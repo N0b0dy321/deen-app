@@ -63,7 +63,7 @@ class HomePage extends StatelessWidget {
                         onTap: () {},
                       ),
                       _FeatureCard(
-                        label: 'Du & Lessons',
+                        label: 'Dua & Lessons',
                         icon: Icons.self_improvement,
                         onTap: () {},
                       ),
