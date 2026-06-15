@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/screen/Qibla.dart';
+import 'package:flutter_application_1/screen/Al-Quran.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -343,11 +345,56 @@ class _BottomNavBar extends StatelessWidget {
       selectedItemColor: const Color(0xFF1B5E20),
       unselectedItemColor: Colors.grey,
       type: BottomNavigationBarType.fixed,
+
+     onTap: (index) {
+  switch (index) {
+    case 0:
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(),
+        ),
+      );
+      break;
+
+    case 1:
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => QiblaPage(),
+        ),
+      );
+      break;
+
+    case 2:
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => QuranPage(),
+        ),
+      );
+      break;
+
+  }
+},
+
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Qibla'),
-        BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Quran'),
-        BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: 'More'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.explore),
+          label: 'Qibla',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.menu_book),
+          label: 'Quran',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.more_horiz),
+          label: 'More',
+        ),
       ],
     );
   }
