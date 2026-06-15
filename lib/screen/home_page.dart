@@ -21,7 +21,7 @@ class HomePage extends StatelessWidget {
                 children: [
                   // Next Prayer Card
                   const Text(
-                    'Piywat',
+                    'Next Prayer',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
