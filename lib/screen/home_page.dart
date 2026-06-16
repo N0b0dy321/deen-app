@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screen/Qibla.dart';
 import 'package:flutter_application_1/screen/Al-Quran.dart';
+import 'package:flutter_application_1/screen/NearbyMasjid.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -60,7 +61,14 @@ class HomePage extends StatelessWidget {
                       _FeatureCard(
                         label: 'Nearby Mosques',
                         icon: Icons.location_on,
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const NearbyMosquesPage(),
+                            ),
+                          );
+                        },
                       ),
                       _FeatureCard(
                         label: 'Dua & Lessons',
