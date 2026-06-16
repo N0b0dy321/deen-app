@@ -1,46 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screen/Qibla.dart';
-import 'package:flutter_application_1/screen/Al-Quran.dart';
-import 'package:flutter_application_1/screen/NearbyMasjid.dart';
+import 'NearbyMasjid.dart';
+import 'prayer_time_page.dart';
+import '../services/prayer_service.dart';
+import 'package:flutter_application_1/screen/qibla_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  Map<String, dynamic>? _prayerData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrayerTimes();
+  }
+
+  Future<void> _loadPrayerTimes() async {
+    final data = await PrayerService.getPrayerTimes();
+    setState(() => _prayerData = data);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final nextPrayer = _prayerData?['nextPrayer'];
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F0),
       body: Column(
         children: [
-          // ── Header Banner ──
           _HeaderBanner(),
-
-          // ── Scrollable Content ──
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Next Prayer Card
-                  const Text(
-                    'Next Prayer',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                  const Text('Next Prayer',
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87)),
+                  const SizedBox(height: 10),
+
+                  // Next Prayer Card — ดึงข้อมูลจริง
+                  GestureDetector(
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(
+                            builder: (_) => const PrayerTimesPage())),
+                    child: _NextPrayerCard(
+                      prayerName: nextPrayer?['name'] ?? '...',
+                      time: nextPrayer?['time'] ?? '--:--',
+                      timeUntil: nextPrayer?['timeUntil'] ?? 'Loading...',
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  _NextPrayerCard(
-                    prayerName: 'Maghrib',
-                    time: '18:33',
-                    timeUntil: 'in 3 hour',
-                  ),
 
-                  const SizedBox(height: 1),
+                  const SizedBox(height: 16),
 
-                  // Feature Grid (2x2)
                   GridView.count(
                     crossAxisCount: 2,
                     shrinkWrap: true,
@@ -56,19 +76,15 @@ class HomePage extends StatelessWidget {
                       _FeatureCard(
                         label: 'Qibla Finder',
                         icon: Icons.explore,
-                        onTap: () {},
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const QiblaPage())),
                       ),
                       _FeatureCard(
                         label: 'Nearby Mosques',
                         icon: Icons.location_on,
-                        onTap: () {
-                          Navigator.push(
-                            context,
+                        onTap: () => Navigator.push(context,
                             MaterialPageRoute(
-                              builder: (context) => const NearbyMosquesPage(),
-                            ),
-                          );
-                        },
+                                builder: (_) => const NearbyMosquesPage())),
                       ),
                       _FeatureCard(
                         label: 'Dua & Lessons',
@@ -79,10 +95,7 @@ class HomePage extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 12),
-
-                  // Chatbot Banner
                   _ChatbotBanner(onTap: () {}),
-
                   const SizedBox(height: 12),
                 ],
               ),
@@ -90,16 +103,16 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-
-      // ── Bottom Navigation Bar ──
-      bottomNavigationBar: _BottomNavBar(),
+      bottomNavigationBar: _BottomNavBar(
+        onPrayerTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const PrayerTimesPage())),
+        onMosqueTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const NearbyMosquesPage())),
+      ),
     );
   }
 }
 
-// ─────────────────────────────────────────
-// Header Banner Widget
-// ─────────────────────────────────────────
 class _HeaderBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -121,24 +134,18 @@ class _HeaderBanner extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-            Text(
-              'ASSLAMU ALAIKUM',
-              style: TextStyle(
-                color: Color(0xFFFFD700),
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
-              ),
-            ),
+            Text('ASSLAMU ALAIKUM',
+                style: TextStyle(
+                    color: Color(0xFFFFD700),
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2)),
             SizedBox(height: 4),
-            Text(
-              'WELCOME TO DEEN',
-              style: TextStyle(
-                color: Color(0xFFFFD700),
-                fontSize: 14,
-                letterSpacing: 3,
-              ),
-            ),
+            Text('WELCOME TO DEEN',
+                style: TextStyle(
+                    color: Color(0xFFFFD700),
+                    fontSize: 14,
+                    letterSpacing: 3)),
           ],
         ),
       ),
@@ -146,9 +153,6 @@ class _HeaderBanner extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Next Prayer Card Widget
-// ─────────────────────────────────────────
 class _NextPrayerCard extends StatelessWidget {
   final String prayerName;
   final String time;
@@ -176,42 +180,37 @@ class _NextPrayerCard extends StatelessWidget {
       child: Row(
         children: [
           const SizedBox(width: 20),
-          // Moon icon placeholder
-          const Icon(Icons.nightlight_round, color: Color(0xFFFFA726), size: 48),
+          const Icon(Icons.nightlight_round,
+              color: Color(0xFFFFA726), size: 48),
           const SizedBox(width: 20),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                prayerName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(prayerName,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold)),
               Row(
                 children: [
-                  Text(
-                    time,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  Text(time,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w500)),
                   const SizedBox(width: 8),
-                  Text(
-                    timeUntil,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                    ),
-                  ),
+                  Text(timeUntil,
+                      style: const TextStyle(
+                          color: Colors.white70, fontSize: 13)),
                 ],
               ),
             ],
+          ),
+          const Spacer(),
+          const Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: Icon(Icons.chevron_right, color: Colors.white70, size: 24),
           ),
         ],
       ),
@@ -219,9 +218,6 @@ class _NextPrayerCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Feature Card Widget
-// ─────────────────────────────────────────
 class _FeatureCard extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -254,15 +250,12 @@ class _FeatureCard extends StatelessWidget {
           children: [
             Icon(icon, size: 48, color: const Color(0xFF1B5E20)),
             const SizedBox(height: 10),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
+            Text(label,
+                style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
+                textAlign: TextAlign.center),
           ],
         ),
       ),
@@ -270,12 +263,8 @@ class _FeatureCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Chatbot Banner Widget
-// ─────────────────────────────────────────
 class _ChatbotBanner extends StatelessWidget {
   final VoidCallback onTap;
-
   const _ChatbotBanner({required this.onTap});
 
   @override
@@ -297,7 +286,6 @@ class _ChatbotBanner extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Robot icon placeholder
             Container(
               width: 50,
               height: 50,
@@ -305,36 +293,26 @@ class _ChatbotBanner extends StatelessWidget {
                 color: const Color(0xFF1B5E20).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.smart_toy,
-                color: Color(0xFF1B5E20),
-                size: 28,
-              ),
+              child: const Icon(Icons.smart_toy,
+                  color: Color(0xFF1B5E20), size: 28),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  Text(
-                    'Ask the Chatbot',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    'Have a question?',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
-                  ),
+                  Text('Ask the Chatbot',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87)),
+                  Text('Have a question?',
+                      style: TextStyle(fontSize: 12, color: Colors.black54)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: Color(0xFF1B5E20), size: 28),
+            const Icon(Icons.chevron_right,
+                color: Color(0xFF1B5E20), size: 28),
           ],
         ),
       ),
@@ -342,10 +320,15 @@ class _ChatbotBanner extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Bottom Navigation Bar Widget
-// ─────────────────────────────────────────
 class _BottomNavBar extends StatelessWidget {
+  final VoidCallback onPrayerTap;
+  final VoidCallback onMosqueTap;
+
+  const _BottomNavBar({
+    required this.onPrayerTap,
+    required this.onMosqueTap,
+  });
+
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
@@ -353,56 +336,17 @@ class _BottomNavBar extends StatelessWidget {
       selectedItemColor: const Color(0xFF1B5E20),
       unselectedItemColor: Colors.grey,
       type: BottomNavigationBarType.fixed,
-
-     onTap: (index) {
-  switch (index) {
-    case 0:
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(),
-        ),
-      );
-      break;
-
-    case 1:
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => QiblaPage(),
-        ),
-      );
-      break;
-
-    case 2:
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => QuranPage(),
-        ),
-      );
-      break;
-
-  }
-},
-
+      onTap: (index) {
+        if (index == 1) onPrayerTap();
+        if (index == 2) onMosqueTap();
+      },
       items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
+            icon: Icon(Icons.access_time), label: 'Prayer'),
+        BottomNavigationBarItem(icon: Icon(Icons.mosque), label: 'Mosques'),
         BottomNavigationBarItem(
-          icon: Icon(Icons.explore),
-          label: 'Qibla',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.menu_book),
-          label: 'Quran',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.more_horiz),
-          label: 'More',
-        ),
+            icon: Icon(Icons.more_horiz), label: 'More'),
       ],
     );
   }
