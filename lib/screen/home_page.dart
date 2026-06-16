@@ -3,6 +3,7 @@ import 'NearbyMasjid.dart';
 import 'prayer_time_page.dart';
 import '../services/prayer_service.dart';
 import 'package:flutter_application_1/screen/qibla_page.dart';
+import 'package:flutter_application_1/screen/chatbot_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -72,7 +73,7 @@ class _HomePageState extends State<HomePage> {
                         label: 'Al-Quran',
                         icon: Icons.menu_book,
                         onTap: () {},
-                      ),
+                      ),  
                       _FeatureCard(
                         label: 'Qibla Finder',
                         icon: Icons.explore,
@@ -95,7 +96,12 @@ class _HomePageState extends State<HomePage> {
                   ),
 
                   const SizedBox(height: 12),
-                  _ChatbotBanner(onTap: () {}),
+                  _ChatbotBanner(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ChatbotPage()),
+                    ),
+              ),
                   const SizedBox(height: 12),
                 ],
               ),
@@ -266,6 +272,7 @@ class _FeatureCard extends StatelessWidget {
 class _ChatbotBanner extends StatelessWidget {
   final VoidCallback onTap;
   const _ChatbotBanner({required this.onTap});
+  
 
   @override
   Widget build(BuildContext context) {

@@ -87,6 +87,7 @@ class PrayerService {
       }
       return null;
     } catch (e) {
+      print('PRAYER ERROR: $e');
       return null;
     }
   }
