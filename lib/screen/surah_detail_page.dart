@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../services/quran_database.dart';
 
 class SurahDetailPage extends StatefulWidget {
   final int surahId;
@@ -17,17 +18,40 @@ class SurahDetailPage extends StatefulWidget {
 }
 
 class _SurahDetailPageState extends State<SurahDetailPage> {
-  List<dynamic> verses = [];
+  List<Map<String, dynamic>> verses = [];
   bool isLoading = true;
+  bool isOffline = false;
   String errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    fetchVerses();
+    loadVerses();
   }
 
-  Future<void> fetchVerses() async {
+  Future<void> loadVerses() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
+    // โหลดจาก local ก่อน
+    final hasLocal = await QuranDatabase.hasVerses(widget.surahId);
+    if (hasLocal) {
+      final local = await QuranDatabase.getVerses(widget.surahId);
+      setState(() {
+        verses = local;
+        isLoading = false;
+        isOffline = false;
+      });
+      return;
+    }
+
+    // ถ้าไม่มี local ดึงจาก API
+    await fetchFromApi();
+  }
+
+  Future<void> fetchFromApi() async {
     try {
       final response = await http.get(
         Uri.parse(
@@ -37,9 +61,17 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        final apiVerses = data['verses'] as List;
+
+        // บันทึกลง local
+        await QuranDatabase.saveVerses(widget.surahId, apiVerses);
+
+        // โหลดจาก local อีกครั้ง
+        final local = await QuranDatabase.getVerses(widget.surahId);
         setState(() {
-          verses = data['verses'];
+          verses = local;
           isLoading = false;
+          isOffline = false;
         });
       } else {
         setState(() {
@@ -51,6 +83,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
       setState(() {
         errorMessage = 'No internet connection';
         isLoading = false;
+        isOffline = true;
       });
     }
   }
@@ -61,17 +94,21 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
       backgroundColor: const Color(0xFFF0F0F0),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1B5E20),
-        title: Text(
-          widget.surahName,
-          style: const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: Text(widget.surahName,
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold)),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          if (isOffline)
+            const Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: Icon(Icons.wifi_off, color: Colors.white70, size: 20),
+            ),
+        ],
       ),
       body: isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF1B5E20)),
-            )
+              child: CircularProgressIndicator(color: Color(0xFF1B5E20)))
           : errorMessage.isNotEmpty
               ? Center(
                   child: Column(
@@ -83,16 +120,9 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                           style: const TextStyle(color: Colors.grey)),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            isLoading = true;
-                            errorMessage = '';
-                          });
-                          fetchVerses();
-                        },
+                        onPressed: fetchFromApi,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1B5E20),
-                        ),
+                            backgroundColor: const Color(0xFF1B5E20)),
                         child: const Text('Retry',
                             style: TextStyle(color: Colors.white)),
                       ),
@@ -104,13 +134,6 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                   itemCount: verses.length,
                   itemBuilder: (context, index) {
                     final verse = verses[index];
-                    final arabicText = verse['text_uthmani'] ?? '';
-                    final translation = verse['translations'] != null &&
-                            verse['translations'].isNotEmpty
-                        ? verse['translations'][0]['text'] ?? ''
-                        : '';
-                    final verseNumber = verse['verse_number'] ?? index + 1;
-
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(16),
@@ -136,16 +159,16 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF1B5E20).withOpacity(0.1),
+                                  color: const Color(0xFF1B5E20)
+                                      .withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  '$verseNumber',
+                                  '${verse['verse_number']}',
                                   style: const TextStyle(
-                                    color: Color(0xFF1B5E20),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
+                                      color: Color(0xFF1B5E20),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12),
                                 ),
                               ),
                             ],
@@ -154,14 +177,13 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
 
                           // Arabic text
                           Text(
-                            arabicText,
+                            verse['text_uthmani'] ?? '',
                             textAlign: TextAlign.right,
                             textDirection: TextDirection.rtl,
                             style: const TextStyle(
-                              fontSize: 24,
-                              height: 2.0,
-                              color: Colors.black87,
-                            ),
+                                fontSize: 24,
+                                height: 2.0,
+                                color: Colors.black87),
                           ),
                           const Divider(height: 20),
 
@@ -169,13 +191,12 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              translation,
+                              verse['translation'] ?? '',
                               textAlign: TextAlign.left,
                               style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.black54,
-                                height: 1.6,
-                              ),
+                                  fontSize: 13,
+                                  color: Colors.black54,
+                                  height: 1.6),
                             ),
                           ),
                         ],

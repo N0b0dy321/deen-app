@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/prayer_service.dart';
-import 'package:flutter_application_1/services/Setting_Time.dart';
+import 'package:DEEN/services/Setting_Time.dart';
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({super.key});

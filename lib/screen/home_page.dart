@@ -3,8 +3,8 @@ import 'NearbyMasjid.dart';
 import 'prayer_time_page.dart';
 import 'Al-Quran.dart';
 import '../services/prayer_service.dart';
-import 'package:flutter_application_1/screen/qibla_page.dart';
-import 'package:flutter_application_1/screen/chatbot_page.dart';
+import 'package:DEEN/screen/qibla_page.dart';
+import 'package:DEEN/screen/chatbot_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
