@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'NearbyMasjid.dart';
 import 'prayer_time_page.dart';
+import 'Al-Quran.dart';
 import '../services/prayer_service.dart';
 import 'package:flutter_application_1/screen/qibla_page.dart';
 import 'package:flutter_application_1/screen/chatbot_page.dart';
@@ -70,10 +71,11 @@ class _HomePageState extends State<HomePage> {
                     mainAxisSpacing: 12,
                     children: [
                       _FeatureCard(
-                        label: 'Al-Quran',
-                        icon: Icons.menu_book,
-                        onTap: () {},
-                      ),  
+  label: 'Al-Quran',
+  icon: Icons.menu_book,
+  onTap: () => Navigator.push(context,
+    MaterialPageRoute(builder: (_) => const AlQuranPage())),
+), 
                       _FeatureCard(
                         label: 'Qibla Finder',
                         icon: Icons.explore,
