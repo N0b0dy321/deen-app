@@ -270,7 +270,7 @@ class _NearbyMosquesPageState extends State<NearbyMosquesPage> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -381,7 +381,7 @@ class _NearbyMosquesPageState extends State<NearbyMosquesPage> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -396,7 +396,7 @@ class _NearbyMosquesPageState extends State<NearbyMosquesPage> {
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1B5E20).withOpacity(0.1),
+                      color: const Color(0xFF1B5E20).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.mosque,
@@ -455,8 +455,8 @@ class _NearbyMosquesPageState extends State<NearbyMosquesPage> {
                               horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: isOpen
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.1),
+                                ? Colors.green.withValues(alpha: 0.1)
+                                : Colors.red.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(

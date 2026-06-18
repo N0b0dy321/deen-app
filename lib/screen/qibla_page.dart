@@ -193,13 +193,13 @@ class _QiblaPageState extends State<QiblaPage> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
               color: _isFacingQibla
-                  ? Colors.green.withOpacity(0.1)
+                  ? Colors.green.withValues(alpha: 0.1)
                   : Colors.white,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: _isFacingQibla
                     ? Colors.green
-                    : Colors.grey.withOpacity(0.3),
+                    : Colors.grey.withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -243,7 +243,7 @@ class _QiblaPageState extends State<QiblaPage> {
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 20,
                         offset: const Offset(0, 5),
                       ),
@@ -273,7 +273,7 @@ class _QiblaPageState extends State<QiblaPage> {
                         margin: const EdgeInsets.only(top: 16),
                         color: isMain
                             ? const Color(0xFF1B5E20)
-                            : Colors.grey.withOpacity(0.4),
+                            : Colors.grey.withValues(alpha: 0.4),
                       ),
                     ),
                   );
@@ -351,7 +351,7 @@ class _QiblaPageState extends State<QiblaPage> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -404,7 +404,7 @@ class _QiblaPageState extends State<QiblaPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
