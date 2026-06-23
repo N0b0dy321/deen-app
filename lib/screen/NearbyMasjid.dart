@@ -172,7 +172,7 @@ class _NearbyMosquesPageState extends State<NearbyMosquesPage> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to fetch mosques: $e';
+        _errorMessage = 'Please connect to the internet and try again';
         _isLoading = false;
       });
     }

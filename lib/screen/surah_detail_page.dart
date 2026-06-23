@@ -20,8 +20,13 @@ class SurahDetailPage extends StatefulWidget {
 class _SurahDetailPageState extends State<SurahDetailPage> {
   List<Map<String, dynamic>> verses = [];
   bool isLoading = true;
-  bool isOffline = false;
   String errorMessage = '';
+
+  String _selectedLang = 'en';
+  final Map<String, Map<String, dynamic>> _languages = {
+    'en': {'label': 'English', 'edition': 'en.sahih', 'flag': '🇬🇧'},
+    'th': {'label': 'ภาษาไทย', 'edition': 'th.thai', 'flag': '🇹🇭'},
+  };
 
   @override
   void initState() {
@@ -35,43 +40,64 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
       errorMessage = '';
     });
 
-    // โหลดจาก local ก่อน
-    final hasLocal = await QuranDatabase.hasVerses(widget.surahId);
+    final hasLocal = await QuranDatabase.hasVersesByLang(widget.surahId, _selectedLang);
+
     if (hasLocal) {
-      final local = await QuranDatabase.getVerses(widget.surahId);
-      setState(() {
-        verses = local;
-        isLoading = false;
-        isOffline = false;
-      });
-      return;
+      final local = await QuranDatabase.getVersesByLang(widget.surahId, _selectedLang);
+
+      // เช็คว่า translation มีข้อมูลจริงๆ ไหม
+      final hasTranslation = local.isNotEmpty &&
+          (local[0]['translation'] ?? '').toString().isNotEmpty;
+
+      if (hasTranslation) {
+        setState(() {
+          verses = local;
+          isLoading = false;
+        });
+        return;
+      }
+
+      // ถ้า translation ว่าง ลบ cache เก่าแล้วดึงใหม่
+      await QuranDatabase.deleteVersesByLang(widget.surahId, _selectedLang);
     }
 
-    // ถ้าไม่มี local ดึงจาก API
     await fetchFromApi();
   }
 
   Future<void> fetchFromApi() async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          'https://api.qurancdn.com/api/qdc/verses/by_chapter/${widget.surahId}'
-          '?language=en&words=true&translations=131&per_page=300&fields=text_uthmani',
-        ),
-      );
+      final edition = _languages[_selectedLang]!['edition'] as String;
+      final url =
+          'https://api.alquran.cloud/v1/surah/${widget.surahId}/editions/quran-uthmani,$edition';
+
+      final response =
+          await http.get(Uri.parse(url)).timeout(const Duration(seconds: 15));
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final apiVerses = data['verses'] as List;
+        final List editions = data['data'];
 
-        // บันทึกลง local
-        await QuranDatabase.saveVerses(widget.surahId, apiVerses);
+        final arabicAyahs = editions[0]['ayahs'] as List;
+        final translationAyahs = editions[1]['ayahs'] as List;
 
-        // โหลดจาก local อีกครั้ง
-        final local = await QuranDatabase.getVerses(widget.surahId);
+        final processedVerses = List.generate(arabicAyahs.length, (i) {
+          return {
+            'verse_number': arabicAyahs[i]['numberInSurah'],
+            'text_uthmani': arabicAyahs[i]['text'] ?? '',
+            'translation': translationAyahs[i]['text'] ?? '',
+            'lang': _selectedLang,
+          };
+        });
+
+        await QuranDatabase.saveProcessedVerses(
+            widget.surahId, _selectedLang, processedVerses);
+
+        final local = await QuranDatabase.getVersesByLang(
+            widget.surahId, _selectedLang);
+
         setState(() {
           verses = local;
           isLoading = false;
-          isOffline = false;
         });
       } else {
         setState(() {
@@ -83,9 +109,14 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
       setState(() {
         errorMessage = 'No internet connection';
         isLoading = false;
-        isOffline = true;
       });
     }
+  }
+
+  void _changeLang(String lang) {
+    if (lang == _selectedLang) return;
+    setState(() => _selectedLang = lang);
+    loadVerses();
   }
 
   @override
@@ -99,11 +130,40 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                 color: Colors.white, fontWeight: FontWeight.bold)),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          if (isOffline)
-            const Padding(
-              padding: EdgeInsets.only(right: 12),
-              child: Icon(Icons.wifi_off, color: Colors.white70, size: 20),
+          PopupMenuButton<String>(
+            icon: Text(
+              _languages[_selectedLang]!['flag'] as String,
+              style: const TextStyle(fontSize: 22),
             ),
+            onSelected: _changeLang,
+            itemBuilder: (context) => _languages.entries.map((entry) {
+              final isSelected = entry.key == _selectedLang;
+              return PopupMenuItem<String>(
+                value: entry.key,
+                child: Row(
+                  children: [
+                    Text(entry.value['flag'] as String,
+                        style: const TextStyle(fontSize: 18)),
+                    const SizedBox(width: 10),
+                    Text(entry.value['label'] as String,
+                        style: TextStyle(
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: isSelected
+                                ? const Color(0xFF1B5E20)
+                                : Colors.black87)),
+                    if (isSelected) ...[
+                      const Spacer(),
+                      const Icon(Icons.check,
+                          color: Color(0xFF1B5E20), size: 16),
+                    ]
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(width: 4),
         ],
       ),
       body: isLoading
@@ -134,6 +194,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                   itemCount: verses.length,
                   itemBuilder: (context, index) {
                     final verse = verses[index];
+                    final translation = verse['translation'] ?? '';
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(16),
@@ -151,7 +212,6 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          // Verse number
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -171,11 +231,15 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                                       fontSize: 12),
                                 ),
                               ),
+                              Text(
+                                _languages[_selectedLang]!['flag'] as String,
+                                style: const TextStyle(fontSize: 14),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 12),
 
-                          // Arabic text
+                          // Arabic
                           Text(
                             verse['text_uthmani'] ?? '',
                             textAlign: TextAlign.right,
@@ -185,20 +249,21 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                                 height: 2.0,
                                 color: Colors.black87),
                           ),
-                          const Divider(height: 20),
 
-                          // Translation
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              verse['translation'] ?? '',
-                              textAlign: TextAlign.left,
-                              style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.black54,
-                                  height: 1.6),
+                          if (translation.isNotEmpty) ...[
+                            const Divider(height: 20),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                translation,
+                                textAlign: TextAlign.left,
+                                style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.black54,
+                                    height: 1.6),
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     );

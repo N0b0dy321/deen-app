@@ -16,9 +16,8 @@ class QuranDatabase {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
-        // ตาราง Surah
         await db.execute('''
           CREATE TABLE surahs (
             id INTEGER PRIMARY KEY,
@@ -29,16 +28,22 @@ class QuranDatabase {
           )
         ''');
 
-        // ตาราง Verses
         await db.execute('''
           CREATE TABLE verses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             surah_id INTEGER,
             verse_number INTEGER,
             text_uthmani TEXT,
-            translation TEXT
+            translation TEXT,
+            lang TEXT DEFAULT 'en'
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+              "ALTER TABLE verses ADD COLUMN lang TEXT DEFAULT 'en'");
+        }
       },
     );
   }
@@ -80,10 +85,8 @@ class QuranDatabase {
   static Future<void> saveVerses(int surahId, List<dynamic> verses) async {
     final db = await database;
     final batch = db.batch();
-
-    // ลบข้อมูลเก่าก่อน
-    batch.delete('verses', where: 'surah_id = ?', whereArgs: [surahId]);
-
+    batch.delete('verses',
+        where: 'surah_id = ? AND lang = ?', whereArgs: [surahId, 'en']);
     for (final v in verses) {
       final translation = v['translations'] != null &&
               (v['translations'] as List).isNotEmpty
@@ -94,6 +97,7 @@ class QuranDatabase {
         'verse_number': v['verse_number'],
         'text_uthmani': v['text_uthmani'] ?? '',
         'translation': translation,
+        'lang': 'en',
       });
     }
     await batch.commit(noResult: true);
@@ -103,8 +107,8 @@ class QuranDatabase {
     final db = await database;
     return await db.query(
       'verses',
-      where: 'surah_id = ?',
-      whereArgs: [surahId],
+      where: 'surah_id = ? AND lang = ?',
+      whereArgs: [surahId, 'en'],
       orderBy: 'verse_number ASC',
     );
   }
@@ -112,17 +116,86 @@ class QuranDatabase {
   static Future<bool> hasVerses(int surahId) async {
     final db = await database;
     final result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM verses WHERE surah_id = ?',
-      [surahId],
+      'SELECT COUNT(*) as count FROM verses WHERE surah_id = ? AND lang = ?',
+      [surahId, 'en'],
     );
     return (result.first['count'] as int) > 0;
   }
 
   static Future<bool> hasAllVerses() async {
-  final db = await database;
-  final result = await db.rawQuery(
-    'SELECT COUNT(DISTINCT surah_id) as count FROM verses'
-  );
-  return (result.first['count'] as int) >= 114;
-}
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(DISTINCT surah_id) as count FROM verses WHERE lang = ?',
+      ['en'],
+    );
+    return (result.first['count'] as int) >= 114;
+  }
+
+  // ── Verses by Language ─────────────────
+
+  static Future<void> saveVersesByLang(
+      int surahId, String lang, List<dynamic> verses) async {
+    final db = await database;
+    final batch = db.batch();
+    batch.delete('verses',
+        where: 'surah_id = ? AND lang = ?', whereArgs: [surahId, lang]);
+    for (final v in verses) {
+      final translation = v['translations'] != null &&
+              (v['translations'] as List).isNotEmpty
+          ? v['translations'][0]['text'] ?? ''
+          : '';
+      batch.insert('verses', {
+        'surah_id': surahId,
+        'verse_number': v['verse_number'],
+        'text_uthmani': v['text_uthmani'] ?? '',
+        'translation': translation,
+        'lang': lang,
+      });
+    }
+    await batch.commit(noResult: true);
+  }
+
+  static Future<void> saveProcessedVerses(
+      int surahId, String lang, List<Map<String, dynamic>> verses) async {
+    final db = await database;
+    final batch = db.batch();
+    batch.delete('verses',
+        where: 'surah_id = ? AND lang = ?', whereArgs: [surahId, lang]);
+    for (final v in verses) {
+      batch.insert('verses', {
+        'surah_id': surahId,
+        'verse_number': v['verse_number'],
+        'text_uthmani': v['text_uthmani'] ?? '',
+        'translation': v['translation'] ?? '',
+        'lang': lang,
+      });
+    }
+    await batch.commit(noResult: true);
+  }
+
+  static Future<List<Map<String, dynamic>>> getVersesByLang(
+      int surahId, String lang) async {
+    final db = await database;
+    return await db.query(
+      'verses',
+      where: 'surah_id = ? AND lang = ?',
+      whereArgs: [surahId, lang],
+      orderBy: 'verse_number ASC',
+    );
+  }
+
+  static Future<bool> hasVersesByLang(int surahId, String lang) async {
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM verses WHERE surah_id = ? AND lang = ?',
+      [surahId, lang],
+    );
+    return (result.first['count'] as int) > 0;
+  }
+
+  static Future<void> deleteVersesByLang(int surahId, String lang) async {
+    final db = await database;
+    await db.delete('verses',
+        where: 'surah_id = ? AND lang = ?', whereArgs: [surahId, lang]);
+  }
 }

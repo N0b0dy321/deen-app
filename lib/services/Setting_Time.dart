@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/prayer_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -65,15 +66,18 @@ class _SettingsPageState extends State<SettingsPage> {
     await prefs.setString('timezone', _selectedTimezone);
     await prefs.setString('method', _selectedMethod);
 
+    // ล้าง cache เพื่อให้ดึง API ใหม่
+    await PrayerService.clearCache();
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Settings saved!'),
+          content: Text('Settings saved! Prayer times will refresh.'),
           backgroundColor: Color(0xFF1B5E20),
           duration: Duration(seconds: 2),
         ),
       );
-      Navigator.pop(context, true); // บอก Home ให้ refresh
+      Navigator.pop(context, true);
     }
   }
 
@@ -130,9 +134,47 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
 
+                  const SizedBox(height: 16),
 
                   // Calculation Method Section
-                 
+                  const Text('Calculation Method',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87)),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedMethod,
+                        isExpanded: true,
+                        icon: const Icon(Icons.keyboard_arrow_down,
+                            color: Color(0xFF1B5E20)),
+                        items: _methods.map((m) {
+                          return DropdownMenuItem(
+                            value: m['value'],
+                            child: Text(m['label']!,
+                                style: const TextStyle(fontSize: 14)),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() => _selectedMethod = value!);
+                        },
+                      ),
+                    ),
+                  ),
 
                   const SizedBox(height: 32),
 
