@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/prayer_service.dart';
+import '../services/language_service.dart';
 import 'package:DEEN/services/Setting_Time.dart';
 
 class PrayerTimesPage extends StatefulWidget {
@@ -12,29 +13,34 @@ class PrayerTimesPage extends StatefulWidget {
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
   bool _isLoading = true;
   Map<String, dynamic>? _prayerData;
+  final _lang = LanguageService();
 
   final List<Map<String, dynamic>> _prayerInfo = [
-    {'key': 'Fajr', 'label': 'Fajr', 'icon': Icons.wb_twilight, 'arabic': 'الفجر'},
-    {'key': 'Sunrise', 'label': 'Sunrise', 'icon': Icons.wb_sunny_outlined, 'arabic': 'الشروق'},
-    {'key': 'Dhuhr', 'label': 'Dhuhr', 'icon': Icons.wb_sunny, 'arabic': 'الظهر'},
-    {'key': 'Asr', 'label': 'Asr', 'icon': Icons.sunny_snowing, 'arabic': 'العصر'},
-    {'key': 'Maghrib', 'label': 'Maghrib', 'icon': Icons.nights_stay_outlined, 'arabic': 'المغرب'},
-    {'key': 'Isha', 'label': 'Isha', 'icon': Icons.nightlight, 'arabic': 'العشاء'},
+    {'key': 'Fajr', 'label': 'Fajr', 'labelTh': 'ฟัจร์', 'icon': Icons.wb_twilight, 'arabic': 'الفجر'},
+    {'key': 'Sunrise', 'label': 'Sunrise', 'labelTh': 'ดวงอาทิตย์ขึ้น', 'icon': Icons.wb_sunny_outlined, 'arabic': 'الشروق'},
+    {'key': 'Dhuhr', 'label': 'Dhuhr', 'labelTh': 'ซุฮร์', 'icon': Icons.wb_sunny, 'arabic': 'الظهر'},
+    {'key': 'Asr', 'label': 'Asr', 'labelTh': 'อัศร์', 'icon': Icons.sunny_snowing, 'arabic': 'العصر'},
+    {'key': 'Maghrib', 'label': 'Maghrib', 'labelTh': 'มัฆริบ', 'icon': Icons.nights_stay_outlined, 'arabic': 'المغرب'},
+    {'key': 'Isha', 'label': 'Isha', 'labelTh': 'อิชาอ์', 'icon': Icons.nightlight, 'arabic': 'العشاء'},
   ];
 
   @override
   void initState() {
     super.initState();
+    _lang.addListener(() => setState(() {}));
     _loadPrayerTimes();
+  }
+
+  @override
+  void dispose() {
+    _lang.removeListener(() => setState(() {}));
+    super.dispose();
   }
 
   Future<void> _loadPrayerTimes() async {
     setState(() => _isLoading = true);
     final data = await PrayerService.getPrayerTimes();
-    setState(() {
-      _prayerData = data;
-      _isLoading = false;
-    });
+    setState(() { _prayerData = data; _isLoading = false; });
   }
 
   @override
@@ -46,12 +52,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           _buildHeader(context),
           Expanded(
             child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF1B5E20)),
-                  )
-                : _prayerData == null
-                    ? _buildError()
-                    : _buildContent(),
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B5E20)))
+                : _prayerData == null ? _buildError() : _buildContent(),
           ),
         ],
       ),
@@ -67,10 +69,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           end: Alignment.bottomCenter,
           colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
         ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
+        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
       ),
       child: SafeArea(
         child: Padding(
@@ -81,37 +80,27 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_ios,
-                        color: Colors.white, size: 22),
+                    child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22),
                   ),
                   GestureDetector(
                     onTap: () async {
                       final result = await Navigator.push(context,
-                         MaterialPageRoute(builder: (_) => const SettingsPage()));
-                      if (result == true) _loadPrayerTimes(); // refresh หลัง save
+                          MaterialPageRoute(builder: (_) => const SettingsPage()));
+                      if (result == true) _loadPrayerTimes();
                     },
-                    child: const Icon(Icons.settings,
-                        color: Colors.white70, size: 26),
-              ),
+                    child: const Icon(Icons.settings, color: Colors.white70, size: 26),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
               const Icon(Icons.access_time, color: Color(0xFFFFD700), size: 40),
               const SizedBox(height: 8),
-              const Text(
-                'Prayer Times',
-                style: TextStyle(
-                  color: Color(0xFFFFD700),
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(_lang.prayerTimes,
+                  style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
               if (_prayerData != null)
-                Text(
-                  _prayerData!['date'],
-                  style: const TextStyle(color: Colors.white70, fontSize: 13),
-                ),
+                Text(_prayerData!['date'],
+                    style: const TextStyle(color: Colors.white70, fontSize: 13)),
               const SizedBox(height: 16),
             ],
           ),
@@ -128,7 +117,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Next Prayer Card
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -142,28 +130,22 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             ),
             child: Column(
               children: [
-                const Text('Next Prayer',
-                    style: TextStyle(color: Colors.white70, fontSize: 13)),
+                Text(_lang.nextPrayerLabel,
+                    style: const TextStyle(color: Colors.white70, fontSize: 13)),
                 const SizedBox(height: 8),
                 Text(nextPrayer['name'],
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold)),
+                    style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
                 Text(nextPrayer['time'],
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 22)),
+                    style: const TextStyle(color: Colors.white, fontSize: 22)),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(nextPrayer['timeUntil'],
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 13)),
+                      style: const TextStyle(color: Colors.white, fontSize: 13)),
                 ),
               ],
             ),
@@ -171,67 +153,42 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
           const SizedBox(height: 16),
 
-          // All Prayer Times
           ..._prayerInfo.map((prayer) {
             final time = timings[prayer['key']] ?? '-';
             final isNext = nextPrayer['name'] == prayer['label'];
+            final label = _lang.isThai ? prayer['labelTh'] : prayer['label'];
             return Container(
               margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 20, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
-                color: isNext
-                    ? const Color(0xFF1B5E20)
-                    : Colors.white,
+                color: isNext ? const Color(0xFF1B5E20) : Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2)),
                 ],
               ),
               child: Row(
                 children: [
                   Icon(prayer['icon'] as IconData,
-                      color: isNext
-                          ? Colors.white
-                          : const Color(0xFF1B5E20),
-                      size: 24),
+                      color: isNext ? Colors.white : const Color(0xFF1B5E20), size: 24),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(prayer['label'],
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: isNext
-                                    ? Colors.white
-                                    : Colors.black87)),
-                        Text(prayer['arabic'],
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: isNext
-                                    ? Colors.white70
-                                    : Colors.grey)),
+                        Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
+                            color: isNext ? Colors.white : Colors.black87)),
+                        Text(prayer['arabic'], style: TextStyle(fontSize: 12,
+                            color: isNext ? Colors.white70 : Colors.grey)),
                       ],
                     ),
                   ),
-                  Text(time,
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isNext
-                              ? Colors.white
-                              : const Color(0xFF1B5E20))),
+                  Text(time, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,
+                      color: isNext ? Colors.white : const Color(0xFF1B5E20))),
                   if (isNext)
                     const Padding(
                       padding: EdgeInsets.only(left: 8),
-                      child: Icon(Icons.notifications_active,
-                          color: Colors.white, size: 18),
+                      child: Icon(Icons.notifications_active, color: Colors.white, size: 18),
                     ),
                 ],
               ),
@@ -240,20 +197,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
           const SizedBox(height: 16),
 
-          // Refresh Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: _loadPrayerTimes,
               icon: const Icon(Icons.refresh, color: Colors.white),
-              label: const Text('Refresh',
-                  style: TextStyle(color: Colors.white)),
+              label: Text(_lang.refresh, style: const TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1B5E20),
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ),
@@ -269,15 +222,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         children: [
           const Icon(Icons.error_outline, color: Colors.red, size: 48),
           const SizedBox(height: 16),
-          const Text('Could not load prayer times',
-              style: TextStyle(color: Colors.grey)),
+          Text(_lang.couldNotLoad, style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadPrayerTimes,
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1B5E20)),
-            child: const Text('Try Again',
-                style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
+            child: Text(_lang.tryAgain, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),

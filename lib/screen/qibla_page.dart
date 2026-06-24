@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:math';
+import '../services/language_service.dart';
 
 class QiblaPage extends StatefulWidget {
   const QiblaPage({super.key});
@@ -16,6 +17,7 @@ class _QiblaPageState extends State<QiblaPage> {
   bool _isLoading = true;
   String _errorMessage = '';
   double? _distanceToKaaba;
+  final _lang = LanguageService();
 
   static const double _kaabaLat = 21.4225;
   static const double _kaabaLng = 39.8262;
@@ -23,7 +25,14 @@ class _QiblaPageState extends State<QiblaPage> {
   @override
   void initState() {
     super.initState();
+    _lang.addListener(() => setState(() {}));
     _initialize();
+  }
+
+  @override
+  void dispose() {
+    _lang.removeListener(() => setState(() {}));
+    super.dispose();
   }
 
   Future<void> _initialize() async {
@@ -50,26 +59,18 @@ class _QiblaPageState extends State<QiblaPage> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          setState(() {
-            _errorMessage = 'Location permission denied';
-            _isLoading = false;
-          });
+          setState(() { _errorMessage = 'Location permission denied'; _isLoading = false; });
           return;
         }
       }
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       setState(() {
         _qiblaDirection = _calculateQibla(position.latitude, position.longitude);
         _distanceToKaaba = _calculateDistance(position.latitude, position.longitude);
         _isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Could not get location: $e';
-        _isLoading = false;
-      });
+      setState(() { _errorMessage = 'Could not get location: $e'; _isLoading = false; });
     }
   }
 
@@ -105,9 +106,7 @@ class _QiblaPageState extends State<QiblaPage> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B5E20)))
-                : _errorMessage.isNotEmpty
-                    ? _buildError()
-                    : _buildCompass(),
+                : _errorMessage.isNotEmpty ? _buildError() : _buildCompass(),
           ),
         ],
       ),
@@ -123,32 +122,27 @@ class _QiblaPageState extends State<QiblaPage> {
           end: Alignment.bottomCenter,
           colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
         ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
+        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
       ),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Column(
             children: [
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22),
-                  ),
-                ],
-              ),
+              Row(children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22),
+                ),
+              ]),
               const SizedBox(height: 8),
               const Icon(Icons.explore, color: Color(0xFFFFD700), size: 40),
               const SizedBox(height: 8),
-              const Text('Qibla Finder',
-                  style: TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),
+              Text(_lang.qiblaTitle,
+                  style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
               if (_distanceToKaaba != null)
-                Text('${_distanceToKaaba!.toStringAsFixed(0)} km from Makkah',
+                Text('${_distanceToKaaba!.toStringAsFixed(0)} ${_lang.fromMakkah}',
                     style: const TextStyle(color: Colors.white70, fontSize: 13)),
               const SizedBox(height: 16),
             ],
@@ -164,31 +158,22 @@ class _QiblaPageState extends State<QiblaPage> {
       child: Column(
         children: [
           const SizedBox(height: 16),
-
-          // Status
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
               color: _isFacingQibla ? Colors.green.withValues(alpha: 0.1) : Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: _isFacingQibla ? Colors.green : Colors.grey.withValues(alpha: 0.3),
-              ),
+              border: Border.all(color: _isFacingQibla ? Colors.green : Colors.grey.withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  _isFacingQibla ? Icons.check_circle : Icons.rotate_right,
-                  color: _isFacingQibla ? Colors.green : Colors.grey,
-                  size: 18,
-                ),
+                Icon(_isFacingQibla ? Icons.check_circle : Icons.rotate_right,
+                    color: _isFacingQibla ? Colors.green : Colors.grey, size: 18),
                 const SizedBox(width: 8),
                 Text(
-                  _isFacingQibla ? 'Facing Qibla! 🕋' : 'Rotate to find Qibla',
-                  style: TextStyle(
-                      color: _isFacingQibla ? Colors.green : Colors.grey,
-                      fontWeight: FontWeight.bold),
+                  _isFacingQibla ? _lang.facingQibla : _lang.rotateQibla,
+                  style: TextStyle(color: _isFacingQibla ? Colors.green : Colors.grey, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -196,43 +181,28 @@ class _QiblaPageState extends State<QiblaPage> {
 
           const SizedBox(height: 40),
 
-          // เข็มทิศ
           SizedBox(
-            width: 280,
-            height: 280,
+            width: 280, height: 280,
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // วงกลม + N S E W + เส้นขีด หมุนตามเข็มทิศจริง
                 Transform.rotate(
                   angle: _compassAngle,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      // วงกลมพื้นหลัง
                       Container(
-                        width: 280,
-                        height: 280,
+                        width: 280, height: 280,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 20,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 5))],
                         ),
                       ),
-
-                      // ทิศหลัก N S E W
                       _buildDirection('N', 0, -110),
                       _buildDirection('S', 0, 110),
                       _buildDirection('E', 110, 0),
                       _buildDirection('W', -110, 0),
-
-                      // เส้นขีด
                       ...List.generate(36, (i) {
                         final angle = i * 10 * pi / 180;
                         final isMain = i % 9 == 0;
@@ -244,9 +214,7 @@ class _QiblaPageState extends State<QiblaPage> {
                               width: isMain ? 2 : 1,
                               height: isMain ? 16 : 10,
                               margin: const EdgeInsets.only(top: 16),
-                              color: isMain
-                                  ? const Color(0xFF1B5E20)
-                                  : Colors.grey.withValues(alpha: 0.4),
+                              color: isMain ? const Color(0xFF1B5E20) : Colors.grey.withValues(alpha: 0.4),
                             ),
                           ),
                         );
@@ -254,21 +222,13 @@ class _QiblaPageState extends State<QiblaPage> {
                     ],
                   ),
                 ),
-
-                // ลูกศร Qibla (ไม่หมุนตามเข็มทิศ)
                 Transform.rotate(
                   angle: _arrowAngle,
-                  child: Icon(
-                    Icons.navigation,
-                    color: _isFacingQibla ? Colors.green : const Color(0xFF1B5E20),
-                    size: 80,
-                  ),
+                  child: Icon(Icons.navigation,
+                      color: _isFacingQibla ? Colors.green : const Color(0xFF1B5E20), size: 80),
                 ),
-
-                // ไอคอนกะอ์บะฮ์ตรงกลาง
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 36, height: 36,
                   decoration: BoxDecoration(
                     color: _isFacingQibla ? Colors.green : const Color(0xFF1B5E20),
                     shape: BoxShape.circle,
@@ -281,28 +241,13 @@ class _QiblaPageState extends State<QiblaPage> {
 
           const SizedBox(height: 32),
 
-          // ข้อมูล
           Row(
             children: [
-              Expanded(
-                child: _buildInfoCard(
-                  icon: Icons.explore,
-                  label: 'Qibla Direction',
-                  value: _qiblaDirection != null
-                      ? '${_qiblaDirection!.toStringAsFixed(1)}°'
-                      : '-',
-                ),
-              ),
+              Expanded(child: _buildInfoCard(icon: Icons.explore, label: _lang.qiblaDirection,
+                  value: _qiblaDirection != null ? '${_qiblaDirection!.toStringAsFixed(1)}°' : '-')),
               const SizedBox(width: 12),
-              Expanded(
-                child: _buildInfoCard(
-                  icon: Icons.compass_calibration,
-                  label: 'Compass',
-                  value: _compassHeading != null
-                      ? '${_compassHeading!.toStringAsFixed(1)}°'
-                      : '-',
-                ),
-              ),
+              Expanded(child: _buildInfoCard(icon: Icons.compass_calibration, label: _lang.compass,
+                  value: _compassHeading != null ? '${_compassHeading!.toStringAsFixed(1)}°' : '-')),
             ],
           ),
 
@@ -313,24 +258,13 @@ class _QiblaPageState extends State<QiblaPage> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
             ),
             child: Row(
-              children: const [
-                Icon(Icons.info_outline, color: Color(0xFF1B5E20), size: 20),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Hold your phone flat and away from metal objects for accurate reading.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ),
+              children: [
+                const Icon(Icons.info_outline, color: Color(0xFF1B5E20), size: 20),
+                const SizedBox(width: 10),
+                Expanded(child: Text(_lang.holdPhone, style: const TextStyle(fontSize: 12, color: Colors.grey))),
               ],
             ),
           ),
@@ -342,46 +276,27 @@ class _QiblaPageState extends State<QiblaPage> {
   Widget _buildDirection(String label, double x, double y) {
     return Transform.translate(
       offset: Offset(x, y),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: label == 'N' ? const Color(0xFF1B5E20) : Colors.black54,
-        ),
-      ),
+      child: Text(label,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
+              color: label == 'N' ? const Color(0xFF1B5E20) : Colors.black54)),
     );
   }
 
-  Widget _buildInfoCard({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
+  Widget _buildInfoCard({required IconData icon, required String label, required String value}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
         children: [
           Icon(icon, color: const Color(0xFF1B5E20), size: 24),
           const SizedBox(height: 8),
-          Text(value,
-              style: const TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+          Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
           const SizedBox(height: 4),
-          Text(label,
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
-              textAlign: TextAlign.center),
+          Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center),
         ],
       ),
     );
@@ -394,14 +309,12 @@ class _QiblaPageState extends State<QiblaPage> {
         children: [
           const Icon(Icons.error_outline, color: Colors.red, size: 48),
           const SizedBox(height: 16),
-          Text(_errorMessage,
-              style: const TextStyle(color: Colors.grey),
-              textAlign: TextAlign.center),
+          Text(_errorMessage, style: const TextStyle(color: Colors.grey), textAlign: TextAlign.center),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _initialize,
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
-            child: const Text('Try Again', style: TextStyle(color: Colors.white)),
+            child: Text(_lang.tryAgain, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),

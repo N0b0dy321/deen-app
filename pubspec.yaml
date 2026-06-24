@@ -28,7 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  flutter:
+  flutter:   
     sdk: flutter
   google_maps_flutter: ^2.5.0
   geolocator: ^11.0.0
@@ -47,6 +47,8 @@ dependencies:
 flutter_icons:
   android: true
   image_path: "image/icon.png"
+
+
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +71,8 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - image/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

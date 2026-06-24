@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/prayer_service.dart';
+import '../services/theme_service.dart';
+import '../services/language_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -12,6 +14,8 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   String _selectedTimezone = 'Asia/Bangkok';
   String _selectedMethod = '16';
+  final _theme = ThemeService();
+  final _lang = LanguageService();
 
   final List<Map<String, String>> _timezones = [
     {'label': 'Thailand (Bangkok)', 'value': 'Asia/Bangkok'},
@@ -50,7 +54,16 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
+    _theme.addListener(() => setState(() {}));
+    _lang.addListener(() => setState(() {}));
     _loadSettings();
+  }
+
+  @override
+  void dispose() {
+    _theme.removeListener(() => setState(() {}));
+    _lang.removeListener(() => setState(() {}));
+    super.dispose();
   }
 
   Future<void> _loadSettings() async {
@@ -65,16 +78,14 @@ class _SettingsPageState extends State<SettingsPage> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('timezone', _selectedTimezone);
     await prefs.setString('method', _selectedMethod);
-
-    // ล้าง cache เพื่อให้ดึง API ใหม่
     await PrayerService.clearCache();
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Settings saved! Prayer times will refresh.'),
-          backgroundColor: Color(0xFF1B5E20),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(_lang.isThai ? 'บันทึกแล้ว!' : 'Settings saved!'),
+          backgroundColor: const Color(0xFF1B5E20),
+          duration: const Duration(seconds: 2),
         ),
       );
       Navigator.pop(context, true);
@@ -83,8 +94,14 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = _theme.isDark;
+    final bgColor = isDark ? const Color(0xFF121212) : const Color(0xFFF0F0F0);
+    final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subTextColor = isDark ? Colors.white60 : Colors.black54;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: bgColor,
       body: Column(
         children: [
           _buildHeader(context),
@@ -94,107 +111,112 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Timezone Section
-                  const Text('Timezone',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87)),
+
+                  // ── Dark Mode Toggle ──
+                  Text(_lang.isThai ? 'ธีม' : 'Theme',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(isDark ? Icons.dark_mode : Icons.light_mode,
+                            color: const Color(0xFF1B5E20), size: 22),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            isDark
+                                ? (_lang.isThai ? 'โหมดกลางคืน' : 'Dark Mode')
+                                : (_lang.isThai ? 'โหมดกลางวัน' : 'Light Mode'),
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: textColor),
+                          ),
+                        ),
+                        Switch(
+                          value: isDark,
+                          onChanged: (_) => _theme.toggle(),
+                          activeColor: const Color(0xFF1B5E20),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Timezone ──
+                  Text(_lang.isThai ? 'เขตเวลา' : 'Timezone',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cardColor,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.06),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _selectedTimezone,
                         isExpanded: true,
-                        icon: const Icon(Icons.keyboard_arrow_down,
-                            color: Color(0xFF1B5E20)),
-                        items: _timezones.map((tz) {
-                          return DropdownMenuItem(
-                            value: tz['value'],
-                            child: Text(tz['label']!,
-                                style: const TextStyle(fontSize: 14)),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() => _selectedTimezone = value!);
-                        },
+                        dropdownColor: cardColor,
+                        icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF1B5E20)),
+                        items: _timezones.map((tz) => DropdownMenuItem(
+                          value: tz['value'],
+                          child: Text(tz['label']!, style: TextStyle(fontSize: 14, color: textColor)),
+                        )).toList(),
+                        onChanged: (value) => setState(() => _selectedTimezone = value!),
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 16),
 
-                  // Calculation Method Section
-                  const Text('Calculation Method',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87)),
+                  // ── Calculation Method ──
+                  Text(_lang.isThai ? 'วิธีคำนวณ' : 'Calculation Method',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cardColor,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.06),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _selectedMethod,
                         isExpanded: true,
-                        icon: const Icon(Icons.keyboard_arrow_down,
-                            color: Color(0xFF1B5E20)),
-                        items: _methods.map((m) {
-                          return DropdownMenuItem(
-                            value: m['value'],
-                            child: Text(m['label']!,
-                                style: const TextStyle(fontSize: 14)),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() => _selectedMethod = value!);
-                        },
+                        dropdownColor: cardColor,
+                        icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF1B5E20)),
+                        items: _methods.map((m) => DropdownMenuItem(
+                          value: m['value'],
+                          child: Text(m['label']!, style: TextStyle(fontSize: 14, color: textColor)),
+                        )).toList(),
+                        onChanged: (value) => setState(() => _selectedMethod = value!),
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 32),
 
-                  // Save Button
+                  // ── Save Button ──
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: _saveSettings,
                       icon: const Icon(Icons.save, color: Colors.white),
-                      label: const Text('Save Settings',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold)),
+                      label: Text(
+                        _lang.isThai ? 'บันทึก' : 'Save Settings',
+                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1B5E20),
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                     ),
                   ),
@@ -216,36 +238,31 @@ class _SettingsPageState extends State<SettingsPage> {
           end: Alignment.bottomCenter,
           colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
         ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
+        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
       ),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Column(
             children: [
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_ios,
-                        color: Colors.white, size: 22),
-                  ),
-                ],
-              ),
+              Row(children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22),
+                ),
+              ]),
               const SizedBox(height: 8),
               const Icon(Icons.settings, color: Color(0xFFFFD700), size: 40),
               const SizedBox(height: 8),
-              const Text('Settings',
-                  style: TextStyle(
-                      color: Color(0xFFFFD700),
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold)),
+              Text(
+                _lang.isThai ? 'ตั้งค่า' : 'Settings',
+                style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 4),
-              const Text('Prayer time preferences',
-                  style: TextStyle(color: Colors.white70, fontSize: 13)),
+              Text(
+                _lang.isThai ? 'ตั้งค่าเวลาละหมาดและธีม' : 'Prayer time & theme preferences',
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
+              ),
               const SizedBox(height: 16),
             ],
           ),

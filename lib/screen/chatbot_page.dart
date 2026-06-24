@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../services/language_service.dart';
 
 class ChatbotPage extends StatefulWidget {
   const ChatbotPage({super.key});
@@ -11,14 +12,13 @@ class ChatbotPage extends StatefulWidget {
 
 class _ChatbotPageState extends State<ChatbotPage> {
   static const String _apiKey = 'AQ.Ab8RN6JiAfYN7ZtqxvALEExa_HfwiwRNURKZvzdIKNYN9Qfs8A';
-  static const String _apiUrl =
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  static const String _apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<Map<String, String>> _messages = [];
   bool _isLoading = false;
+  final _lang = LanguageService();
 
-  // System prompt ให้ตอบเรื่องอิสลาม
   static const String _systemPrompt = '''
 You are an Islamic assistant for the Deen app. 
 Your role is to answer questions about Islam including:
@@ -34,38 +34,30 @@ Respond in the same language the user uses (Thai or English).
 ''';
 
   @override
+  void initState() {
+    super.initState();
+    _lang.addListener(() => setState(() {}));
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     _scrollController.dispose();
+    _lang.removeListener(() => setState(() {}));
     super.dispose();
   }
 
   Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
-
-    setState(() {
-      _messages.add({'role': 'user', 'content': text});
-      _isLoading = true;
-    });
-
+    setState(() { _messages.add({'role': 'user', 'content': text}); _isLoading = true; });
     _controller.clear();
     _scrollToBottom();
 
     try {
-      // สร้าง conversation history
       final contents = [
-        {
-          'role': 'user',
-          'parts': [{'text': _systemPrompt}]
-        },
-        {
-          'role': 'model',
-          'parts': [{'text': 'I understand. I am your Islamic assistant for the Deen app. How can I help you?'}]
-        },
-        ..._messages.map((msg) => {
-          'role': msg['role'] == 'user' ? 'user' : 'model',
-          'parts': [{'text': msg['content']}]
-        }),
+        {'role': 'user', 'parts': [{'text': _systemPrompt}]},
+        {'role': 'model', 'parts': [{'text': 'I understand. I am your Islamic assistant for the Deen app. How can I help you?'}]},
+        ..._messages.map((msg) => {'role': msg['role'] == 'user' ? 'user' : 'model', 'parts': [{'text': msg['content']}]}),
       ];
 
       await Future.delayed(const Duration(seconds: 1));
@@ -76,35 +68,21 @@ Respond in the same language the user uses (Thai or English).
       );
 
       final data = json.decode(response.body);
-
-      print('RESPONSE: $data');
-
       if (data['candidates'] != null) {
         final reply = data['candidates'][0]['content']['parts'][0]['text'];
-        setState(() {
-          _messages.add({'role': 'assistant', 'content': reply});
-          _isLoading = false;
-        });
+        setState(() { _messages.add({'role': 'assistant', 'content': reply}); _isLoading = false; });
       } else {
         setState(() {
-          _messages.add({
-            'role': 'assistant',
-            'content': 'Sorry, I could not process your request. Please try again.'
-          });
+          _messages.add({'role': 'assistant', 'content': 'Sorry, I could not process your request. Please try again.'});
           _isLoading = false;
         });
       }
     } catch (e) {
-      print('ERROR: $e');
       setState(() {
-        _messages.add({
-          'role': 'assistant',
-          'content': 'Connection error. Please check your internet and try again.'
-        });
+        _messages.add({'role': 'assistant', 'content': 'Connection error. Please check your internet and try again.'});
         _isLoading = false;
       });
     }
-
     _scrollToBottom();
   }
 
@@ -127,11 +105,7 @@ Respond in the same language the user uses (Thai or English).
       body: Column(
         children: [
           _buildHeader(context),
-          Expanded(
-            child: _messages.isEmpty
-                ? _buildWelcome()
-                : _buildMessages(),
-          ),
+          Expanded(child: _messages.isEmpty ? _buildWelcome() : _buildMessages()),
           _buildInput(),
         ],
       ),
@@ -147,10 +121,7 @@ Respond in the same language the user uses (Thai or English).
           end: Alignment.bottomCenter,
           colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
         ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
+        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
       ),
       child: SafeArea(
         child: Padding(
@@ -161,37 +132,26 @@ Respond in the same language the user uses (Thai or English).
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_ios,
-                        color: Colors.white, size: 22),
+                    child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22),
                   ),
                   const Spacer(),
                   GestureDetector(
                     onTap: () => setState(() => _messages.clear()),
-                    child: const Icon(Icons.refresh,
-                        color: Colors.white70, size: 22),
+                    child: const Icon(Icons.refresh, color: Colors.white70, size: 22),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.smart_toy,
-                    color: Color(0xFFFFD700), size: 32),
+                width: 56, height: 56,
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+                child: const Icon(Icons.smart_toy, color: Color(0xFFFFD700), size: 32),
               ),
               const SizedBox(height: 8),
-              const Text('Islamic Assistant',
-                  style: TextStyle(
-                      color: Color(0xFFFFD700),
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold)),
+              Text(_lang.islamicAssistant,
+                  style: const TextStyle(color: Color(0xFFFFD700), fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              const Text('Ask me anything about Islam',
-                  style: TextStyle(color: Colors.white70, fontSize: 13)),
+              Text(_lang.askAnything, style: const TextStyle(color: Colors.white70, fontSize: 13)),
               const SizedBox(height: 16),
             ],
           ),
@@ -201,32 +161,24 @@ Respond in the same language the user uses (Thai or English).
   }
 
   Widget _buildWelcome() {
-    final suggestions = [
-      'What are the 5 pillars of Islam?',
-      'How do I perform Wudu?',
-      'What is the importance of Fajr prayer?',
-      'Teach me Surah Al-Fatiha',
-    ];
+    final suggestions = _lang.isThai
+        ? ['5 หลักของอิสลามคืออะไร?', 'วิธีทำวุฎูอ์?', 'ความสำคัญของละหมาดฟัจร์?', 'สอนซูเราะห์อัลฟาติฮะห์']
+        : ['What are the 5 pillars of Islam?', 'How do I perform Wudu?', 'What is the importance of Fajr prayer?', 'Teach me Surah Al-Fatiha'];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           const SizedBox(height: 16),
-          const Text('Assalamu Alaikum! 👋',
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87)),
+          Text(_lang.assalamu,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
           const SizedBox(height: 8),
-          const Text('Ask me anything about Islam',
-              style: TextStyle(color: Colors.grey)),
+          Text(_lang.askAnything, style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 24),
-          const Align(
+          Align(
             alignment: Alignment.centerLeft,
-            child: Text('Suggested questions:',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.black54)),
+            child: Text(_lang.suggestedQuestions,
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
           ),
           const SizedBox(height: 12),
           ...suggestions.map((s) => GestureDetector(
@@ -234,31 +186,18 @@ Respond in the same language the user uses (Thai or English).
                 child: Container(
                   width: double.infinity,
                   margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.chat_bubble_outline,
-                          color: Color(0xFF1B5E20), size: 18),
+                      const Icon(Icons.chat_bubble_outline, color: Color(0xFF1B5E20), size: 18),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(s,
-                            style: const TextStyle(
-                                fontSize: 14, color: Colors.black87)),
-                      ),
-                      const Icon(Icons.chevron_right,
-                          color: Colors.grey, size: 18),
+                      Expanded(child: Text(s, style: const TextStyle(fontSize: 14, color: Colors.black87))),
+                      const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
                     ],
                   ),
                 ),
@@ -276,8 +215,7 @@ Respond in the same language the user uses (Thai or English).
       itemBuilder: (context, index) {
         if (index == _messages.length) return _buildTypingIndicator();
         final msg = _messages[index];
-        final isUser = msg['role'] == 'user';
-        return _buildBubble(msg['content']!, isUser);
+        return _buildBubble(msg['content']!, msg['role'] == 'user');
       },
     );
   }
@@ -286,50 +224,31 @@ Respond in the same language the user uses (Thai or English).
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser) ...[
             Container(
-              width: 32,
-              height: 32,
-              decoration: const BoxDecoration(
-                color: Color(0xFF1B5E20),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.smart_toy,
-                  color: Colors.white, size: 18),
+              width: 32, height: 32,
+              decoration: const BoxDecoration(color: Color(0xFF1B5E20), shape: BoxShape.circle),
+              child: const Icon(Icons.smart_toy, color: Colors.white, size: 18),
             ),
             const SizedBox(width: 8),
           ],
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isUser
-                    ? const Color(0xFF1B5E20)
-                    : Colors.white,
+                color: isUser ? const Color(0xFF1B5E20) : Colors.white,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
                   bottomLeft: Radius.circular(isUser ? 16 : 4),
                   bottomRight: Radius.circular(isUser ? 4 : 16),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
               ),
-              child: Text(text,
-                  style: TextStyle(
-                      fontSize: 14,
-                      color: isUser ? Colors.white : Colors.black87,
-                      height: 1.5)),
+              child: Text(text, style: TextStyle(fontSize: 14, color: isUser ? Colors.white : Colors.black87, height: 1.5)),
             ),
           ),
           if (isUser) const SizedBox(width: 8),
@@ -342,31 +261,15 @@ Respond in the same language the user uses (Thai or English).
     return Row(
       children: [
         Container(
-          width: 32,
-          height: 32,
-          decoration: const BoxDecoration(
-            color: Color(0xFF1B5E20),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.smart_toy,
-              color: Colors.white, size: 18),
+          width: 32, height: 32,
+          decoration: const BoxDecoration(color: Color(0xFF1B5E20), shape: BoxShape.circle),
+          child: const Icon(Icons.smart_toy, color: Colors.white, size: 18),
         ),
         const SizedBox(width: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              _dot(0),
-              const SizedBox(width: 4),
-              _dot(150),
-              const SizedBox(width: 4),
-              _dot(300),
-            ],
-          ),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+          child: Row(children: [_dot(0), const SizedBox(width: 4), _dot(150), const SizedBox(width: 4), _dot(300)]),
         ),
       ],
     );
@@ -376,17 +279,13 @@ Respond in the same language the user uses (Thai or English).
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Duration(milliseconds: 600 + delay),
-      builder: (context, value, child) {
-        return Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: Color.lerp(Colors.grey.shade300,
-                const Color(0xFF1B5E20), value),
-            shape: BoxShape.circle,
-          ),
-        );
-      },
+      builder: (context, value, child) => Container(
+        width: 8, height: 8,
+        decoration: BoxDecoration(
+          color: Color.lerp(Colors.grey.shade300, const Color(0xFF1B5E20), value),
+          shape: BoxShape.circle,
+        ),
+      ),
     );
   }
 
@@ -395,13 +294,7 @@ Respond in the same language the user uses (Thai or English).
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, -2))],
       ),
       child: Row(
         children: [
@@ -409,16 +302,12 @@ Respond in the same language the user uses (Thai or English).
             child: TextField(
               controller: _controller,
               decoration: InputDecoration(
-                hintText: 'Ask about Islam...',
+                hintText: _lang.askPlaceholder,
                 hintStyle: const TextStyle(color: Colors.grey),
                 filled: true,
                 fillColor: const Color(0xFFF0F0F0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
               onSubmitted: _sendMessage,
               textInputAction: TextInputAction.send,
@@ -428,12 +317,8 @@ Respond in the same language the user uses (Thai or English).
           GestureDetector(
             onTap: () => _sendMessage(_controller.text),
             child: Container(
-              width: 48,
-              height: 48,
-              decoration: const BoxDecoration(
-                color: Color(0xFF1B5E20),
-                shape: BoxShape.circle,
-              ),
+              width: 48, height: 48,
+              decoration: const BoxDecoration(color: Color(0xFF1B5E20), shape: BoxShape.circle),
               child: const Icon(Icons.send, color: Colors.white, size: 20),
             ),
           ),

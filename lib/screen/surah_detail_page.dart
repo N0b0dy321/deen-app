@@ -28,6 +28,14 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
     'th': {'label': 'ภาษาไทย', 'edition': 'th.thai', 'flag': '🇹🇭'},
   };
 
+  // Bismillah จาก codeunits จริงๆ ของ API
+  static final String _bismillah = String.fromCharCodes([
+    0x628, 0x650, 0x633, 0x652, 0x645, 0x650, 0x20,
+    0x671, 0x644, 0x644, 0x651, 0x64e, 0x647, 0x650, 0x20,
+    0x671, 0x644, 0x631, 0x651, 0x64e, 0x62d, 0x652, 0x645, 0x64e, 0x670, 0x646, 0x650, 0x20,
+    0x671, 0x644, 0x631, 0x651, 0x64e, 0x62d, 0x650, 0x64a, 0x645, 0x650,
+  ]);
+
   @override
   void initState() {
     super.initState();
@@ -40,16 +48,25 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
       errorMessage = '';
     });
 
-    final hasLocal = await QuranDatabase.hasVersesByLang(widget.surahId, _selectedLang);
+    final hasLocal =
+        await QuranDatabase.hasVersesByLang(widget.surahId, _selectedLang);
 
     if (hasLocal) {
-      final local = await QuranDatabase.getVersesByLang(widget.surahId, _selectedLang);
-
-      // เช็คว่า translation มีข้อมูลจริงๆ ไหม
+      final local =
+          await QuranDatabase.getVersesByLang(widget.surahId, _selectedLang);
       final hasTranslation = local.isNotEmpty &&
           (local[0]['translation'] ?? '').toString().isNotEmpty;
 
       if (hasTranslation) {
+        if (widget.surahId != 1 && widget.surahId != 9) {
+          final firstVerse = local[0]['text_uthmani'] ?? '';
+          if (firstVerse.contains(_bismillah)) {
+            await QuranDatabase.deleteVersesByLang(
+                widget.surahId, _selectedLang);
+            await fetchFromApi();
+            return;
+          }
+        }
         setState(() {
           verses = local;
           isLoading = false;
@@ -57,7 +74,6 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
         return;
       }
 
-      // ถ้า translation ว่าง ลบ cache เก่าแล้วดึงใหม่
       await QuranDatabase.deleteVersesByLang(widget.surahId, _selectedLang);
     }
 
@@ -81,9 +97,18 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
         final translationAyahs = editions[1]['ayahs'] as List;
 
         final processedVerses = List.generate(arabicAyahs.length, (i) {
+          String arabicText = arabicAyahs[i]['text'] ?? '';
+
+          // ตัด Bismillah ออกจาก verse 1 (ยกเว้น Surah 1 และ 9)
+          if (i == 0 && widget.surahId != 1 && widget.surahId != 9) {
+            if (arabicText.startsWith(_bismillah)) {
+              arabicText = arabicText.substring(_bismillah.length).trim();
+            }
+          }
+
           return {
             'verse_number': arabicAyahs[i]['numberInSurah'],
-            'text_uthmani': arabicAyahs[i]['text'] ?? '',
+            'text_uthmani': arabicText,
             'translation': translationAyahs[i]['text'] ?? '',
             'lang': _selectedLang,
           };
@@ -189,85 +214,100 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                     ],
                   ),
                 )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: verses.length,
-                  itemBuilder: (context, index) {
-                    final verse = verses[index];
-                    final translation = verse['translation'] ?? '';
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+              : Column(
+                  children: [
+                    if (widget.surahId != 1 && widget.surahId != 9)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                        child: Image.asset(
+                          'image/Bismillah.png',
+                          height: 150,
+                          fit: BoxFit.contain,
+                        ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1B5E20)
-                                      .withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: verses.length,
+                        itemBuilder: (context, index) {
+                          final verse = verses[index];
+                          final translation = verse['translation'] ?? '';
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
                                 ),
-                                child: Text(
-                                  '${verse['verse_number']}',
-                                  style: const TextStyle(
-                                      color: Color(0xFF1B5E20),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12),
-                                ),
-                              ),
-                              Text(
-                                _languages[_selectedLang]!['flag'] as String,
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Arabic
-                          Text(
-                            verse['text_uthmani'] ?? '',
-                            textAlign: TextAlign.right,
-                            textDirection: TextDirection.rtl,
-                            style: const TextStyle(
-                                fontSize: 24,
-                                height: 2.0,
-                                color: Colors.black87),
-                          ),
-
-                          if (translation.isNotEmpty) ...[
-                            const Divider(height: 20),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                translation,
-                                textAlign: TextAlign.left,
-                                style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.black54,
-                                    height: 1.6),
-                              ),
+                              ],
                             ),
-                          ],
-                        ],
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1B5E20)
+                                            .withOpacity(0.1),
+                                        borderRadius:
+                                            BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        '${verse['verse_number']}',
+                                        style: const TextStyle(
+                                            color: Color(0xFF1B5E20),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12),
+                                      ),
+                                    ),
+                                    Text(
+                                      _languages[_selectedLang]!['flag']
+                                          as String,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  verse['text_uthmani'] ?? '',
+                                  textAlign: TextAlign.right,
+                                  textDirection: TextDirection.rtl,
+                                  style: const TextStyle(
+                                      fontSize: 24,
+                                      height: 2.0,
+                                      color: Colors.black87),
+                                ),
+                                if (translation.isNotEmpty) ...[
+                                  const Divider(height: 20),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      translation,
+                                      textAlign: TextAlign.left,
+                                      style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.black54,
+                                          height: 1.6),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
     );
   }
