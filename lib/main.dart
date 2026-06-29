@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screen/home_page.dart';
+import 'screen/splash_screen.dart';
 import 'services/theme_service.dart';
 import 'services/language_service.dart';
 
@@ -43,7 +43,7 @@ class _MyAppState extends State<MyApp> {
       theme: _theme.lightTheme,
       darkTheme: _theme.darkTheme,
       themeMode: _theme.isDark ? ThemeMode.dark : ThemeMode.light,
-      home: const HomePage(),
+      home: const SplashScreen(),
     );
   }
 }

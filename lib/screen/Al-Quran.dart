@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import '../services/quran_database.dart';
 import '../services/language_service.dart';
+import '../services/theme_service.dart';
 import 'surah_detail_page.dart';
 
 const Map<int, String> _thaiNames = {
@@ -47,28 +48,25 @@ int _levenshtein(String a, String b) {
   for (int i = 1; i <= a.length; i++) {
     for (int j = 1; j <= b.length; j++) {
       final cost = a[i - 1] == b[j - 1] ? 0 : 1;
-      matrix[i][j] = [matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost].reduce(min);
+      matrix[i][j] = [matrix[i-1][j]+1, matrix[i][j-1]+1, matrix[i-1][j-1]+cost].reduce(min);
     }
   }
   return matrix[a.length][b.length];
 }
 
 bool _fuzzyMatch(String text, String query) {
-  text = text.toLowerCase();
-  query = query.toLowerCase();
+  text = text.toLowerCase(); query = query.toLowerCase();
   if (text.contains(query)) return true;
   final tolerance = query.length <= 4 ? 1 : 2;
   for (int i = 0; i <= text.length - query.length + tolerance; i++) {
     final end = min(i + query.length + tolerance, text.length);
-    final sub = text.substring(i, end);
-    if (_levenshtein(sub, query) <= tolerance) return true;
+    if (_levenshtein(text.substring(i, end), query) <= tolerance) return true;
   }
   return false;
 }
 
 class AlQuranPage extends StatefulWidget {
   const AlQuranPage({super.key});
-
   @override
   State<AlQuranPage> createState() => _AlQuranPageState();
 }
@@ -83,11 +81,13 @@ class _AlQuranPageState extends State<AlQuranPage> {
   String errorMessage = '';
   final TextEditingController _searchController = TextEditingController();
   final _lang = LanguageService();
+  final _theme = ThemeService();
 
   @override
   void initState() {
     super.initState();
     _lang.addListener(() => setState(() {}));
+    _theme.addListener(() => setState(() {}));
     loadSurahs();
     _searchController.addListener(_onSearch);
   }
@@ -96,6 +96,7 @@ class _AlQuranPageState extends State<AlQuranPage> {
   void dispose() {
     _searchController.dispose();
     _lang.removeListener(() => setState(() {}));
+    _theme.removeListener(() => setState(() {}));
     super.dispose();
   }
 
@@ -150,10 +151,7 @@ class _AlQuranPageState extends State<AlQuranPage> {
     setState(() { isDownloading = true; downloadProgress = 0; });
     for (int i = 0; i < surahList.length; i++) {
       final surahId = surahList[i]['id'] as int;
-      if (await QuranDatabase.hasVerses(surahId)) {
-        setState(() => downloadProgress = i + 1);
-        continue;
-      }
+      if (await QuranDatabase.hasVerses(surahId)) { setState(() => downloadProgress = i + 1); continue; }
       try {
         final response = await http.get(Uri.parse(
           'https://api.qurancdn.com/api/qdc/verses/by_chapter/$surahId?language=en&words=true&translations=131&per_page=300&fields=text_uthmani'));
@@ -170,133 +168,91 @@ class _AlQuranPageState extends State<AlQuranPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: _theme.bgColor,
       appBar: AppBar(
         backgroundColor: const Color(0xFF1B5E20),
-        title: Text(_lang.alQuran,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(_lang.alQuran, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B5E20)))
+          ? Center(child: CircularProgressIndicator(color: _theme.iconColor))
           : errorMessage.isNotEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.wifi_off, size: 64, color: Colors.grey),
-                      const SizedBox(height: 16),
-                      Text(errorMessage, style: const TextStyle(color: Colors.grey)),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: fetchSurahsFromApi,
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
-                        child: Text(_lang.retry, style: const TextStyle(color: Colors.white)),
+              ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Icon(Icons.wifi_off, size: 64, color: _theme.subTextColor),
+                  const SizedBox(height: 16),
+                  Text(errorMessage, style: TextStyle(color: _theme.subTextColor)),
+                  const SizedBox(height: 16),
+                  ElevatedButton(onPressed: fetchSurahsFromApi,
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
+                    child: Text(_lang.retry, style: const TextStyle(color: Colors.white))),
+                ]))
+              : Column(children: [
+                  if (isDownloading)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      color: _theme.iconColor.withOpacity(0.1),
+                      child: Column(children: [
+                        Row(children: [
+                          Icon(Icons.download, color: _theme.iconColor, size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text('${_lang.downloadingOffline} $downloadProgress/$totalSurahs',
+                              style: TextStyle(color: _theme.iconColor, fontSize: 13))),
+                        ]),
+                        const SizedBox(height: 6),
+                        LinearProgressIndicator(value: downloadProgress / totalSurahs,
+                            backgroundColor: _theme.isDark ? const Color(0xFF2C3E50) : Colors.grey.shade300,
+                            color: _theme.iconColor),
+                      ]),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                    child: TextField(
+                      controller: _searchController,
+                      style: TextStyle(color: _theme.textColor),
+                      decoration: InputDecoration(
+                        hintText: _lang.searchHint,
+                        hintStyle: TextStyle(color: _theme.subTextColor, fontSize: 14),
+                        prefixIcon: Icon(Icons.search, color: _theme.iconColor),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(icon: Icon(Icons.clear, color: _theme.subTextColor),
+                                onPressed: () => _searchController.clear())
+                            : null,
+                        filled: true,
+                        fillColor: _theme.cardColor,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: _theme.isDark ? BorderSide(color: ThemeService.darkBorder) : BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
-                    ],
+                    ),
                   ),
-                )
-              : Column(
-                  children: [
-                    if (isDownloading)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        color: const Color(0xFF1B5E20).withOpacity(0.1),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.download, color: Color(0xFF1B5E20), size: 18),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    '${_lang.downloadingOffline} $downloadProgress/$totalSurahs',
-                                    style: const TextStyle(color: Color(0xFF1B5E20), fontSize: 13),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            LinearProgressIndicator(
-                              value: downloadProgress / totalSurahs,
-                              backgroundColor: Colors.grey.shade300,
-                              color: const Color(0xFF1B5E20),
-                            ),
-                          ],
-                        ),
-                      ),
+                  if (_searchController.text.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: _lang.searchHint,
-                          hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                          prefixIcon: const Icon(Icons.search, color: Color(0xFF1B5E20)),
-                          suffixIcon: _searchController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear, color: Colors.grey),
-                                  onPressed: () => _searchController.clear(),
-                                )
-                              : null,
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        ),
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      child: Align(alignment: Alignment.centerLeft,
+                        child: Text('${_lang.foundSurahs} ${filteredSurahs.length} ${_lang.surahUnit}',
+                            style: TextStyle(fontSize: 12, color: _theme.subTextColor))),
                     ),
-                    if (_searchController.text.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            '${_lang.foundSurahs} ${filteredSurahs.length} ${_lang.surahUnit}',
-                            style: const TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-                        ),
-                      ),
-                    Expanded(
-                      child: filteredSurahs.isEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.search_off, size: 64, color: Colors.grey),
-                                  const SizedBox(height: 12),
-                                  Text(_lang.notFound, style: const TextStyle(color: Colors.grey)),
-                                ],
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.all(12),
-                              itemCount: filteredSurahs.length,
-                              itemBuilder: (context, index) {
-                                final surah = filteredSurahs[index];
-                                final thaiName = _thaiNames[surah['id']] ?? '';
-                                return _SurahCard(
-                                  surah: surah,
-                                  thaiName: thaiName,
-                                  lang: _lang,
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => SurahDetailPage(
-                                        surahId: surah['id'],
-                                        surahName: surah['name_simple'],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
-                ),
+                  Expanded(
+                    child: filteredSurahs.isEmpty
+                        ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                            Icon(Icons.search_off, size: 64, color: _theme.subTextColor),
+                            const SizedBox(height: 12),
+                            Text(_lang.notFound, style: TextStyle(color: _theme.subTextColor)),
+                          ]))
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(12),
+                            itemCount: filteredSurahs.length,
+                            itemBuilder: (context, index) {
+                              final surah = filteredSurahs[index];
+                              final thaiName = _thaiNames[surah['id']] ?? '';
+                              return _SurahCard(surah: surah, thaiName: thaiName, lang: _lang, theme: _theme,
+                                onTap: () => Navigator.push(context, MaterialPageRoute(
+                                  builder: (_) => SurahDetailPage(surahId: surah['id'], surahName: surah['name_simple']))));
+                            }),
+                  ),
+                ]),
     );
   }
 }
@@ -305,9 +261,10 @@ class _SurahCard extends StatelessWidget {
   final Map<String, dynamic> surah;
   final String thaiName;
   final LanguageService lang;
+  final ThemeService theme;
   final VoidCallback onTap;
 
-  const _SurahCard({required this.surah, required this.thaiName, required this.lang, required this.onTap});
+  const _SurahCard({required this.surah, required this.thaiName, required this.lang, required this.theme, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -317,41 +274,30 @@ class _SurahCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 2)),
-          ],
+          border: theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
+          boxShadow: [BoxShadow(color: theme.shadowColor, blurRadius: 6, offset: const Offset(0, 2))],
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(color: const Color(0xFF1B5E20).withOpacity(0.1), shape: BoxShape.circle),
-              child: Center(child: Text('${surah['id']}',
-                  style: const TextStyle(color: Color(0xFF1B5E20), fontWeight: FontWeight.bold, fontSize: 13))),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(surah['name_simple'] ?? '',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
-                  const SizedBox(height: 2),
-                  Text(
-                    lang.isThai && thaiName.isNotEmpty
-                        ? '$thaiName • ${surah['verses_count']} ${lang.verses}'
-                        : '${surah['translated_name'] ?? ''} • ${surah['verses_count']} ${lang.verses}',
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
-                  ),
-                ],
-              ),
-            ),
-            Text(surah['name_arabic'] ?? '',
-                style: const TextStyle(fontSize: 18, color: Color(0xFF1B5E20), fontWeight: FontWeight.bold)),
-          ],
-        ),
+        child: Row(children: [
+          Container(width: 40, height: 40,
+            decoration: BoxDecoration(color: theme.iconColor.withOpacity(0.12), shape: BoxShape.circle),
+            child: Center(child: Text('${surah['id']}',
+                style: TextStyle(color: theme.iconColor, fontWeight: FontWeight.bold, fontSize: 13)))),
+          const SizedBox(width: 14),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(surah['name_simple'] ?? '',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: theme.textColor)),
+            const SizedBox(height: 2),
+            Text(
+              lang.isThai && thaiName.isNotEmpty
+                  ? '$thaiName • ${surah['verses_count']} ${lang.verses}'
+                  : '${surah['translated_name'] ?? ''} • ${surah['verses_count']} ${lang.verses}',
+              style: TextStyle(fontSize: 12, color: theme.subTextColor)),
+          ])),
+          Text(surah['name_arabic'] ?? '',
+              style: TextStyle(fontSize: 18, color: theme.iconColor, fontWeight: FontWeight.bold)),
+        ]),
       ),
     );
   }
