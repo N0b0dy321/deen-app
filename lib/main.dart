@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'screen/splash_screen.dart';
 import 'services/theme_service.dart';
 import 'services/language_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ThemeService().init();
   await LanguageService().init();
+  await NotificationService.init();
+  await NotificationService.requestPermission();
   runApp(const MyApp());
 }
 

@@ -2,18 +2,17 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'notification_service.dart';
+import 'language_service.dart';
 
 class PrayerService {
   static const String _cachePrefix = 'prayer_';
   static const String _lastFetchKey = 'prayer_last_fetch';
 
-  // ดึงเวลาละหมาดของวันนี้
   static Future<Map<String, dynamic>?> getPrayerTimes() async {
     final prefs = await SharedPreferences.getInstance();
-    final today = DateTime.now();
-    final todayStr = _dateKey(today);
+    final todayStr = _dateKey(DateTime.now());
 
-    // เช็ค cache วันนี้ก่อน
     final cached = prefs.getString('$_cachePrefix$todayStr');
     if (cached != null) {
       final data = json.decode(cached) as Map<String, dynamic>;
@@ -21,17 +20,15 @@ class PrayerService {
       return data;
     }
 
-    // ไม่มี cache ดึงจาก API
     return await _fetchAndCache7Days(prefs);
   }
 
-  // ดึง 7 วันล่วงหน้าแล้วบันทึกทั้งหมด
-  static Future<Map<String, dynamic>?> _fetchAndCache7Days(SharedPreferences prefs) async {
+  static Future<Map<String, dynamic>?> _fetchAndCache7Days(
+      SharedPreferences prefs) async {
     try {
       final timezone = prefs.getString('timezone') ?? 'Asia/Bangkok';
       final method = prefs.getString('method') ?? '16';
 
-      // ขอ GPS
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -39,22 +36,18 @@ class PrayerService {
       }
 
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+          desiredAccuracy: LocationAccuracy.high);
 
       final now = DateTime.now();
       Map<String, dynamic>? todayData;
 
-      // ดึงทีละวัน 7 วัน
       for (int i = 0; i < 7; i++) {
         final date = now.add(Duration(days: i));
         final dateStr = _dateKey(date);
 
-        // ข้ามถ้ามี cache แล้ว
         if (prefs.containsKey('$_cachePrefix$dateStr')) {
           if (i == 0) {
-            final cached = prefs.getString('$_cachePrefix$dateStr')!;
-            todayData = json.decode(cached);
+            todayData = json.decode(prefs.getString('$_cachePrefix$dateStr')!);
           }
           continue;
         }
@@ -67,23 +60,18 @@ class PrayerService {
           '&timezonestring=$timezone',
         );
 
-        final response = await http.get(url).timeout(const Duration(seconds: 10));
+        final response =
+            await http.get(url).timeout(const Duration(seconds: 10));
         final data = json.decode(response.body);
 
         if (data['code'] == 200) {
-          final timings = data['data']['timings'];
-          final dateReadable = data['data']['date']['readable'];
-
           final dayData = {
-            'timings': timings,
-            'date': dateReadable,
+            'timings': data['data']['timings'],
+            'date': data['data']['date']['readable'],
             'timezone': timezone,
             'method': method,
           };
-
-          // บันทึก cache แต่ละวัน
           await prefs.setString('$_cachePrefix$dateStr', json.encode(dayData));
-
           if (i == 0) todayData = dayData;
         }
       }
@@ -92,6 +80,15 @@ class PrayerService {
 
       if (todayData != null) {
         todayData['nextPrayer'] = _calculateNextPrayer(todayData['timings']);
+
+        // ── Schedule Notifications ──
+        final isThai = LanguageService().isThai;
+        await NotificationService.schedulePrayerNotifications(
+          timings: Map<String, dynamic>.from(todayData['timings']),
+          timezone: todayData['timezone'] ?? 'Asia/Bangkok',
+          isThai: isThai,
+        );
+
         return todayData;
       }
 
@@ -102,8 +99,8 @@ class PrayerService {
     }
   }
 
-  // คำนวณ nextPrayer
-  static Map<String, dynamic> _calculateNextPrayer(Map<String, dynamic> timings) {
+  static Map<String, dynamic> _calculateNextPrayer(
+      Map<String, dynamic> timings) {
     final prayers = [
       {'name': 'Fajr', 'time': timings['Fajr']},
       {'name': 'Dhuhr', 'time': timings['Dhuhr']},
@@ -113,13 +110,11 @@ class PrayerService {
     ];
 
     final now = DateTime.now();
-
     for (var prayer in prayers) {
-      final timeParts = prayer['time']!.split(':');
+      final parts = prayer['time']!.split(':');
       final prayerTime = DateTime(
         now.year, now.month, now.day,
-        int.parse(timeParts[0]),
-        int.parse(timeParts[1]),
+        int.parse(parts[0]), int.parse(parts[1]),
       );
       if (prayerTime.isAfter(now)) {
         final diff = prayerTime.difference(now);
@@ -140,7 +135,6 @@ class PrayerService {
     };
   }
 
-  // โหลด cache ใดก็ได้ที่มี (กรณีออฟไลน์)
   static Map<String, dynamic>? _loadAnyCache(SharedPreferences prefs) {
     final todayStr = _dateKey(DateTime.now());
     final cached = prefs.getString('$_cachePrefix$todayStr');
@@ -150,11 +144,8 @@ class PrayerService {
       data['isOffline'] = true;
       return data;
     }
-
-    // ลองหา cache วันอื่น
     for (int i = 1; i <= 7; i++) {
-      final date = DateTime.now().subtract(Duration(days: i));
-      final dateStr = _dateKey(date);
+      final dateStr = _dateKey(DateTime.now().subtract(Duration(days: i)));
       final old = prefs.getString('$_cachePrefix$dateStr');
       if (old != null) {
         final data = json.decode(old) as Map<String, dynamic>;
@@ -166,13 +157,11 @@ class PrayerService {
     return null;
   }
 
-  // ล้าง cache ทั้งหมด (เรียกตอน settings เปลี่ยน)
   static Future<void> clearCache() async {
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
     for (int i = -1; i <= 7; i++) {
-      final date = now.add(Duration(days: i));
-      await prefs.remove('$_cachePrefix${_dateKey(date)}');
+      await prefs.remove('$_cachePrefix${_dateKey(now.add(Duration(days: i)))}');
     }
     await prefs.remove(_lastFetchKey);
   }
