@@ -3,6 +3,19 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
+import 'azan_service.dart';
+
+// Background handler - เขียน stop flag ผ่าน SharedPreferences
+@pragma('vm:entry-point')
+void notificationTapBackground(NotificationResponse response) async {
+  if (response.actionId == 'stop_azan') {
+    // เขียน flag ให้ main isolate หยุดเสียง
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('azan_stop_flag', true);
+    // ปิด notification
+    await FlutterLocalNotificationsPlugin().cancel(response.id ?? 0);
+  }
+}
 
 class NotificationService {
   static final _plugin = FlutterLocalNotificationsPlugin();
@@ -34,6 +47,16 @@ class NotificationService {
 
     await _plugin.initialize(
       const InitializationSettings(android: android, iOS: ios),
+      onDidReceiveNotificationResponse: (response) async {
+        if (response.actionId == 'stop_azan') {
+          // อยู่ใน main isolate หยุดได้เลย
+          await AzanService.stopAzan();
+          await _plugin.cancel(response.id ?? 0);
+        } else {
+          await AzanService.playAzan();
+        }
+      },
+      onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
     _initialized = true;
   }
@@ -43,6 +66,41 @@ class NotificationService {
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     await android?.requestNotificationsPermission();
+  }
+
+  // ── Notification Details ──────────────────────────
+  static NotificationDetails _buildDetails(String body) {
+    return NotificationDetails(
+      android: AndroidNotificationDetails(
+        _channelId,
+        _channelName,
+        channelDescription: _channelDesc,
+        importance: Importance.max,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+        color: Color(0xFF1B5E20),
+        playSound: false,
+        enableVibration: true,
+        ongoing: false,
+        autoCancel: false,
+        styleInformation: BigTextStyleInformation(body),
+        fullScreenIntent: true,
+        actions: [
+          AndroidNotificationAction(
+            'stop_azan',
+            '🔇 Stop Azan',
+            cancelNotification: true,
+            showsUserInterface: false,
+          ),
+        ],
+      ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: false,
+        interruptionLevel: InterruptionLevel.timeSensitive,
+      ),
+    );
   }
 
   // ── Schedule Notifications ────────────────────────
@@ -96,62 +154,35 @@ class NotificationService {
       final body = isThai ? 'ถึงเวลา$nameTh แล้ว' : 'It\'s time for $name prayer';
 
       await _plugin.zonedSchedule(
-        id,
-        title,
-        body,
-        scheduled,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            _channelId,
-            _channelName,
-            channelDescription: _channelDesc,
-            importance: Importance.max,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-            color: Color(0xFF1B5E20),
-            playSound: true,
-            enableVibration: true,
-            styleInformation: BigTextStyleInformation(body),
-          ),
-          iOS: const DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
-        ),
+        id, title, body, scheduled,
+        _buildDetails(body),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.time,
       );
     }
+
+    // Pre-download เสียงที่เลือก
+    final azanId = await AzanService.getSelectedAzanId();
+    if (!await AzanService.isDownloaded(azanId)) {
+      try {
+        final azan = AzanService.getAzanById(azanId);
+        await AzanService.downloadAzan(id: azanId, url: azan['url']!);
+      } catch (_) {}
+    }
   }
 
   // ── Cancel All ────────────────────────────────────
   static Future<void> cancelAll() async {
     await _plugin.cancelAll();
+    await AzanService.stopAzan();
   }
 
-  // ── Test Notification ─────────────────────────────
+  // ── Test ──────────────────────────────────────────
   static Future<void> showTest() async {
-    await _plugin.show(
-      99,
-      '🕌 DEEN - Test Notification',
-      'การแจ้งเตือนทำงานปกติ ✅',
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          _channelId,
-          _channelName,
-          channelDescription: _channelDesc,
-          importance: Importance.max,
-          priority: Priority.high,
-          color: Color(0xFF1B5E20),
-        ),
-        iOS: const DarwinNotificationDetails(
-          presentAlert: true,
-          presentSound: true,
-        ),
-      ),
-    );
+    const body = 'การแจ้งเตือนทำงานปกติ ✅';
+    await _plugin.show(99, '🕌 DEEN - Test', body, _buildDetails(body));
+    await AzanService.playAzan();
   }
 }

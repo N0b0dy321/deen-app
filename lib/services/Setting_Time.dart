@@ -4,6 +4,7 @@ import '../services/prayer_service.dart';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
 import '../services/notification_service.dart';
+import '../services/azan_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -17,6 +18,9 @@ class _SettingsPageState extends State<SettingsPage> {
   String _selectedMethod = '16';
   bool _notificationEnabled = true;
   double _quranFontSize = 24.0;
+  String _selectedAzanId = 'makkah';
+  Map<String, double> _downloadProgress = {};
+  Map<String, bool> _downloaded = {};
   final _theme = ThemeService();
   final _lang = LanguageService();
 
@@ -60,6 +64,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _theme.addListener(() => setState(() {}));
     _lang.addListener(() => setState(() {}));
     _loadSettings();
+    _checkDownloaded();
   }
 
   @override
@@ -71,12 +76,22 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
+    final azanId = await AzanService.getSelectedAzanId();
     setState(() {
       _selectedTimezone = prefs.getString('timezone') ?? 'Asia/Bangkok';
       _selectedMethod = prefs.getString('method') ?? '16';
       _notificationEnabled = prefs.getBool('notification') ?? true;
       _quranFontSize = prefs.getDouble('quran_font_size') ?? 24.0;
+      _selectedAzanId = azanId;
     });
+  }
+
+  Future<void> _checkDownloaded() async {
+    final result = <String, bool>{};
+    for (final azan in AzanService.azanList) {
+      result[azan['id']!] = await AzanService.isDownloaded(azan['id']!);
+    }
+    setState(() => _downloaded = result);
   }
 
   Future<void> _saveSettings() async {
@@ -85,12 +100,10 @@ class _SettingsPageState extends State<SettingsPage> {
     await prefs.setString('method', _selectedMethod);
     await prefs.setBool('notification', _notificationEnabled);
     await prefs.setDouble('quran_font_size', _quranFontSize);
+    await AzanService.setSelectedAzan(_selectedAzanId);
     await PrayerService.clearCache();
 
-    // อัปเดต notification ตาม toggle
-    if (!_notificationEnabled) {
-      await NotificationService.cancelAll();
-    }
+    if (!_notificationEnabled) await NotificationService.cancelAll();
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -109,12 +122,25 @@ class _SettingsPageState extends State<SettingsPage> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_lang.isThai ? 'ส่งการแจ้งเตือนทดสอบแล้ว!' : 'Test notification sent!'),
+          content: Text(_lang.isThai ? 'กำลังเล่นเสียงอาซาน...' : 'Playing azan...'),
           backgroundColor: const Color(0xFF1B5E20),
           duration: const Duration(seconds: 2),
         ),
       );
     }
+  }
+
+  Future<void> _downloadAzan(String id, String url) async {
+    setState(() => _downloadProgress[id] = 0.0);
+    await AzanService.downloadAzan(
+      id: id,
+      url: url,
+      onProgress: (p) => setState(() => _downloadProgress[id] = p),
+    );
+    setState(() {
+      _downloadProgress.remove(id);
+      _downloaded[id] = true;
+    });
   }
 
   void _showAboutDialog() {
@@ -126,8 +152,7 @@ class _SettingsPageState extends State<SettingsPage> {
         title: Row(children: [
           const Icon(Icons.mosque, color: Color(0xFF1B5E20), size: 28),
           const SizedBox(width: 10),
-          Text('DEEN', style: TextStyle(
-              color: _theme.textColor, fontWeight: FontWeight.bold, fontSize: 20)),
+          Text('DEEN', style: TextStyle(color: _theme.textColor, fontWeight: FontWeight.bold, fontSize: 20)),
         ]),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -207,10 +232,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                           child: Text(
                             _lang.isThai ? '🇹🇭 TH' : '🇬🇧 EN',
-                            style: TextStyle(
-                                color: _theme.iconColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13),
+                            style: TextStyle(color: _theme.iconColor, fontWeight: FontWeight.bold, fontSize: 13),
                           ),
                         ),
                       ),
@@ -225,55 +247,49 @@ class _SettingsPageState extends State<SettingsPage> {
                   _buildCard(children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(children: [
-                            Icon(Icons.format_size, color: _theme.iconColor, size: 22),
-                            const SizedBox(width: 12),
-                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text(_lang.isThai ? 'ขนาดตัวอักษรอาหรับ' : 'Arabic Font Size',
-                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _theme.textColor)),
-                              Text(_lang.isThai ? 'ปรับขนาดตัวอักษรในอัลกุรอาน' : 'Adjust Quran text size',
-                                  style: TextStyle(fontSize: 12, color: _theme.subTextColor)),
-                            ])),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: _theme.iconColor.withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text('${_quranFontSize.toInt()}px',
-                                  style: TextStyle(color: _theme.iconColor, fontWeight: FontWeight.bold, fontSize: 13)),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Row(children: [
+                          Icon(Icons.format_size, color: _theme.iconColor, size: 22),
+                          const SizedBox(width: 12),
+                          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(_lang.isThai ? 'ขนาดตัวอักษรอาหรับ' : 'Arabic Font Size',
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _theme.textColor)),
+                            Text(_lang.isThai ? 'ปรับขนาดตัวอักษรในอัลกุรอาน' : 'Adjust Quran text size',
+                                style: TextStyle(fontSize: 12, color: _theme.subTextColor)),
+                          ])),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _theme.iconColor.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          ]),
-                          const SizedBox(height: 8),
-                          Center(
-                            child: Text('بِسْمِ ٱللَّهِ',
-                                style: TextStyle(fontSize: _quranFontSize, color: _theme.textColor, height: 1.8),
-                                textDirection: TextDirection.rtl),
+                            child: Text('${_quranFontSize.toInt()}px',
+                                style: TextStyle(color: _theme.iconColor, fontWeight: FontWeight.bold, fontSize: 13)),
                           ),
-                          SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              activeTrackColor: _theme.iconColor,
-                              inactiveTrackColor: _theme.iconColor.withOpacity(0.2),
-                              thumbColor: _theme.iconColor,
-                              overlayColor: _theme.iconColor.withOpacity(0.1),
-                            ),
-                            child: Slider(
-                              value: _quranFontSize,
-                              min: 16.0,
-                              max: 36.0,
-                              divisions: 10,
-                              onChanged: (v) => setState(() => _quranFontSize = v),
-                            ),
+                        ]),
+                        const SizedBox(height: 8),
+                        Center(
+                          child: Text('بِسْمِ ٱللَّهِ',
+                              style: TextStyle(fontSize: _quranFontSize, color: _theme.textColor, height: 1.8),
+                              textDirection: TextDirection.rtl),
+                        ),
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor: _theme.iconColor,
+                            inactiveTrackColor: _theme.iconColor.withOpacity(0.2),
+                            thumbColor: _theme.iconColor,
+                            overlayColor: _theme.iconColor.withOpacity(0.1),
                           ),
-                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                            Text('A', style: TextStyle(fontSize: 12, color: _theme.subTextColor)),
-                            Text('A', style: TextStyle(fontSize: 20, color: _theme.subTextColor, fontWeight: FontWeight.bold)),
-                          ]),
-                        ],
-                      ),
+                          child: Slider(
+                            value: _quranFontSize, min: 16.0, max: 36.0, divisions: 10,
+                            onChanged: (v) => setState(() => _quranFontSize = v),
+                          ),
+                        ),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                          Text('A', style: TextStyle(fontSize: 12, color: _theme.subTextColor)),
+                          Text('A', style: TextStyle(fontSize: 20, color: _theme.subTextColor, fontWeight: FontWeight.bold)),
+                        ]),
+                      ]),
                     ),
                   ]),
 
@@ -291,11 +307,10 @@ class _SettingsPageState extends State<SettingsPage> {
                       onChanged: (v) => setState(() => _notificationEnabled = v),
                     ),
                     _divider(),
-                    // Test Notification
                     _buildActionRow(
                       icon: Icons.notifications_active,
                       label: _lang.isThai ? 'ทดสอบการแจ้งเตือน' : 'Test Notification',
-                      subtitle: _lang.isThai ? 'กดเพื่อทดสอบว่าแจ้งเตือนทำงานไหม' : 'Tap to test if notification works',
+                      subtitle: _lang.isThai ? 'กดเพื่อทดสอบเสียงอาซาน' : 'Tap to test azan sound',
                       trailing: Icon(Icons.chevron_right, color: _theme.subTextColor),
                       onTap: _testNotification,
                     ),
@@ -315,6 +330,81 @@ class _SettingsPageState extends State<SettingsPage> {
                       items: _methods,
                       onChanged: (v) => setState(() => _selectedMethod = v!),
                     ),
+                  ]),
+
+                  const SizedBox(height: 20),
+
+                  // ── AZAN SOUND ──
+                  _sectionLabel(_lang.isThai ? '🔊 เสียงอาซาน' : '🔊 Azan Sound'),
+                  const SizedBox(height: 8),
+                  _buildCard(children: [
+                    ...AzanService.azanList.asMap().entries.map((entry) {
+                      final i = entry.key;
+                      final azan = entry.value;
+                      final id = azan['id']!;
+                      final name = _lang.isThai ? azan['nameTh']! : azan['name']!;
+                      final isSelected = _selectedAzanId == id;
+                      final isDownloaded = _downloaded[id] ?? false;
+                      final progress = _downloadProgress[id];
+
+                      return Column(children: [
+                        if (i > 0) _divider(),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Row(children: [
+                            // Radio button
+                            GestureDetector(
+                              onTap: () => setState(() => _selectedAzanId = id),
+                              child: Container(
+                                width: 24, height: 24,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: _theme.iconColor, width: 2),
+                                  color: isSelected ? _theme.iconColor : Colors.transparent,
+                                ),
+                                child: isSelected
+                                    ? const Icon(Icons.check, color: Colors.white, size: 14)
+                                    : null,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _theme.textColor)),
+                              if (progress != null)
+                                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  const SizedBox(height: 4),
+                                  LinearProgressIndicator(
+                                    value: progress,
+                                    color: _theme.iconColor,
+                                    backgroundColor: _theme.iconColor.withOpacity(0.2),
+                                  ),
+                                  Text('${(progress * 100).toInt()}%',
+                                      style: TextStyle(fontSize: 11, color: _theme.subTextColor)),
+                                ])
+                              else
+                                Text(
+                                  isDownloaded
+                                      ? (_lang.isThai ? '✅ ดาวน์โหลดแล้ว' : '✅ Downloaded')
+                                      : (_lang.isThai ? 'ยังไม่ได้ดาวน์โหลด' : 'Not downloaded'),
+                                  style: TextStyle(fontSize: 12, color: _theme.subTextColor),
+                                ),
+                            ])),
+
+                            // Play button
+                            if (isDownloaded)
+                              IconButton(
+                                icon: Icon(Icons.play_circle, color: _theme.iconColor, size: 28),
+                                onPressed: () => AzanService.previewAzan(id),
+                              )
+                            else if (progress == null)
+                              IconButton(
+                                icon: Icon(Icons.download, color: _theme.iconColor, size: 26),
+                                onPressed: () => _downloadAzan(id, azan['url']!),
+                              ),
+                          ]),
+                        ),
+                      ]);
+                    }),
                   ]),
 
                   const SizedBox(height: 20),
@@ -358,8 +448,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: const Icon(Icons.save, color: Colors.white),
                       label: Text(
                         _lang.isThai ? 'บันทึก' : 'Save Settings',
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1B5E20),
@@ -368,12 +457,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 16),
-                  Center(
-                    child: Text('DEEN v1.0.0',
-                        style: TextStyle(fontSize: 12, color: _theme.subTextColor)),
-                  ),
+                  Center(child: Text('DEEN v1.0.0',
+                      style: TextStyle(fontSize: 12, color: _theme.subTextColor))),
                   const SizedBox(height: 8),
                 ],
               ),
@@ -385,9 +471,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _sectionLabel(String label) {
-    return Text(label,
-        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
-            color: _theme.subTextColor, letterSpacing: 0.5));
+    return Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
+        color: _theme.subTextColor, letterSpacing: 0.5));
   }
 
   Widget _buildCard({required List<Widget> children}) {
@@ -403,27 +488,19 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _divider() {
-    return Divider(
-      height: 1, indent: 54,
-      color: _theme.isDark ? ThemeService.darkBorder : Colors.grey.shade200,
-    );
+    return Divider(height: 1, indent: 54,
+        color: _theme.isDark ? ThemeService.darkBorder : Colors.grey.shade200);
   }
 
   Widget _buildToggleRow({
-    required IconData icon,
-    required String label,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
+    required IconData icon, required String label, required String subtitle,
+    required bool value, required ValueChanged<bool> onChanged,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(children: [
-        Container(
-          width: 38, height: 38,
-          decoration: BoxDecoration(
-              color: _theme.iconColor.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10)),
+        Container(width: 38, height: 38,
+          decoration: BoxDecoration(color: _theme.iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
           child: Icon(icon, color: _theme.iconColor, size: 20)),
         const SizedBox(width: 14),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -436,11 +513,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildActionRow({
-    required IconData icon,
-    required String label,
-    required String subtitle,
-    required Widget trailing,
-    VoidCallback? onTap,
+    required IconData icon, required String label, required String subtitle,
+    required Widget trailing, VoidCallback? onTap,
   }) {
     return InkWell(
       onTap: onTap,
@@ -448,11 +522,8 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(children: [
-          Container(
-            width: 38, height: 38,
-            decoration: BoxDecoration(
-                color: _theme.iconColor.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(10)),
+          Container(width: 38, height: 38,
+            decoration: BoxDecoration(color: _theme.iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
             child: Icon(icon, color: _theme.iconColor, size: 20)),
           const SizedBox(width: 14),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -466,29 +537,21 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildDropdownRow({
-    required IconData icon,
-    required String label,
-    required String value,
-    required List<Map<String, String>> items,
-    required ValueChanged<String?> onChanged,
+    required IconData icon, required String label, required String value,
+    required List<Map<String, String>> items, required ValueChanged<String?> onChanged,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(children: [
-        Container(
-          width: 38, height: 38,
-          decoration: BoxDecoration(
-              color: _theme.iconColor.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10)),
+        Container(width: 38, height: 38,
+          decoration: BoxDecoration(color: _theme.iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
           child: Icon(icon, color: _theme.iconColor, size: 20)),
         const SizedBox(width: 14),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _theme.textColor)),
           DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: value,
-              isExpanded: true,
-              dropdownColor: _theme.cardColor,
+              value: value, isExpanded: true, dropdownColor: _theme.cardColor,
               icon: Icon(Icons.keyboard_arrow_down, color: _theme.iconColor, size: 18),
               style: TextStyle(fontSize: 12, color: _theme.subTextColor),
               items: items.map((item) => DropdownMenuItem(
@@ -508,8 +571,7 @@ class _SettingsPageState extends State<SettingsPage> {
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
           colors: _theme.isDark
               ? [const Color(0xFF0D3B1E), const Color(0xFF1A5C32)]
               : [const Color(0xFF1B5E20), const Color(0xFF2E7D32)],
@@ -522,9 +584,8 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Column(children: [
             Row(children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22)),
+              GestureDetector(onTap: () => Navigator.pop(context),
+                  child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22)),
             ]),
             const SizedBox(height: 8),
             const Icon(Icons.settings, color: Color(0xFFFFD700), size: 40),
@@ -532,9 +593,8 @@ class _SettingsPageState extends State<SettingsPage> {
             Text(_lang.isThai ? 'ตั้งค่า' : 'Settings',
                 style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
-            Text(
-              _lang.isThai ? 'ปรับแต่งแอพตามใจชอบ' : 'Customize your experience',
-              style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            Text(_lang.isThai ? 'ปรับแต่งแอพตามใจชอบ' : 'Customize your experience',
+                style: const TextStyle(color: Colors.white70, fontSize: 13)),
             const SizedBox(height: 16),
           ]),
         ),
