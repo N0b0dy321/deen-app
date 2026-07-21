@@ -5,16 +5,10 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'azan_service.dart';
 
-// Background handler - เขียน stop flag ผ่าน SharedPreferences
 @pragma('vm:entry-point')
 void notificationTapBackground(NotificationResponse response) async {
-  if (response.actionId == 'stop_azan') {
-    // เขียน flag ให้ main isolate หยุดเสียง
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('azan_stop_flag', true);
-    // ปิด notification
-    await FlutterLocalNotificationsPlugin().cancel(response.id ?? 0);
-  }
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('azan_stop_flag', true);
 }
 
 class NotificationService {
@@ -33,7 +27,6 @@ class NotificationService {
     {'name': 'Isha',    'nameAr': 'العشاء', 'nameTh': 'อิชาอ์', 'id': 5},
   ];
 
-  // ── Init ──────────────────────────────────────────
   static Future<void> init() async {
     if (_initialized) return;
     tz_data.initializeTimeZones();
@@ -48,47 +41,43 @@ class NotificationService {
     await _plugin.initialize(
       const InitializationSettings(android: android, iOS: ios),
       onDidReceiveNotificationResponse: (response) async {
-        if (response.actionId == 'stop_azan') {
-          // อยู่ใน main isolate หยุดได้เลย
-          await AzanService.stopAzan();
-          await _plugin.cancel(response.id ?? 0);
-        } else {
-          await AzanService.playAzan();
-        }
+        await AzanService.stopAzan();
+        await _plugin.cancel(response.id ?? 0);
       },
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
     _initialized = true;
   }
 
-  // ── Request Permission ────────────────────────────
   static Future<void> requestPermission() async {
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     await android?.requestNotificationsPermission();
+    await android?.requestExactAlarmsPermission();
   }
 
-  // ── Notification Details ──────────────────────────
-  static NotificationDetails _buildDetails(String body) {
+  // ── Build details with azan sound ────────────────
+  static NotificationDetails _buildDetails(String body, {String sound = 'azan_makkah'}) {
     return NotificationDetails(
       android: AndroidNotificationDetails(
-        _channelId,
+        '${_channelId}_$sound', // channel แยกตามเสียง
         _channelName,
         channelDescription: _channelDesc,
         importance: Importance.max,
         priority: Priority.high,
         icon: '@mipmap/ic_launcher',
         color: Color(0xFF1B5E20),
-        playSound: false,
+        sound: RawResourceAndroidNotificationSound(sound), // เสียงจาก raw folder
+        playSound: true,
         enableVibration: true,
         ongoing: false,
-        autoCancel: false,
+        autoCancel: true,
         styleInformation: BigTextStyleInformation(body),
         fullScreenIntent: true,
         actions: [
           AndroidNotificationAction(
             'stop_azan',
-            '🔇 Stop Azan',
+            '🔇 Stop',
             cancelNotification: true,
             showsUserInterface: false,
           ),
@@ -97,13 +86,12 @@ class NotificationService {
       iOS: const DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
-        presentSound: false,
+        presentSound: true,
         interruptionLevel: InterruptionLevel.timeSensitive,
       ),
     );
   }
 
-  // ── Schedule Notifications ────────────────────────
   static Future<void> schedulePrayerNotifications({
     required Map<String, dynamic> timings,
     required String timezone,
@@ -125,6 +113,12 @@ class NotificationService {
 
     await cancelAll();
 
+    // ดึงเสียงที่เลือก
+    final selectedAzan = await AzanService.getSelectedAzanId();
+
+    final now = tz.TZDateTime.now(tz.local);
+    print('=== NOW: $now ===');
+
     for (final prayer in _prayers) {
       final name = prayer['name'] as String;
       final nameAr = prayer['nameAr'] as String;
@@ -139,7 +133,6 @@ class NotificationService {
       final hour = int.tryParse(parts[0]) ?? 0;
       final minute = int.tryParse(parts[1]) ?? 0;
 
-      final now = tz.TZDateTime.now(tz.local);
       var scheduled = tz.TZDateTime(
         tz.local,
         now.year, now.month, now.day,
@@ -150,12 +143,14 @@ class NotificationService {
         scheduled = scheduled.add(const Duration(days: 1));
       }
 
+      print('=== SCHEDULING $name at $scheduled ===');
+
       final title = isThai ? '🕌 $nameTh - $nameAr' : '🕌 $name - $nameAr';
       final body = isThai ? 'ถึงเวลา$nameTh แล้ว' : 'It\'s time for $name prayer';
 
       await _plugin.zonedSchedule(
         id, title, body, scheduled,
-        _buildDetails(body),
+        _buildDetails(body, sound: selectedAzan),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
@@ -163,26 +158,40 @@ class NotificationService {
       );
     }
 
-    // Pre-download เสียงที่เลือก
-    final azanId = await AzanService.getSelectedAzanId();
-    if (!await AzanService.isDownloaded(azanId)) {
-      try {
-        final azan = AzanService.getAzanById(azanId);
-        await AzanService.downloadAzan(id: azanId, url: azan['url']!);
-      } catch (_) {}
-    }
+    print('=== ALL PRAYERS SCHEDULED ===');
   }
 
-  // ── Cancel All ────────────────────────────────────
   static Future<void> cancelAll() async {
     await _plugin.cancelAll();
-    await AzanService.stopAzan();
   }
 
-  // ── Test ──────────────────────────────────────────
   static Future<void> showTest() async {
+    final selectedAzan = await AzanService.getSelectedAzanId();
     const body = 'การแจ้งเตือนทำงานปกติ ✅';
-    await _plugin.show(99, '🕌 DEEN - Test', body, _buildDetails(body));
-    await AzanService.playAzan();
+    await _plugin.show(
+      99,
+      '🕌 DEEN - Test',
+      body,
+      _buildDetails(body, sound: selectedAzan),
+    );
+  }
+
+  static Future<void> scheduleTestIn1Min() async {
+    final now = tz.TZDateTime.now(tz.local);
+    final scheduled = now.add(const Duration(minutes: 1));
+    final selectedAzan = await AzanService.getSelectedAzanId();
+    print('=== SCHEDULING TEST FOR: $scheduled ===');
+
+    await _plugin.zonedSchedule(
+      98,
+      '🕌 DEEN - Scheduled Test',
+      'การแจ้งเตือนแบบ schedule ทำงานปกติ ✅',
+      scheduled,
+      _buildDetails('การแจ้งเตือนแบบ schedule ทำงานปกติ ✅', sound: selectedAzan),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
+    print('=== TEST SCHEDULED DONE ===');
   }
 }

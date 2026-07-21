@@ -18,9 +18,7 @@ class _SettingsPageState extends State<SettingsPage> {
   String _selectedMethod = '16';
   bool _notificationEnabled = true;
   double _quranFontSize = 24.0;
-  String _selectedAzanId = 'makkah';
-  Map<String, double> _downloadProgress = {};
-  Map<String, bool> _downloaded = {};
+  String _selectedAzanId = 'azan_makkah';
   final _theme = ThemeService();
   final _lang = LanguageService();
 
@@ -64,7 +62,6 @@ class _SettingsPageState extends State<SettingsPage> {
     _theme.addListener(() => setState(() {}));
     _lang.addListener(() => setState(() {}));
     _loadSettings();
-    _checkDownloaded();
   }
 
   @override
@@ -84,14 +81,6 @@ class _SettingsPageState extends State<SettingsPage> {
       _quranFontSize = prefs.getDouble('quran_font_size') ?? 24.0;
       _selectedAzanId = azanId;
     });
-  }
-
-  Future<void> _checkDownloaded() async {
-    final result = <String, bool>{};
-    for (final azan in AzanService.azanList) {
-      result[azan['id']!] = await AzanService.isDownloaded(azan['id']!);
-    }
-    setState(() => _downloaded = result);
   }
 
   Future<void> _saveSettings() async {
@@ -122,25 +111,12 @@ class _SettingsPageState extends State<SettingsPage> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_lang.isThai ? 'กำลังเล่นเสียงอาซาน...' : 'Playing azan...'),
+          content: Text(_lang.isThai ? 'ส่งการแจ้งเตือนทดสอบแล้ว!' : 'Test notification sent!'),
           backgroundColor: const Color(0xFF1B5E20),
           duration: const Duration(seconds: 2),
         ),
       );
     }
-  }
-
-  Future<void> _downloadAzan(String id, String url) async {
-    setState(() => _downloadProgress[id] = 0.0);
-    await AzanService.downloadAzan(
-      id: id,
-      url: url,
-      onProgress: (p) => setState(() => _downloadProgress[id] = p),
-    );
-    setState(() {
-      _downloadProgress.remove(id);
-      _downloaded[id] = true;
-    });
   }
 
   void _showAboutDialog() {
@@ -315,6 +291,27 @@ class _SettingsPageState extends State<SettingsPage> {
                       onTap: _testNotification,
                     ),
                     _divider(),
+                    _buildActionRow(
+                      icon: Icons.alarm,
+                      label: _lang.isThai ? 'ทดสอบ Schedule (1 นาที)' : 'Schedule Test (1 min)',
+                      subtitle: _lang.isThai ? 'แจ้งเตือนหลัง 1 นาที เพื่อทดสอบระบบ' : 'Notification after 1 min to test system',
+                      trailing: Icon(Icons.chevron_right, color: _theme.subTextColor),
+                      onTap: () async {
+                        await NotificationService.scheduleTestIn1Min();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(_lang.isThai
+                                  ? 'ตั้งเวลาแล้ว! รอ 1 นาทีครับ 🔔'
+                                  : 'Scheduled! Wait 1 minute 🔔'),
+                              backgroundColor: const Color(0xFF1B5E20),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    _divider(),
                     _buildDropdownRow(
                       icon: Icons.access_time,
                       label: _lang.isThai ? 'เขตเวลา' : 'Timezone',
@@ -344,18 +341,16 @@ class _SettingsPageState extends State<SettingsPage> {
                       final id = azan['id']!;
                       final name = _lang.isThai ? azan['nameTh']! : azan['name']!;
                       final isSelected = _selectedAzanId == id;
-                      final isDownloaded = _downloaded[id] ?? false;
-                      final progress = _downloadProgress[id];
 
                       return Column(children: [
                         if (i > 0) _divider(),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          child: Row(children: [
-                            // Radio button
-                            GestureDetector(
-                              onTap: () => setState(() => _selectedAzanId = id),
-                              child: Container(
+                        InkWell(
+                          onTap: () => setState(() => _selectedAzanId = id),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            child: Row(children: [
+                              // Radio button
+                              Container(
                                 width: 24, height: 24,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
@@ -366,42 +361,21 @@ class _SettingsPageState extends State<SettingsPage> {
                                     ? const Icon(Icons.check, color: Colors.white, size: 14)
                                     : null,
                               ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _theme.textColor)),
-                              if (progress != null)
-                                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  const SizedBox(height: 4),
-                                  LinearProgressIndicator(
-                                    value: progress,
-                                    color: _theme.iconColor,
-                                    backgroundColor: _theme.iconColor.withOpacity(0.2),
-                                  ),
-                                  Text('${(progress * 100).toInt()}%',
-                                      style: TextStyle(fontSize: 11, color: _theme.subTextColor)),
-                                ])
-                              else
+                              const SizedBox(width: 14),
+                              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Text(name, style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: _theme.textColor)),
                                 Text(
-                                  isDownloaded
-                                      ? (_lang.isThai ? '✅ ดาวน์โหลดแล้ว' : '✅ Downloaded')
-                                      : (_lang.isThai ? 'ยังไม่ได้ดาวน์โหลด' : 'Not downloaded'),
+                                  _lang.isThai ? 'ไฟล์เสียงในตัวเครื่อง' : 'Built-in sound',
                                   style: TextStyle(fontSize: 12, color: _theme.subTextColor),
                                 ),
-                            ])),
-
-                            // Play button
-                            if (isDownloaded)
-                              IconButton(
-                                icon: Icon(Icons.play_circle, color: _theme.iconColor, size: 28),
-                                onPressed: () => AzanService.previewAzan(id),
-                              )
-                            else if (progress == null)
-                              IconButton(
-                                icon: Icon(Icons.download, color: _theme.iconColor, size: 26),
-                                onPressed: () => _downloadAzan(id, azan['url']!),
-                              ),
-                          ]),
+                              ])),
+                              if (isSelected)
+                                Icon(Icons.volume_up, color: _theme.iconColor, size: 22),
+                            ]),
+                          ),
                         ),
                       ]);
                     }),
@@ -440,7 +414,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
                   const SizedBox(height: 32),
 
-                  // ── Save Button ──
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(

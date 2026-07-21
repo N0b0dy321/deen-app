@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'NearbyMasjid.dart';
 import 'prayer_time_page.dart';
 import 'Al-Quran.dart';
@@ -20,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   Map<String, dynamic>? _prayerData;
   final _lang = LanguageService();
   final _theme = ThemeService();
+  Timer? _timer;
 
   @override
   void initState() {
@@ -28,10 +30,21 @@ class _HomePageState extends State<HomePage> {
     _lang.addListener(() => setState(() {}));
     _theme.addListener(() => setState(() {}));
     _loadPrayerTimes();
+
+    // อัปเดต countdown ทุก 1 วินาที
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_prayerData != null) {
+        setState(() {
+          _prayerData!['nextPrayer'] =
+              PrayerService.calculateNextPrayer(_prayerData!['timings']);
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _lang.removeListener(() => setState(() {}));
     _theme.removeListener(() => setState(() {}));
     super.dispose();

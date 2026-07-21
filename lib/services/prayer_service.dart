@@ -16,7 +16,17 @@ class PrayerService {
     final cached = prefs.getString('$_cachePrefix$todayStr');
     if (cached != null) {
       final data = json.decode(cached) as Map<String, dynamic>;
-      data['nextPrayer'] = _calculateNextPrayer(data['timings']);
+      data['nextPrayer'] = calculateNextPrayer(data['timings']);
+
+      // Schedule notifications จาก cache ด้วย
+      final isThai = LanguageService().isThai;
+      final timezone = prefs.getString('timezone') ?? 'Asia/Bangkok';
+      await NotificationService.schedulePrayerNotifications(
+        timings: Map<String, dynamic>.from(data['timings']),
+        timezone: timezone,
+        isThai: isThai,
+      );
+
       return data;
     }
 
@@ -79,7 +89,7 @@ class PrayerService {
       await prefs.setString(_lastFetchKey, now.toIso8601String());
 
       if (todayData != null) {
-        todayData['nextPrayer'] = _calculateNextPrayer(todayData['timings']);
+        todayData['nextPrayer'] = calculateNextPrayer(todayData['timings']);
 
         // ── Schedule Notifications ──
         final isThai = LanguageService().isThai;
@@ -99,7 +109,7 @@ class PrayerService {
     }
   }
 
-  static Map<String, dynamic> _calculateNextPrayer(
+  static Map<String, dynamic> calculateNextPrayer(
       Map<String, dynamic> timings) {
     final prayers = [
       {'name': 'Fajr', 'time': timings['Fajr']},
@@ -140,7 +150,7 @@ class PrayerService {
     final cached = prefs.getString('$_cachePrefix$todayStr');
     if (cached != null) {
       final data = json.decode(cached) as Map<String, dynamic>;
-      data['nextPrayer'] = _calculateNextPrayer(data['timings']);
+      data['nextPrayer'] = calculateNextPrayer(data['timings']);
       data['isOffline'] = true;
       return data;
     }
@@ -149,7 +159,7 @@ class PrayerService {
       final old = prefs.getString('$_cachePrefix$dateStr');
       if (old != null) {
         final data = json.decode(old) as Map<String, dynamic>;
-        data['nextPrayer'] = _calculateNextPrayer(data['timings']);
+        data['nextPrayer'] = calculateNextPrayer(data['timings']);
         data['isOffline'] = true;
         return data;
       }
