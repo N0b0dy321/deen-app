@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:just_audio/just_audio.dart';
 import '../services/quran_database.dart';
 import '../services/theme_service.dart';
 
@@ -17,12 +18,27 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
   bool isLoading = true;
   String errorMessage = '';
   String _selectedLang = 'en';
+  String _selectedReciter = 'ar.alafasy';
   final _theme = ThemeService();
+
+  // Audio player
+  final AudioPlayer _player = AudioPlayer();
+  int? _playingVerseNumber;
+  bool _isPlaying = false;
 
   final Map<String, Map<String, dynamic>> _languages = {
     'en': {'label': 'English', 'edition': 'en.sahih', 'flag': '🇬🇧'},
     'th': {'label': 'ภาษาไทย', 'edition': 'th.thai', 'flag': '🇹🇭'},
   };
+
+  // รายชื่อนักอ่าน
+  final List<Map<String, String>> _reciters = [
+    {'id': 'ar.alafasy', 'name': 'Mishary Alafasy'},
+    {'id': 'ar.abdurrahmaansudais', 'name': 'Sudais'},
+    {'id': 'ar.minshawi', 'name': 'Minshawi'},
+    {'id': 'ar.husary', 'name': 'Husary'},
+    {'id': 'ar.muhammadayyoub', 'name': 'Muhammad Ayyoub'},
+  ];
 
   static final String _bismillah = String.fromCharCodes([
     0x628,0x650,0x633,0x652,0x645,0x650,0x20,
@@ -35,15 +51,72 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
   void initState() {
     super.initState();
     _theme.addListener(() => setState(() {}));
+
+    // ฟัง player state - auto play next verse
+    _player.processingStateStream.listen((state) {
+      if (state == ProcessingState.completed) {
+        if (mounted && _playingVerseNumber != null && _playingVerseNumber! < verses.length) {
+          _playVerse(_playingVerseNumber! + 1);
+        } else if (mounted) {
+          setState(() {
+            _isPlaying = false;
+            _playingVerseNumber = null;
+          });
+        }
+      }
+    });
+
     loadVerses();
   }
 
   @override
   void dispose() {
     _theme.removeListener(() => setState(() {}));
+    _player.dispose();
     super.dispose();
   }
 
+  // ── Play / Stop ────────────────────────────────────
+  Future<void> _playVerse(int verseNumber) async {
+    if (_playingVerseNumber == verseNumber && _isPlaying) {
+      await _player.stop();
+      setState(() { _isPlaying = false; _playingVerseNumber = null; });
+      return;
+    }
+
+    setState(() { _isPlaying = true; _playingVerseNumber = verseNumber; });
+
+    try {
+      final apiUrl = 'https://api.alquran.cloud/v1/ayah/${widget.surahId}:$verseNumber/$_selectedReciter';
+      final response = await http.get(Uri.parse(apiUrl)).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final audioUrl = data['data']['audio'] as String;
+
+        await _player.stop();
+        await Future.delayed(const Duration(milliseconds: 300));
+        await _player.setUrl(audioUrl);
+        await _player.play();
+      } else {
+        throw Exception('API error');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() { _isPlaying = false; _playingVerseNumber = null; });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('ไม่สามารถเล่นเสียงได้'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _stopAudio() async {
+    await _player.stop();
+    setState(() { _isPlaying = false; _playingVerseNumber = null; });
+  }
+
+  // ── Load Verses ────────────────────────────────────
   Future<void> loadVerses() async {
     setState(() { isLoading = true; errorMessage = ''; });
     final hasLocal = await QuranDatabase.hasVersesByLang(widget.surahId, _selectedLang);
@@ -104,8 +177,59 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
 
   void _changeLang(String lang) {
     if (lang == _selectedLang) return;
+    _stopAudio();
     setState(() => _selectedLang = lang);
     loadVerses();
+  }
+
+  // ── Reciter Picker ─────────────────────────────────
+  void _showReciterPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: BoxDecoration(
+          color: _theme.cardColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(width: 40, height: 4,
+              decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text('เลือกนักอ่าน / Reciter',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
+            ),
+            const SizedBox(height: 8),
+            ..._reciters.map((reciter) {
+              final isSelected = _selectedReciter == reciter['id'];
+              return ListTile(
+                leading: Container(
+                  width: 36, height: 36,
+                  decoration: BoxDecoration(
+                    color: _theme.iconColor.withOpacity(0.12),
+                    shape: BoxShape.circle),
+                  child: Icon(Icons.record_voice_over, color: _theme.iconColor, size: 18)),
+                title: Text(reciter['name']!,
+                  style: TextStyle(color: _theme.textColor,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
+                onTap: () {
+                  setState(() => _selectedReciter = reciter['id']!);
+                  _stopAudio();
+                  Navigator.pop(context);
+                },
+              );
+            }),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -114,11 +238,26 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
       backgroundColor: _theme.bgColor,
       appBar: AppBar(
         backgroundColor: const Color(0xFF1B5E20),
-        title: Text(widget.surahName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(widget.surahName,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          // ปุ่มเลือกนักอ่าน
+          IconButton(
+            icon: const Icon(Icons.record_voice_over, color: Colors.white),
+            onPressed: _showReciterPicker,
+            tooltip: 'เลือกนักอ่าน',
+          ),
+          // ปุ่มหยุดเสียง
+          if (_isPlaying)
+            IconButton(
+              icon: const Icon(Icons.stop_circle, color: Color(0xFFFFD700)),
+              onPressed: _stopAudio,
+            ),
+          // ปุ่มภาษา
           PopupMenuButton<String>(
-            icon: Text(_languages[_selectedLang]!['flag'] as String, style: const TextStyle(fontSize: 22)),
+            icon: Text(_languages[_selectedLang]!['flag'] as String,
+              style: const TextStyle(fontSize: 22)),
             color: _theme.cardColor,
             onSelected: _changeLang,
             itemBuilder: (context) => _languages.entries.map((entry) {
@@ -129,8 +268,9 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                   Text(entry.value['flag'] as String, style: const TextStyle(fontSize: 18)),
                   const SizedBox(width: 10),
                   Text(entry.value['label'] as String,
-                      style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSelected ? _theme.iconColor : _theme.textColor)),
+                    style: TextStyle(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? _theme.iconColor : _theme.textColor)),
                   if (isSelected) ...[const Spacer(), Icon(Icons.check, color: _theme.iconColor, size: 16)],
                 ]),
               );
@@ -152,6 +292,26 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                     child: const Text('Retry', style: TextStyle(color: Colors.white))),
                 ]))
               : Column(children: [
+                  // แสดงนักอ่านที่เลือกอยู่
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    color: _theme.isDark ? const Color(0xFF0D3B1E) : const Color(0xFFE8F5E9),
+                    child: Row(children: [
+                      Icon(Icons.record_voice_over, color: _theme.iconColor, size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        _reciters.firstWhere((r) => r['id'] == _selectedReciter)['name']!,
+                        style: TextStyle(fontSize: 13, color: _theme.iconColor, fontWeight: FontWeight.w500)),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: _showReciterPicker,
+                        child: Text('เปลี่ยน',
+                          style: TextStyle(fontSize: 12, color: _theme.iconColor,
+                            decoration: TextDecoration.underline)),
+                      ),
+                    ]),
+                  ),
+
                   if (widget.surahId != 1 && widget.surahId != 9)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
@@ -161,44 +321,78 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                               child: Image.asset('image/Bismillah.png', height: 100, fit: BoxFit.contain))
                           : Image.asset('image/Bismillah.png', height: 150, fit: BoxFit.contain),
                     ),
+
                   Expanded(
                     child: ListView.builder(
                       padding: const EdgeInsets.all(12),
                       itemCount: verses.length,
                       itemBuilder: (context, index) {
                         final verse = verses[index];
+                        final verseNumber = verse['verse_number'] as int;
                         final translation = verse['translation'] ?? '';
+                        final isThisPlaying = _playingVerseNumber == verseNumber && _isPlaying;
+
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: _theme.cardColor,
+                            color: isThisPlaying
+                                ? _theme.iconColor.withOpacity(0.08)
+                                : _theme.cardColor,
                             borderRadius: BorderRadius.circular(14),
-                            border: _theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
+                            border: isThisPlaying
+                                ? Border.all(color: _theme.iconColor.withOpacity(0.4))
+                                : _theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
                             boxShadow: [BoxShadow(color: _theme.shadowColor, blurRadius: 6, offset: const Offset(0, 2))],
                           ),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: _theme.iconColor.withOpacity(0.12),
-                                  borderRadius: BorderRadius.circular(20)),
-                                child: Text('${verse['verse_number']}',
-                                    style: TextStyle(color: _theme.iconColor, fontWeight: FontWeight.bold, fontSize: 12)),
+                              // ปุ่มเสียง
+                              GestureDetector(
+                                onTap: () => _playVerse(verseNumber),
+                                child: Container(
+                                  width: 36, height: 36,
+                                  decoration: BoxDecoration(
+                                    color: isThisPlaying
+                                        ? _theme.iconColor
+                                        : _theme.iconColor.withOpacity(0.12),
+                                    shape: BoxShape.circle),
+                                  child: Icon(
+                                    isThisPlaying ? Icons.stop : Icons.play_arrow,
+                                    color: isThisPlaying ? Colors.white : _theme.iconColor,
+                                    size: 20),
+                                ),
                               ),
-                              Text(_languages[_selectedLang]!['flag'] as String, style: const TextStyle(fontSize: 14)),
+
+                              Row(children: [
+                                // verse number badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: _theme.iconColor.withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(20)),
+                                  child: Text('$verseNumber',
+                                    style: TextStyle(color: _theme.iconColor,
+                                      fontWeight: FontWeight.bold, fontSize: 12)),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(_languages[_selectedLang]!['flag'] as String,
+                                  style: const TextStyle(fontSize: 14)),
+                              ]),
                             ]),
+
                             const SizedBox(height: 12),
                             Text(verse['text_uthmani'] ?? '',
-                                textAlign: TextAlign.right,
-                                textDirection: TextDirection.rtl,
-                                style: TextStyle(fontSize: 24, height: 2.0, color: _theme.textColor)),
+                              textAlign: TextAlign.right,
+                              textDirection: TextDirection.rtl,
+                              style: TextStyle(fontSize: 24, height: 2.0, color: _theme.textColor)),
+
                             if (translation.isNotEmpty) ...[
-                              Divider(height: 20, color: _theme.isDark ? ThemeService.darkBorder : Colors.grey.shade200),
+                              Divider(height: 20,
+                                color: _theme.isDark ? ThemeService.darkBorder : Colors.grey.shade200),
                               Align(alignment: Alignment.centerLeft,
                                 child: Text(translation, textAlign: TextAlign.left,
-                                    style: TextStyle(fontSize: 13, color: _theme.subTextColor, height: 1.6))),
+                                  style: TextStyle(fontSize: 13, color: _theme.subTextColor, height: 1.6))),
                             ],
                           ]),
                         );
@@ -206,6 +400,75 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                     ),
                   ),
                 ]),
+      // ── Player Bar ──────────────────────────────
+      bottomNavigationBar: _isPlaying ? _buildPlayerBar() : null,
+    );
+  }
+
+  Widget _buildPlayerBar() {
+    final reciterName = _reciters.firstWhere(
+      (r) => r['id'] == _selectedReciter,
+      orElse: () => {'name': ''},
+    )['name']!;
+
+    return Container(
+      height: 72,
+      decoration: BoxDecoration(
+        color: _theme.isDark ? const Color(0xFF0D3B1E) : const Color(0xFF1B5E20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, -2))],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(children: [
+        // Icon
+        Container(
+          width: 40, height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(8)),
+          child: const Icon(Icons.menu_book, color: Color(0xFFFFD700), size: 20)),
+        const SizedBox(width: 12),
+
+        // ข้อมูล
+        Expanded(child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${widget.surahName} · Ayah $_playingVerseNumber',
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+              maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(reciterName,
+              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11)),
+          ])),
+
+        // Controls
+        IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+          icon: const Icon(Icons.skip_previous, color: Colors.white, size: 24),
+          onPressed: () {
+            if (_playingVerseNumber != null && _playingVerseNumber! > 1) {
+              _playVerse(_playingVerseNumber! - 1);
+            }
+          },
+        ),
+        GestureDetector(
+          onTap: _stopAudio,
+          child: Container(
+            width: 36, height: 36,
+            decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle),
+            child: const Icon(Icons.stop, color: Color(0xFF1B5E20), size: 20)),
+        ),
+        IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+          icon: const Icon(Icons.skip_next, color: Colors.white, size: 24),
+          onPressed: () {
+            if (_playingVerseNumber != null && _playingVerseNumber! < verses.length) {
+              _playVerse(_playingVerseNumber! + 1);
+            }
+          },
+        ),
+      ]),
     );
   }
 }

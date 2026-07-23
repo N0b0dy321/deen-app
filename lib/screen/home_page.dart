@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'NearbyMasjid.dart';
+import 'HalalRestaurant.dart';
 import 'prayer_time_page.dart';
 import 'Al-Quran.dart';
 import '../services/prayer_service.dart';
@@ -111,8 +112,13 @@ class _HomePageState extends State<HomePage> {
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AlQuranPage()))),
                       _FeatureCard(label: _lang.qiblaFinder, icon: Icons.explore, theme: _theme,
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaPage()))),
-                      _FeatureCard(label: _lang.nearbyMosques, icon: Icons.location_on, theme: _theme,
+                      _FeatureCard(label: _lang.nearbyMosques, icon: Icons.mosque, theme: _theme,
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyMosquesPage()))),
+                      _FeatureCard(
+                          label: _lang.isThai ? 'ร้านอาหารฮาลาล' : 'Halal Food',
+                          icon: Icons.restaurant,
+                          theme: _theme,
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HalalRestaurantPage()))),
                       _FeatureCard(label: _lang.duaLessons, icon: Icons.self_improvement, theme: _theme,
                           onTap: () {}),
                     ],
