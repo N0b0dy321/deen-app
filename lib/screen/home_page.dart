@@ -10,6 +10,7 @@ import '../services/theme_service.dart';
 import 'package:DEEN/screen/qibla_page.dart';
 import 'package:DEEN/screen/chatbot_page.dart';
 import 'package:DEEN/services/Setting_Time.dart';
+import 'dua_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -119,8 +120,8 @@ class _HomePageState extends State<HomePage> {
                           icon: Icons.restaurant,
                           theme: _theme,
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HalalRestaurantPage()))),
-                      _FeatureCard(label: _lang.duaLessons, icon: Icons.self_improvement, theme: _theme,
-                          onTap: () {}),
+                      _FeatureCard(label: _lang.duaLessons,icon: Icons.self_improvement,theme: _theme,
+                          onTap: () => Navigator.push(context,MaterialPageRoute(builder: (_) => const DuaPage())),),
                     ],
                   ),
 

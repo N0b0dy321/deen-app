@@ -72,22 +72,22 @@ class _HalalRestaurantPageState extends State<HalalRestaurantPage> {
   Future<void> _fetchNearbyRestaurants(double lat, double lng) async {
     try {
       final response = await http.post(
-        Uri.parse('https://places.googleapis.com/v1/places:searchNearby'),
+        Uri.parse('https://places.googleapis.com/v1/places:searchText'),
         headers: {
           'Content-Type': 'application/json',
           'X-Goog-Api-Key': _apiKey,
           'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.rating,places.currentOpeningHours,places.id,places.priceLevel',
         },
         body: json.encode({
-          'includedTypes': ['restaurant', 'meal_takeaway', 'meal_delivery'],
+          'textQuery': 'halal restaurant',
           'maxResultCount': 20,
-          'locationRestriction': {
+          'locationBias': {
             'circle': {
               'center': {'latitude': lat, 'longitude': lng},
               'radius': 3000.0,
             }
           },
-          'rankPreference': 'DISTANCE',
+          'languageCode': 'th',
         }),
       );
 
