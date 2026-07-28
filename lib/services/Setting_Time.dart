@@ -183,7 +183,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
 
                   // ── APPEARANCE ──
-                  _sectionLabel(_lang.isThai ? '🎨 หน้าตา' : '🎨 Appearance'),
+                  _sectionLabel(_lang.isThai ? ' หน้าตา' : ' Appearance'),
                   const SizedBox(height: 8),
                   _buildCard(children: [
                     _buildToggleRow(
@@ -218,7 +218,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 20),
 
                   // ── QURAN ──
-                  _sectionLabel(_lang.isThai ? '📖 อัลกุรอาน' : '📖 Al-Quran'),
+                  _sectionLabel(_lang.isThai ? ' อัลกุรอาน' : ' Al-Quran'),
                   const SizedBox(height: 8),
                   _buildCard(children: [
                     Padding(
@@ -272,7 +272,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 20),
 
                   // ── PRAYER TIMES ──
-                  _sectionLabel(_lang.isThai ? '🕌 เวลาละหมาด' : '🕌 Prayer Times'),
+                  _sectionLabel(_lang.isThai ? ' เวลาละหมาด' : ' Prayer Times'),
                   const SizedBox(height: 8),
                   _buildCard(children: [
                     _buildToggleRow(
@@ -332,7 +332,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 20),
 
                   // ── AZAN SOUND ──
-                  _sectionLabel(_lang.isThai ? '🔊 เสียงอาซาน' : '🔊 Azan Sound'),
+                  _sectionLabel(_lang.isThai ? ' เสียงอาซาน' : ' Azan Sound'),
                   const SizedBox(height: 8),
                   _buildCard(children: [
                     ...AzanService.azanList.asMap().entries.map((entry) {
