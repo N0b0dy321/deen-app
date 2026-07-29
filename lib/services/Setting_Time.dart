@@ -19,6 +19,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _notificationEnabled = true;
   double _quranFontSize = 24.0;
   String _selectedAzanId = 'azan_makkah';
+  String _pendingLang = 'th'; // ภาษาที่รอ save
   final _theme = ThemeService();
   final _lang = LanguageService();
 
@@ -80,6 +81,7 @@ class _SettingsPageState extends State<SettingsPage> {
       _notificationEnabled = prefs.getBool('notification') ?? true;
       _quranFontSize = prefs.getDouble('quran_font_size') ?? 24.0;
       _selectedAzanId = azanId;
+      _pendingLang = _lang.lang; // โหลดค่าภาษาปัจจุบัน
     });
   }
 
@@ -92,9 +94,13 @@ class _SettingsPageState extends State<SettingsPage> {
     await AzanService.setSelectedAzan(_selectedAzanId);
     await PrayerService.clearCache();
     if (!_notificationEnabled) await NotificationService.cancelAll();
+
+    // Apply ภาษาตอน save
+    await _lang.setLang(_pendingLang);
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(_lang.isThai ? 'บันทึกแล้ว!' : 'Settings saved!'),
+        content: Text(_pendingLang == 'th' ? 'บันทึกแล้ว!' : 'Settings saved!'),
         backgroundColor: const Color(0xFF1B5E20),
         duration: const Duration(seconds: 2),
       ));
@@ -133,31 +139,29 @@ class _SettingsPageState extends State<SettingsPage> {
       backgroundColor: _theme.cardColor,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => Column(
-        children: [
-          const SizedBox(height: 12),
-          Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(_lang.isThai ? 'เลือกเขตเวลา' : 'Select Timezone',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
-          ),
-          const SizedBox(height: 8),
-          Expanded(child: ListView(children: _timezones.map((tz) {
-            final isSelected = _selectedTimezone == tz['value'];
-            return ListTile(
-              title: Text(tz['label']!, style: TextStyle(color: _theme.textColor, fontSize: 14)),
-              trailing: isSelected ? Icon(Icons.check, color: _theme.iconColor) : null,
-              onTap: () {
-                setState(() => _selectedTimezone = tz['value']!);
-                Navigator.pop(context);
-              },
-            );
-          }).toList())),
-        ],
-      ),
+      builder: (_) => Column(children: [
+        const SizedBox(height: 12),
+        Container(width: 40, height: 4,
+            decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(_lang.isThai ? 'เลือกเขตเวลา' : 'Select Timezone',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
+        ),
+        const SizedBox(height: 8),
+        Expanded(child: ListView(children: _timezones.map((tz) {
+          final isSelected = _selectedTimezone == tz['value'];
+          return ListTile(
+            title: Text(tz['label']!, style: TextStyle(color: _theme.textColor, fontSize: 14)),
+            trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
+            onTap: () {
+              setState(() => _selectedTimezone = tz['value']!);
+              Navigator.pop(context);
+            },
+          );
+        }).toList())),
+      ]),
     );
   }
 
@@ -167,7 +171,40 @@ class _SettingsPageState extends State<SettingsPage> {
       backgroundColor: _theme.cardColor,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => Column(children: [
+        const SizedBox(height: 12),
+        Container(width: 40, height: 4,
+            decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(_lang.isThai ? 'เลือกวิธีคำนวณ' : 'Select Calculation Method',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
+        ),
+        const SizedBox(height: 8),
+        Expanded(child: ListView(children: _methods.map((m) {
+          final isSelected = _selectedMethod == m['value'];
+          return ListTile(
+            title: Text(m['label']!, style: TextStyle(color: _theme.textColor, fontSize: 14)),
+            trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
+            onTap: () {
+              setState(() => _selectedMethod = m['value']!);
+              Navigator.pop(context);
+            },
+          );
+        }).toList())),
+      ]),
+    );
+  }
+
+  void _showLanguageSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _theme.cardColor,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 12),
           Container(width: 40, height: 4,
@@ -175,21 +212,64 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(_lang.isThai ? 'เลือกวิธีคำนวณ' : 'Select Calculation Method',
+            child: Text('Language / ภาษา',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
           ),
           const SizedBox(height: 8),
-          Expanded(child: ListView(children: _methods.map((m) {
-            final isSelected = _selectedMethod == m['value'];
+          ...LanguageService.availableLanguages.map((lang) {
+            final isSelected = _pendingLang == lang['code'];
             return ListTile(
-              title: Text(m['label']!, style: TextStyle(color: _theme.textColor, fontSize: 14)),
-              trailing: isSelected ? Icon(Icons.check, color: _theme.iconColor) : null,
+              leading: Text(lang['flag']!, style: const TextStyle(fontSize: 24)),
+              title: Text(lang['native']!, style: TextStyle(color: _theme.textColor, fontWeight: FontWeight.w500)),
+              subtitle: Text(lang['name']!, style: TextStyle(color: _theme.subTextColor, fontSize: 12)),
+              trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
               onTap: () {
-                setState(() => _selectedMethod = m['value']!);
+                setState(() => _pendingLang = lang['code']!);
                 Navigator.pop(context);
               },
             );
-          }).toList())),
+          }),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  void _showAzanSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _theme.cardColor,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          Container(width: 40, height: 4,
+              decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(_lang.isThai ? 'เลือกเสียงอาซาน' : 'Select Azan Sound',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
+          ),
+          const SizedBox(height: 8),
+          ...AzanService.azanList.map((azan) {
+            final id = azan['id']!;
+            final name = _lang.isThai ? azan['nameTh']! : azan['name']!;
+            final isSelected = _selectedAzanId == id;
+            return ListTile(
+              leading: Icon(Icons.volume_up_outlined,
+                  color: isSelected ? _theme.iconColor : _theme.subTextColor),
+              title: Text(name, style: TextStyle(color: _theme.textColor)),
+              trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
+              onTap: () {
+                setState(() => _selectedAzanId = id);
+                Navigator.pop(context);
+              },
+            );
+          }),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -223,225 +303,167 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ],
       ),
-      body: ListView(
-        children: [
+      body: ListView(children: [
 
-          // ── APPEARANCE ──────────────────────────────
-          _sectionHeader(_lang.isThai ? 'หน้าตา' : 'Appearance'),
-          _buildGroup(cardBg, divColor, [
-            _buildSwitchRow(
-              icon: Icons.dark_mode_outlined,
-              iconColor: Colors.indigo,
-              label: _lang.isThai ? 'โหมดกลางคืน' : 'Dark Mode',
-              value: _theme.isDark,
-              textColor: textColor,
-              onChanged: (_) => _theme.toggle(),
-            ),
-            _buildNavRow(
-              icon: Icons.language,
-              iconColor: Colors.blue,
-              label: _lang.isThai ? 'ภาษา' : 'Language',
-              value: _lang.isThai ? 'ภาษาไทย' : 'English',
-              textColor: textColor,
-              subColor: subColor,
-              onTap: () => _lang.setLang(_lang.isThai ? 'en' : 'th'),
-            ),
-          ]),
-
-          // ── AL-QURAN ────────────────────────────────
-          _sectionHeader(_lang.isThai ? 'อัลกุรอาน' : 'Al-Quran'),
-          _buildGroup(cardBg, divColor, [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  _iconBox(Icons.format_size, Colors.orange),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(_lang.isThai ? 'ขนาดตัวอักษรอาหรับ' : 'Arabic Font Size',
-                      style: TextStyle(fontSize: 15, color: textColor))),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                    decoration: BoxDecoration(
-                        color: green.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8)),
-                    child: Text('${_quranFontSize.toInt()}',
-                        style: TextStyle(color: green, fontWeight: FontWeight.w600, fontSize: 13)),
-                  ),
-                ]),
-                const SizedBox(height: 8),
-                Center(child: Text('بِسْمِ ٱللَّهِ',
-                    style: TextStyle(fontSize: _quranFontSize, color: textColor, height: 1.8),
-                    textDirection: TextDirection.rtl)),
-                SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    activeTrackColor: green,
-                    inactiveTrackColor: green.withOpacity(0.2),
-                    thumbColor: green,
-                    overlayColor: green.withOpacity(0.1),
-                  ),
-                  child: Slider(
-                    value: _quranFontSize, min: 16, max: 36, divisions: 10,
-                    onChanged: (v) => setState(() => _quranFontSize = v)),
-                ),
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Text('A', style: TextStyle(fontSize: 12, color: subColor)),
-                  Text('A', style: TextStyle(fontSize: 20, color: subColor, fontWeight: FontWeight.bold)),
-                ]),
-              ]),
-            ),
-          ]),
-
-          // ── PRAYER TIMES ────────────────────────────
-          _sectionHeader(_lang.isThai ? 'เวลาละหมาด' : 'Prayer Times'),
-          _buildGroup(cardBg, divColor, [
-            _buildSwitchRow(
-              icon: Icons.notifications_outlined,
-              iconColor: Colors.red,
-              label: _lang.isThai ? 'แจ้งเตือนละหมาด' : 'Prayer Notification',
-              value: _notificationEnabled,
-              textColor: textColor,
-              onChanged: (v) => setState(() => _notificationEnabled = v),
-            ),
-            _buildNavRow(
-              icon: Icons.music_note_outlined,
-              iconColor: Colors.purple,
-              label: _lang.isThai ? 'เสียงอาซาน' : 'Azan Sound',
-              value: AzanService.getAzanById(_selectedAzanId)[_lang.isThai ? 'nameTh' : 'name'] ?? '',
-              textColor: textColor,
-              subColor: subColor,
-              onTap: () => _showAzanSheet(),
-            ),
-            _buildNavRow(
-              icon: Icons.public,
-              iconColor: Colors.teal,
-              label: _lang.isThai ? 'เขตเวลา' : 'Timezone',
-              value: _timezones.firstWhere((t) => t['value'] == _selectedTimezone)['label']!.split(' ').first,
-              textColor: textColor,
-              subColor: subColor,
-              onTap: _showTimezoneSheet,
-            ),
-            _buildNavRow(
-              icon: Icons.calculate_outlined,
-              iconColor: Colors.brown,
-              label: _lang.isThai ? 'วิธีคำนวณ' : 'Calculation Method',
-              value: _methods.firstWhere((m) => m['value'] == _selectedMethod)['label']!.split(' ').first,
-              textColor: textColor,
-              subColor: subColor,
-              onTap: _showMethodSheet,
-            ),
-          ]),
-
-          // ── TESTING ─────────────────────────────────
-          _sectionHeader(_lang.isThai ? 'ทดสอบ' : 'Testing'),
-          _buildGroup(cardBg, divColor, [
-            _buildNavRow(
-              icon: Icons.notifications_active_outlined,
-              iconColor: Colors.orange,
-              label: _lang.isThai ? 'ทดสอบการแจ้งเตือน' : 'Test Notification',
-              value: '',
-              textColor: textColor,
-              subColor: subColor,
-              onTap: () async {
-                await NotificationService.showTest();
-                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(_lang.isThai ? 'ส่งแจ้งเตือนแล้ว!' : 'Notification sent!'),
-                  backgroundColor: const Color(0xFF1B5E20)));
-              },
-            ),
-            _buildNavRow(
-              icon: Icons.alarm_outlined,
-              iconColor: Colors.deepOrange,
-              label: _lang.isThai ? 'ทดสอบ Schedule (1 นาที)' : 'Schedule Test (1 min)',
-              value: '',
-              textColor: textColor,
-              subColor: subColor,
-              onTap: () async {
-                await NotificationService.scheduleTestIn1Min();
-                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(_lang.isThai ? 'รอ 1 นาทีครับ 🔔' : 'Wait 1 minute 🔔'),
-                  backgroundColor: const Color(0xFF1B5E20)));
-              },
-            ),
-          ]),
-
-          // ── ABOUT ───────────────────────────────────
-          _sectionHeader(_lang.isThai ? 'เกี่ยวกับ' : 'About'),
-          _buildGroup(cardBg, divColor, [
-            _buildNavRow(
-              icon: Icons.info_outline,
-              iconColor: Colors.blue,
-              label: _lang.isThai ? 'เกี่ยวกับแอพ' : 'About App',
-              value: 'v1.0.0',
-              textColor: textColor,
-              subColor: subColor,
-              onTap: _showAboutDialog,
-            ),
-            _buildNavRow(
-              icon: Icons.star_outline,
-              iconColor: Colors.amber,
-              label: _lang.isThai ? 'ให้คะแนนแอพ' : 'Rate App',
-              value: '',
-              textColor: textColor,
-              subColor: subColor,
-              onTap: () {},
-            ),
-            _buildNavRow(
-              icon: Icons.share_outlined,
-              iconColor: Colors.green,
-              label: _lang.isThai ? 'แชร์แอพ' : 'Share App',
-              value: '',
-              textColor: textColor,
-              subColor: subColor,
-              onTap: () {},
-            ),
-          ]),
-
-          const SizedBox(height: 8),
-          Center(child: Text('DEEN v1.0.0 • Made with ❤️',
-              style: TextStyle(fontSize: 12, color: subColor))),
-          const SizedBox(height: 32),
-        ],
-      ),
-    );
-  }
-
-  void _showAzanSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: _theme.cardColor,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 12),
-          Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(_lang.isThai ? 'เลือกเสียงอาซาน' : 'Select Azan Sound',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
+        // ── APPEARANCE ──
+        _sectionHeader(_lang.isThai ? 'หน้าตา' : 'Appearance'),
+        _buildGroup(cardBg, divColor, [
+          // Dark Mode → เปลี่ยนทันที
+          _buildSwitchRow(
+            icon: Icons.dark_mode_outlined,
+            iconColor: Colors.indigo,
+            label: _lang.isThai ? 'โหมดกลางคืน' : 'Dark Mode',
+            value: _theme.isDark,
+            textColor: textColor,
+            onChanged: (_) => _theme.toggle(),
           ),
-          const SizedBox(height: 8),
-          ...AzanService.azanList.map((azan) {
-            final id = azan['id']!;
-            final name = _lang.isThai ? azan['nameTh']! : azan['name']!;
-            final isSelected = _selectedAzanId == id;
-            return ListTile(
-              leading: Icon(Icons.volume_up_outlined,
-                  color: isSelected ? _theme.iconColor : _theme.subTextColor),
-              title: Text(name, style: TextStyle(color: _theme.textColor)),
-              trailing: isSelected ? Icon(Icons.check, color: _theme.iconColor) : null,
-              onTap: () {
-                setState(() => _selectedAzanId = id);
-                Navigator.pop(context);
-              },
-            );
-          }),
-          const SizedBox(height: 16),
-        ],
-      ),
+          // Language → รอ Save
+          _buildNavRow(
+            icon: Icons.language,
+            iconColor: Colors.blue,
+            label: _lang.isThai ? 'ภาษา' : 'Language',
+            value: '${LanguageService.availableLanguages.firstWhere((l) => l['code'] == _pendingLang)['flag']} ${LanguageService.availableLanguages.firstWhere((l) => l['code'] == _pendingLang)['native']}',
+            textColor: textColor,
+            subColor: subColor,
+            onTap: _showLanguageSheet,
+          ),
+        ]),
+
+        // ── AL-QURAN ──
+        _sectionHeader(_lang.isThai ? 'อัลกุรอาน' : 'Al-Quran'),
+        _buildGroup(cardBg, divColor, [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                _iconBox(Icons.format_size, Colors.orange),
+                const SizedBox(width: 12),
+                Expanded(child: Text(_lang.isThai ? 'ขนาดตัวอักษรอาหรับ' : 'Arabic Font Size',
+                    style: TextStyle(fontSize: 15, color: textColor))),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  decoration: BoxDecoration(color: green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                  child: Text('${_quranFontSize.toInt()}',
+                      style: TextStyle(color: green, fontWeight: FontWeight.w600, fontSize: 13)),
+                ),
+              ]),
+              const SizedBox(height: 8),
+              Center(child: Text('بِسْمِ ٱللَّهِ',
+                  style: TextStyle(fontSize: _quranFontSize, color: textColor, height: 1.8),
+                  textDirection: TextDirection.rtl)),
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: green,
+                  inactiveTrackColor: green.withOpacity(0.2),
+                  thumbColor: green,
+                  overlayColor: green.withOpacity(0.1),
+                ),
+                child: Slider(
+                  value: _quranFontSize, min: 16, max: 36, divisions: 10,
+                  onChanged: (v) => setState(() => _quranFontSize = v)),
+              ),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text('A', style: TextStyle(fontSize: 12, color: subColor)),
+                Text('A', style: TextStyle(fontSize: 20, color: subColor, fontWeight: FontWeight.bold)),
+              ]),
+            ]),
+          ),
+        ]),
+
+        // ── PRAYER TIMES ──
+        _sectionHeader(_lang.isThai ? 'เวลาละหมาด' : 'Prayer Times'),
+        _buildGroup(cardBg, divColor, [
+          _buildSwitchRow(
+            icon: Icons.notifications_outlined,
+            iconColor: Colors.red,
+            label: _lang.isThai ? 'แจ้งเตือนละหมาด' : 'Prayer Notification',
+            value: _notificationEnabled,
+            textColor: textColor,
+            onChanged: (v) => setState(() => _notificationEnabled = v),
+          ),
+          _buildNavRow(
+            icon: Icons.music_note_outlined,
+            iconColor: Colors.purple,
+            label: _lang.isThai ? 'เสียงอาซาน' : 'Azan Sound',
+            value: AzanService.getAzanById(_selectedAzanId)[_lang.isThai ? 'nameTh' : 'name'] ?? '',
+            textColor: textColor,
+            subColor: subColor,
+            onTap: _showAzanSheet,
+          ),
+          _buildNavRow(
+            icon: Icons.public,
+            iconColor: Colors.teal,
+            label: _lang.isThai ? 'เขตเวลา' : 'Timezone',
+            value: _timezones.firstWhere((t) => t['value'] == _selectedTimezone)['label']!.split(' ').first,
+            textColor: textColor,
+            subColor: subColor,
+            onTap: _showTimezoneSheet,
+          ),
+          _buildNavRow(
+            icon: Icons.calculate_outlined,
+            iconColor: Colors.brown,
+            label: _lang.isThai ? 'วิธีคำนวณ' : 'Calculation Method',
+            value: _methods.firstWhere((m) => m['value'] == _selectedMethod)['label']!.split(' ').first,
+            textColor: textColor,
+            subColor: subColor,
+            onTap: _showMethodSheet,
+          ),
+        ]),
+
+        // ── TESTING ──
+        _sectionHeader(_lang.isThai ? 'ทดสอบ' : 'Testing'),
+        _buildGroup(cardBg, divColor, [
+          _buildNavRow(
+            icon: Icons.notifications_active_outlined,
+            iconColor: Colors.orange,
+            label: _lang.isThai ? 'ทดสอบการแจ้งเตือน' : 'Test Notification',
+            value: '', textColor: textColor, subColor: subColor,
+            onTap: () async {
+              await NotificationService.showTest();
+              if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(_lang.isThai ? 'ส่งแจ้งเตือนแล้ว!' : 'Notification sent!'),
+                backgroundColor: const Color(0xFF1B5E20)));
+            },
+          ),
+          _buildNavRow(
+            icon: Icons.alarm_outlined,
+            iconColor: Colors.deepOrange,
+            label: _lang.isThai ? 'ทดสอบ Schedule (1 นาที)' : 'Schedule Test (1 min)',
+            value: '', textColor: textColor, subColor: subColor,
+            onTap: () async {
+              await NotificationService.scheduleTestIn1Min();
+              if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(_lang.isThai ? 'รอ 1 นาทีครับ 🔔' : 'Wait 1 minute 🔔'),
+                backgroundColor: const Color(0xFF1B5E20)));
+            },
+          ),
+        ]),
+
+        // ── ABOUT ──
+        _sectionHeader(_lang.isThai ? 'เกี่ยวกับ' : 'About'),
+        _buildGroup(cardBg, divColor, [
+          _buildNavRow(
+            icon: Icons.info_outline, iconColor: Colors.blue,
+            label: _lang.isThai ? 'เกี่ยวกับแอพ' : 'About App',
+            value: 'v1.0.0', textColor: textColor, subColor: subColor,
+            onTap: _showAboutDialog),
+          _buildNavRow(
+            icon: Icons.star_outline, iconColor: Colors.amber,
+            label: _lang.isThai ? 'ให้คะแนนแอพ' : 'Rate App',
+            value: '', textColor: textColor, subColor: subColor,
+            onTap: () {}),
+          _buildNavRow(
+            icon: Icons.share_outlined, iconColor: Colors.green,
+            label: _lang.isThai ? 'แชร์แอพ' : 'Share App',
+            value: '', textColor: textColor, subColor: subColor,
+            onTap: () {}),
+        ]),
+
+        const SizedBox(height: 8),
+        Center(child: Text('DEEN v1.0.0 • Made with ❤️',
+            style: TextStyle(fontSize: 12, color: subColor))),
+        const SizedBox(height: 32),
+      ]),
     );
   }
 
@@ -449,11 +471,8 @@ class _SettingsPageState extends State<SettingsPage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 6),
       child: Text(title.toUpperCase(),
-          style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: _theme.subTextColor,
-              letterSpacing: 0.8)),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+              color: _theme.subTextColor, letterSpacing: 0.8)),
     );
   }
 
@@ -476,12 +495,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildSwitchRow({
-    required IconData icon,
-    required Color iconColor,
-    required String label,
-    required bool value,
-    required Color textColor,
-    required ValueChanged<bool> onChanged,
+    required IconData icon, required Color iconColor, required String label,
+    required bool value, required Color textColor, required ValueChanged<bool> onChanged,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -496,12 +511,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildNavRow({
-    required IconData icon,
-    required Color iconColor,
-    required String label,
-    required String value,
-    required Color textColor,
-    required Color subColor,
+    required IconData icon, required Color iconColor, required String label,
+    required String value, required Color textColor, required Color subColor,
     required VoidCallback onTap,
   }) {
     return InkWell(

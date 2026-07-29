@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 import '../services/quran_database.dart';
 import '../services/theme_service.dart';
+import '../services/language_service.dart';
 
 class SurahDetailPage extends StatefulWidget {
   final int surahId;
@@ -20,6 +21,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
   String _selectedLang = 'en';
   String _selectedReciter = 'ar.alafasy';
   final _theme = ThemeService();
+  final _lang = LanguageService();
 
   // Audio player
   final AudioPlayer _player = AudioPlayer();
@@ -27,8 +29,13 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
   bool _isPlaying = false;
 
   final Map<String, Map<String, dynamic>> _languages = {
-    'en': {'label': 'English', 'edition': 'en.sahih', 'flag': '🇬🇧'},
-    'th': {'label': 'ภาษาไทย', 'edition': 'th.thai', 'flag': '🇹🇭'},
+    'en': {'label': 'English',          'edition': 'en.sahih',     'flag': '🇬🇧'},
+    'th': {'label': 'ภาษาไทย',          'edition': 'th.thai',      'flag': '🇹🇭'},
+    'ms': {'label': 'Bahasa Melayu',    'edition': 'ms.basmeih',   'flag': '🇲🇾'},
+    'id': {'label': 'Bahasa Indonesia', 'edition': 'id.indonesian', 'flag': '🇮🇩'},
+    'ar': {'label': 'العربية',          'edition': 'ar.muyassar',  'flag': '🇸🇦'},
+    'ur': {'label': 'اردو',             'edition': 'ur.jalandhry', 'flag': '🇵🇰'},
+    'bn': {'label': 'বাংলা',            'edition': 'bn.bengali',   'flag': '🇧🇩'},
   };
 
   // รายชื่อนักอ่าน
@@ -51,6 +58,14 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
   void initState() {
     super.initState();
     _theme.addListener(() => setState(() {}));
+
+    // Sync ภาษากับ LanguageService
+    final appLang = _lang.lang;
+    if (_languages.containsKey(appLang)) {
+      _selectedLang = appLang;
+    } else {
+      _selectedLang = 'en';
+    }
 
     // ฟัง player state - auto play next verse
     _player.processingStateStream.listen((state) {
@@ -376,8 +391,6 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                                       fontWeight: FontWeight.bold, fontSize: 12)),
                                 ),
                                 const SizedBox(width: 8),
-                                Text(_languages[_selectedLang]!['flag'] as String,
-                                  style: const TextStyle(fontSize: 14)),
                               ]),
                             ]),
 
