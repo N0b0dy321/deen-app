@@ -201,36 +201,49 @@ class _SettingsPageState extends State<SettingsPage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: _theme.cardColor,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 12),
-          Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text('Language / ภาษา',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
-          ),
-          const SizedBox(height: 8),
-          ...LanguageService.availableLanguages.map((lang) {
-            final isSelected = _pendingLang == lang['code'];
-            return ListTile(
-              leading: Text(lang['flag']!, style: const TextStyle(fontSize: 24)),
-              title: Text(lang['native']!, style: TextStyle(color: _theme.textColor, fontWeight: FontWeight.w500)),
-              subtitle: Text(lang['name']!, style: TextStyle(color: _theme.subTextColor, fontSize: 12)),
-              trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
-              onTap: () {
-                setState(() => _pendingLang = lang['code']!);
-                Navigator.pop(context);
-              },
-            );
-          }),
-          const SizedBox(height: 16),
-        ],
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        maxChildSize: 0.9,
+        minChildSize: 0.4,
+        expand: false,
+        builder: (_, controller) => Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(width: 40, height: 4,
+                decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text('Language / ภาษา',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: ListView(
+                controller: controller,
+                children: [
+                  ...LanguageService.availableLanguages.map((lang) {
+                    final isSelected = _pendingLang == lang['code'];
+                    return ListTile(
+                      leading: Text(lang['flag']!, style: const TextStyle(fontSize: 24)),
+                      title: Text(lang['native']!, style: TextStyle(color: _theme.textColor, fontWeight: FontWeight.w500)),
+                      subtitle: Text(lang['name']!, style: TextStyle(color: _theme.subTextColor, fontSize: 12)),
+                      trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
+                      onTap: () {
+                        setState(() => _pendingLang = lang['code']!);
+                        Navigator.pop(context);
+                      },
+                    );
+                  }),
+                  SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

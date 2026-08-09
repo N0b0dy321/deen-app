@@ -4,13 +4,13 @@ import 'NearbyMasjid.dart';
 import 'HalalRestaurant.dart';
 import 'prayer_time_page.dart';
 import 'Al-Quran.dart';
+import 'dua_lessons_page.dart';
 import '../services/prayer_service.dart';
 import '../services/language_service.dart';
 import '../services/theme_service.dart';
 import 'package:DEEN/screen/qibla_page.dart';
 import 'package:DEEN/screen/chatbot_page.dart';
 import 'package:DEEN/services/Setting_Time.dart';
-import 'dua_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -63,6 +63,7 @@ class _HomePageState extends State<HomePage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (_) => _MoreBottomSheet(theme: _theme, lang: _lang),
     );
   }
@@ -120,8 +121,8 @@ class _HomePageState extends State<HomePage> {
                           icon: Icons.restaurant,
                           theme: _theme,
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HalalRestaurantPage()))),
-                      _FeatureCard(label: _lang.duaLessons,icon: Icons.self_improvement,theme: _theme,
-                          onTap: () => Navigator.push(context,MaterialPageRoute(builder: (_) => const DuaPage())),),
+                      _FeatureCard(label: _lang.duaLessons, icon: Icons.self_improvement, theme: _theme,
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DuaLessonsPage()))),
                     ],
                   ),
 
@@ -297,8 +298,8 @@ class _MoreBottomSheet extends StatelessWidget {
           // Items
           ...items.map((item) => _buildItem(context, item)),
 
-          const SizedBox(height: 16),
-          SafeArea(child: const SizedBox()),
+          // Safe area padding
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
         ],
       ),
     );
