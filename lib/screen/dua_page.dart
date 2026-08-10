@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
@@ -12,19 +13,8 @@ class DuaPage extends StatefulWidget {
   State<DuaPage> createState() => _DuaPageState();
 }
 
-class _DuaPageState extends State<DuaPage> {
-  final _theme = ThemeService();
-  final _lang = LanguageService();
-
-  List<Map<String, dynamic>> _duas = [];
-  List<Map<String, dynamic>> _filtered = [];
-  bool _isLoading = true;
-  String _errorMessage = '';
-  String _selectedCategory = 'all';
-  final _searchController = TextEditingController();
-
-  // ── Title แปลไทย (hardcoded) ──────────────────────
-  static const Map<int, Map<String, String>> _translations = {
+// ── Translations (shared) ──────────────────────────
+const Map<int, Map<String, String>> kDuaTranslations = {
     1:  {'titleTh': 'ดุอาตอนตื่นนอน', 'descTh': 'อ่านทุกเช้าหลังตื่นนอน'},
     2:  {'titleTh': 'ดุอาก่อนเข้าห้องน้ำ', 'descTh': 'อ่านก่อนเข้าห้องน้ำ'},
     3:  {'titleTh': 'ดุอาหลังออกจากห้องน้ำ', 'descTh': 'อ่านหลังออกจากห้องน้ำ'},
@@ -129,35 +119,68 @@ class _DuaPageState extends State<DuaPage> {
     102: {'titleTh': 'ดุอาขอความสำเร็จในการงาน', 'descTh': 'ขอความรู้ที่มีประโยชน์ ริซกี้ที่ดี และการงานที่ถูกรับ'},
   };
 
+class _DuaPageState extends State<DuaPage> {
+  final _theme = ThemeService();
+  final _lang = LanguageService();
+
+  List<Map<String, dynamic>> _duas = [];
+  List<Map<String, dynamic>> _filtered = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+  String _selectedCategory = 'all';
+  final _searchController = TextEditingController();
+
   final List<Map<String, String>> _categories = [
-    {'id': 'all',        'label': 'ทั้งหมด',          'labelEn': 'All',        'icon': '🤲'},
-    {'id': 'daily',      'label': 'ประจำวัน',          'labelEn': 'Daily',      'icon': '☀️'},
-    {'id': 'prayer',     'label': 'ละหมาด',            'labelEn': 'Prayer',     'icon': '🕌'},
-    {'id': 'hardship',   'label': 'ความยากลำบาก',      'labelEn': 'Hardship',   'icon': '💙'},
-    {'id': 'protection', 'label': 'ปกป้อง',            'labelEn': 'Protection', 'icon': '🛡️'},
-    {'id': 'travel',     'label': 'เดินทาง',            'labelEn': 'Travel',     'icon': '✈️'},
-    {'id': 'family',     'label': 'ครอบครัว',          'labelEn': 'Family',     'icon': '👨‍👩‍👧'},
-    {'id': 'ramadan',    'label': 'รอมฎอน',            'labelEn': 'Ramadan',    'icon': '🌙'},
-    {'id': 'social',     'label': 'สังคม',             'labelEn': 'Social',     'icon': '🤝'},
-    {'id': 'death',      'label': 'ผู้เสียชีวิต',      'labelEn': 'Death',      'icon': '🕊️'},
+    {'id': 'all',        'label': 'ทั้งหมด',     'labelEn': 'All',        'labelMs': 'Semua',      'labelId': 'Semua',       'labelAr': 'الكل',        'labelUr': 'سب',       'labelBn': 'সব',      'icon': '🤲'},
+    {'id': 'daily',      'label': 'ประจำวัน',    'labelEn': 'Daily',      'labelMs': 'Harian',     'labelId': 'Harian',      'labelAr': 'يومي',        'labelUr': 'روزانہ',   'labelBn': 'দৈনিক',   'icon': '☀️'},
+    {'id': 'prayer',     'label': 'ละหมาด',      'labelEn': 'Prayer',     'labelMs': 'Solat',      'labelId': 'Sholat',      'labelAr': 'الصلاة',      'labelUr': 'نماز',     'labelBn': 'নামাজ',   'icon': '🕌'},
+    {'id': 'hardship',   'label': 'ยากลำบาก',   'labelEn': 'Hardship',   'labelMs': 'Kesusahan',  'labelId': 'Kesulitan',   'labelAr': 'الشدة',       'labelUr': 'مشکل',     'labelBn': 'কষ্ট',    'icon': '💙'},
+    {'id': 'protection', 'label': 'ปกป้อง',      'labelEn': 'Protection', 'labelMs': 'Perlindungan','labelId': 'Perlindungan','labelAr': 'الحماية',     'labelUr': 'تحفظ',     'labelBn': 'সুরক্ষা', 'icon': '🛡️'},
+    {'id': 'travel',     'label': 'เดินทาง',     'labelEn': 'Travel',     'labelMs': 'Perjalanan', 'labelId': 'Perjalanan',  'labelAr': 'السفر',       'labelUr': 'سفر',      'labelBn': 'ভ্রমণ',   'icon': '✈️'},
+    {'id': 'family',     'label': 'ครอบครัว',    'labelEn': 'Family',     'labelMs': 'Keluarga',   'labelId': 'Keluarga',    'labelAr': 'الأسرة',      'labelUr': 'خاندان',   'labelBn': 'পরিবার',  'icon': '👨‍👩‍👧'},
+    {'id': 'ramadan',    'label': 'รอมฎอน',      'labelEn': 'Ramadan',    'labelMs': 'Ramadan',    'labelId': 'Ramadan',     'labelAr': 'رمضان',       'labelUr': 'رمضان',    'labelBn': 'রমজান',   'icon': '🌙'},
+    {'id': 'social',     'label': 'สังคม',       'labelEn': 'Social',     'labelMs': 'Sosial',     'labelId': 'Sosial',      'labelAr': 'الاجتماعي',   'labelUr': 'سماجی',    'labelBn': 'সামাজিক', 'icon': '🤝'},
+    {'id': 'death',      'label': 'ผู้เสียชีวิต','labelEn': 'Death',      'labelMs': 'Kematian',   'labelId': 'Kematian',    'labelAr': 'الوفاة',      'labelUr': 'موت',      'labelBn': 'মৃত্যু',  'icon': '🕊️'},
   ];
+
+  String _getCatLabel(Map<String, String> cat) {
+    print('=== LANG: ${_lang.lang} ===');
+    switch (_lang.lang) {
+      case 'th': return cat['label'] ?? cat['labelEn'] ?? '';
+      case 'ms': return cat['labelMs'] ?? cat['labelEn'] ?? '';
+      case 'id': return cat['labelId'] ?? cat['labelEn'] ?? '';
+      case 'ar': return cat['labelAr'] ?? cat['labelEn'] ?? '';
+      case 'ur': return cat['labelUr'] ?? cat['labelEn'] ?? '';
+      case 'bn': return cat['labelBn'] ?? cat['labelEn'] ?? '';
+      default:   return cat['labelEn'] ?? '';
+    }
+  }
+
+  void _rebuild() => setState(() {});
+  void _rebuildAndFilter() { if (mounted) { setState(() {}); _filterDuas(); } }
 
   @override
   void initState() {
     super.initState();
-    _theme.addListener(() => setState(() {}));
-    _lang.addListener(() { setState(() {}); _filterDuas(); });
+    _theme.addListener(_rebuild);
+    _lang.addListener(_rebuildAndFilter);
     _searchController.addListener(_filterDuas);
     _fetchDuas();
   }
 
   @override
   void dispose() {
-    _theme.removeListener(() => setState(() {}));
-    _lang.removeListener(() => setState(() {}));
+    _theme.removeListener(_rebuild);
+    _lang.removeListener(_rebuildAndFilter);
     _searchController.dispose();
     super.dispose();
   }
+
+  static const _geminiKey = 'AQ.Ab8RN6JiAfYN7ZtqxvALEExa_HfwiwRNURKZvzdIKNYN9Qfs8A';
+  static const _geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  bool _isTranslating = false;
+
+  String _getCacheKey(String lang) => 'dua_trans_$lang';
 
   Future<void> _fetchDuas() async {
     setState(() { _isLoading = true; _errorMessage = ''; });
@@ -170,19 +193,108 @@ class _DuaPageState extends State<DuaPage> {
         final duas = data.map((e) {
           final dua = Map<String, dynamic>.from(e);
           final id = dua['id'] as int;
-          if (_translations.containsKey(id)) {
-            dua['titleTh'] = _translations[id]!['titleTh'];
-            dua['descTh'] = _translations[id]!['descTh'];
+          // Thai hardcoded
+          if (kDuaTranslations.containsKey(id)) {
+            dua['titleTh'] = kDuaTranslations[id]!['titleTh'];
+            dua['descTh'] = kDuaTranslations[id]!['descTh'];
           }
           return dua;
         }).toList();
+
         setState(() { _duas = duas; _filtered = duas; _isLoading = false; });
+
+        // แปลภาษาอื่นๆ ถ้าไม่ใช่ EN/TH
+        final lang = _lang.lang;
+        if (lang != 'en' && lang != 'th') {
+          await _applyTranslations(duas, lang);
+        }
       } else {
         setState(() { _errorMessage = 'Failed to load duas'; _isLoading = false; });
       }
     } catch (e) {
       setState(() { _errorMessage = 'No internet connection'; _isLoading = false; });
     }
+  }
+
+  Future<void> _applyTranslations(List<Map<String, dynamic>> duas, String lang) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = _getCacheKey(lang);
+    final cached = prefs.getString(cacheKey);
+
+    Map<String, dynamic> translations = {};
+
+    if (cached != null) {
+      // โหลดจาก cache
+      translations = json.decode(cached);
+    } else {
+      // แปลด้วย Gemini
+      translations = await _translateWithGemini(duas, lang);
+      if (translations.isNotEmpty) {
+        await prefs.setString(cacheKey, json.encode(translations));
+      }
+    }
+
+    // Apply translations
+    if (translations.isNotEmpty && mounted) {
+      for (var dua in _duas) {
+        final id = dua['id'].toString();
+        if (translations.containsKey(id)) {
+          dua['titleLang'] = translations[id]['title'];
+          dua['descLang'] = translations[id]['desc'];
+        }
+      }
+      setState(() { _filtered = List.from(_duas); });
+      _filterDuas();
+    }
+  }
+
+  Future<Map<String, dynamic>> _translateWithGemini(List<Map<String, dynamic>> duas, String lang) async {
+    setState(() => _isTranslating = true);
+    final Map<String, dynamic> result = {};
+
+    try {
+      final langNames = {
+        'ms': 'Malay (Bahasa Melayu)',
+        'id': 'Indonesian (Bahasa Indonesia)',
+        'ar': 'Arabic (العربية)',
+        'ur': 'Urdu (اردو)',
+        'bn': 'Bengali (বাংলা)',
+      };
+      final langName = langNames[lang] ?? lang;
+      final batchSize = 20;
+
+      for (int i = 0; i < duas.length; i += batchSize) {
+        final batch = duas.sublist(i, (i + batchSize).clamp(0, duas.length));
+        final items = batch.map((d) => '${d['id']}|${d['title']}|${d['description']}').join('\n');
+
+        final prompt = 'Translate these Islamic dua titles and descriptions to $langName. Reply ONLY with JSON array, no markdown.\nFormat: [{"id":1,"title":"...","desc":"..."}]\n\nItems (id|title|description):\n$items';
+
+        final res = await http.post(
+          Uri.parse('$_geminiUrl?key=$_geminiKey'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'contents': [{'parts': [{'text': prompt}]}],
+            'generationConfig': {'temperature': 0.1},
+          }),
+        ).timeout(const Duration(seconds: 30));
+
+        if (res.statusCode == 200) {
+          final resData = json.decode(res.body);
+          final text = resData['candidates'][0]['content']['parts'][0]['text'] as String;
+          final jsonStr = text.replaceAll('```json', '').replaceAll('```', '').trim();
+          final translated = json.decode(jsonStr) as List;
+          for (final item in translated) {
+            result[item['id'].toString()] = {'title': item['title'], 'desc': item['desc']};
+          }
+        }
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+    } catch (e) {
+      print('Translation error: $e');
+    }
+
+    if (mounted) setState(() => _isTranslating = false);
+    return result;
   }
 
   void _filterDuas() {
@@ -220,8 +332,8 @@ class _DuaPageState extends State<DuaPage> {
         (c) => c['id'] == dua['category'],
         orElse: () => {'icon': '🤲', 'label': '', 'labelEn': '', 'id': ''});
     final id = dua['id'] as int;
-    final title = _lang.isThai ? (dua['titleTh'] ?? dua['title'] ?? '') : (dua['title'] ?? '');
-    final desc = _lang.isThai ? (dua['descTh'] ?? dua['description'] ?? '') : (dua['description'] ?? '');
+    final title = _lang.isThai ? (dua['titleTh'] ?? dua['title'] ?? '') : (dua['titleLang'] ?? dua['title'] ?? '');
+    final desc = _lang.isThai ? (dua['descTh'] ?? dua['description'] ?? '') : (dua['descLang'] ?? dua['description'] ?? '');
 
     showModalBottomSheet(
       context: context,
@@ -246,7 +358,7 @@ class _DuaPageState extends State<DuaPage> {
                 child: Row(children: [
                   Text(cat['icon']!, style: const TextStyle(fontSize: 14)),
                   const SizedBox(width: 4),
-                  Text(_lang.isThai ? cat['label']! : cat['labelEn']!,
+                  Text(_getCatLabel(cat),
                       style: TextStyle(fontSize: 12, color: _theme.iconColor, fontWeight: FontWeight.w600)),
                 ]),
               ),
@@ -295,6 +407,17 @@ class _DuaPageState extends State<DuaPage> {
       backgroundColor: _theme.bgColor,
       body: Column(children: [
         _buildHeader(context),
+        if (_isTranslating)
+          Container(
+            color: _theme.isDark ? const Color(0xFF0D3B1E) : const Color(0xFFE8F5E9),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(children: [
+              SizedBox(width: 16, height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: _theme.iconColor)),
+              const SizedBox(width: 10),
+              Text('Translating...', style: TextStyle(fontSize: 12, color: _theme.iconColor)),
+            ]),
+          ),
         Expanded(child: _isLoading
             ? Center(child: CircularProgressIndicator(color: _theme.iconColor))
             : _errorMessage.isNotEmpty ? _buildError() : _buildBody()),
@@ -374,7 +497,7 @@ class _DuaPageState extends State<DuaPage> {
                 child: Row(children: [
                   Text(cat['icon']!, style: const TextStyle(fontSize: 14)),
                   const SizedBox(width: 4),
-                  Text(_lang.isThai ? cat['label']! : cat['labelEn']!,
+                  Text(_getCatLabel(cat),
                       style: TextStyle(fontSize: 13,
                           color: isSelected ? Colors.white : _theme.textColor,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
@@ -400,8 +523,8 @@ class _DuaPageState extends State<DuaPage> {
     final cat = _categories.firstWhere(
         (c) => c['id'] == dua['category'],
         orElse: () => {'icon': '🤲', 'label': '', 'labelEn': '', 'id': ''});
-    final title = _lang.isThai ? (dua['titleTh'] ?? dua['title'] ?? '') : (dua['title'] ?? '');
-    final desc = _lang.isThai ? (dua['descTh'] ?? dua['description'] ?? '') : (dua['description'] ?? '');
+    final title = _lang.isThai ? (dua['titleTh'] ?? dua['title'] ?? '') : (dua['titleLang'] ?? dua['title'] ?? '');
+    final desc = _lang.isThai ? (dua['descTh'] ?? dua['description'] ?? '') : (dua['descLang'] ?? dua['description'] ?? '');
 
     return GestureDetector(
       onTap: () => _showDuaDetail(dua),
@@ -455,8 +578,6 @@ class _DuaPageState extends State<DuaPage> {
     ]));
   }
 }
-
-
 // ── DuaTab (ใช้ใน DuaLessonsPage) ────────────────
 class DuaTab extends StatefulWidget {
   const DuaTab({super.key});
@@ -476,45 +597,49 @@ class _DuaTabState extends State<DuaTab> {
   String _selectedCategory = 'all';
   final _searchController = TextEditingController();
 
-  static const Map<int, Map<String, String>> _translations = {
-    1:  {'titleTh': 'ดุอาตอนตื่นนอน', 'descTh': 'อ่านทุกเช้าหลังตื่นนอน'},
-    2:  {'titleTh': 'ดุอาก่อนเข้าห้องน้ำ', 'descTh': 'อ่านก่อนเข้าห้องน้ำ'},
-    3:  {'titleTh': 'ดุอาหลังออกจากห้องน้ำ', 'descTh': 'อ่านหลังออกจากห้องน้ำ'},
-    4:  {'titleTh': 'ดุอาตอนเปลี่ยนเสื้อผ้า', 'descTh': 'อ่านเมื่อสวมเสื้อผ้า'},
-    5:  {'titleTh': 'ดุอาตอนส่องกระจก', 'descTh': 'อ่านเมื่อมองกระจก'},
-    6:  {'titleTh': 'ดุอาก่อนรับประทานอาหาร', 'descTh': 'อ่านก่อนเริ่มรับประทานอาหาร'},
-    7:  {'titleTh': 'ดุอาเมื่อลืมบิสมิลลาห์', 'descTh': 'อ่านเมื่อนึกขึ้นได้ระหว่างกิน'},
-    8:  {'titleTh': 'ดุอาหลังรับประทานอาหาร', 'descTh': 'อ่านหลังกินอาหารเสร็จ'},
-    9:  {'titleTh': 'ดุอาตอนออกจากบ้าน', 'descTh': 'อ่านเมื่อออกจากบ้าน'},
-    10: {'titleTh': 'ดุอาตอนขึ้นยานพาหนะ', 'descTh': 'อ่านเมื่อขึ้นรถหรือยานพาหนะ'},
-  };
+  
 
   final List<Map<String, String>> _categories = [
-    {'id': 'all',        'label': 'ทั้งหมด',     'labelEn': 'All',        'icon': '🤲'},
-    {'id': 'daily',      'label': 'ประจำวัน',    'labelEn': 'Daily',      'icon': '☀️'},
-    {'id': 'prayer',     'label': 'ละหมาด',      'labelEn': 'Prayer',     'icon': '🕌'},
-    {'id': 'hardship',   'label': 'ยากลำบาก',    'labelEn': 'Hardship',   'icon': '💙'},
-    {'id': 'protection', 'label': 'ปกป้อง',      'labelEn': 'Protection', 'icon': '🛡️'},
-    {'id': 'travel',     'label': 'เดินทาง',     'labelEn': 'Travel',     'icon': '✈️'},
-    {'id': 'family',     'label': 'ครอบครัว',    'labelEn': 'Family',     'icon': '👨‍👩‍👧'},
-    {'id': 'ramadan',    'label': 'รอมฎอน',      'labelEn': 'Ramadan',    'icon': '🌙'},
-    {'id': 'social',     'label': 'สังคม',       'labelEn': 'Social',     'icon': '🤝'},
-    {'id': 'death',      'label': 'ผู้เสียชีวิต','labelEn': 'Death',      'icon': '🕊️'},
+    {'id': 'all',        'label': 'ทั้งหมด',     'labelEn': 'All',        'labelMs': 'Semua',       'labelId': 'Semua',       'labelAr': 'الكل',       'labelUr': 'سب',      'labelBn': 'সব',      'icon': '🤲'},
+    {'id': 'daily',      'label': 'ประจำวัน',    'labelEn': 'Daily',      'labelMs': 'Harian',      'labelId': 'Harian',      'labelAr': 'يومي',       'labelUr': 'روزانہ',  'labelBn': 'দৈনিক',   'icon': '☀️'},
+    {'id': 'prayer',     'label': 'ละหมาด',      'labelEn': 'Prayer',     'labelMs': 'Solat',       'labelId': 'Sholat',      'labelAr': 'الصلاة',     'labelUr': 'نماز',    'labelBn': 'নামাজ',   'icon': '🕌'},
+    {'id': 'hardship',   'label': 'ยากลำบาก',   'labelEn': 'Hardship',   'labelMs': 'Kesusahan',   'labelId': 'Kesulitan',   'labelAr': 'الشدة',      'labelUr': 'مشکل',    'labelBn': 'কষ্ট',    'icon': '💙'},
+    {'id': 'protection', 'label': 'ปกป้อง',      'labelEn': 'Protection', 'labelMs': 'Perlindungan','labelId': 'Perlindungan','labelAr': 'الحماية',    'labelUr': 'تحفظ',    'labelBn': 'সুরক্ষা', 'icon': '🛡️'},
+    {'id': 'travel',     'label': 'เดินทาง',     'labelEn': 'Travel',     'labelMs': 'Perjalanan',  'labelId': 'Perjalanan',  'labelAr': 'السفر',      'labelUr': 'سفر',     'labelBn': 'ভ্রমণ',   'icon': '✈️'},
+    {'id': 'family',     'label': 'ครอบครัว',    'labelEn': 'Family',     'labelMs': 'Keluarga',    'labelId': 'Keluarga',    'labelAr': 'الأسرة',     'labelUr': 'خاندان',  'labelBn': 'পরিবার',  'icon': '👨‍👩‍👧'},
+    {'id': 'ramadan',    'label': 'รอมฎอน',      'labelEn': 'Ramadan',    'labelMs': 'Ramadan',     'labelId': 'Ramadan',     'labelAr': 'رمضان',      'labelUr': 'رمضان',   'labelBn': 'রমজান',   'icon': '🌙'},
+    {'id': 'social',     'label': 'สังคม',       'labelEn': 'Social',     'labelMs': 'Sosial',      'labelId': 'Sosial',      'labelAr': 'الاجتماعي',  'labelUr': 'سماجی',   'labelBn': 'সামাজিক', 'icon': '🤝'},
+    {'id': 'death',      'label': 'ผู้เสียชีวิต','labelEn': 'Death',      'labelMs': 'Kematian',    'labelId': 'Kematian',    'labelAr': 'الوفاة',     'labelUr': 'موت',     'labelBn': 'মৃত্যু',  'icon': '🕊️'},
   ];
+
+  String _getCatLabel(Map<String, String> cat) {
+    switch (_lang.lang) {
+      case 'th': return cat['label'] ?? cat['labelEn'] ?? '';
+      case 'ms': return cat['labelMs'] ?? cat['labelEn'] ?? '';
+      case 'id': return cat['labelId'] ?? cat['labelEn'] ?? '';
+      case 'ar': return cat['labelAr'] ?? cat['labelEn'] ?? '';
+      case 'ur': return cat['labelUr'] ?? cat['labelEn'] ?? '';
+      case 'bn': return cat['labelBn'] ?? cat['labelEn'] ?? '';
+      default:   return cat['labelEn'] ?? '';
+    }
+  }
+
+  void _rebuild() => setState(() {});
+  void _rebuildAndFilter() { if (mounted) { setState(() {}); _filterDuas(); } }
 
   @override
   void initState() {
     super.initState();
-    _theme.addListener(() => setState(() {}));
-    _lang.addListener(() { setState(() {}); _filterDuas(); });
+    _theme.addListener(_rebuild);
+    _lang.addListener(_rebuildAndFilter);
     _searchController.addListener(_filterDuas);
     _fetchDuas();
   }
 
   @override
   void dispose() {
-    _theme.removeListener(() => setState(() {}));
-    _lang.removeListener(() => setState(() {}));
+    _theme.removeListener(_rebuild);
+    _lang.removeListener(_rebuildAndFilter);
     _searchController.dispose();
     super.dispose();
   }
@@ -530,18 +655,52 @@ class _DuaTabState extends State<DuaTab> {
         final duas = data.map((e) {
           final dua = Map<String, dynamic>.from(e);
           final id = dua['id'] as int;
-          if (_translations.containsKey(id)) {
-            dua['titleTh'] = _translations[id]!['titleTh'];
-            dua['descTh'] = _translations[id]!['descTh'];
+          if (kDuaTranslations.containsKey(id)) {
+            dua['titleTh'] = kDuaTranslations[id]!['titleTh'];
+            dua['descTh'] = kDuaTranslations[id]!['descTh'];
           }
           return dua;
         }).toList();
         setState(() { _duas = duas; _filtered = duas; _isLoading = false; });
+
+        // แปลภาษาอื่นๆ ถ้าไม่ใช่ EN/TH
+        final lang = _lang.lang;
+        if (lang != 'en' && lang != 'th') {
+          await _applyTranslations(duas, lang);
+        }
       } else {
         setState(() { _errorMessage = 'Failed to load duas'; _isLoading = false; });
       }
     } catch (e) {
       setState(() { _errorMessage = 'No internet connection'; _isLoading = false; });
+    }
+  }
+
+  Future<void> _applyTranslations(List<Map<String, dynamic>> duas, String lang) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'dua_trans_$lang';
+    final cached = prefs.getString(cacheKey);
+    Map<String, dynamic> translations = {};
+
+    if (cached != null) {
+      translations = json.decode(cached);
+    } else {
+      // ใช้ translation จาก DuaPage ถ้ามี cache แล้ว
+      final pageCache = prefs.getString('dua_trans_$lang');
+      if (pageCache != null) {
+        translations = json.decode(pageCache);
+      }
+    }
+
+    if (translations.isNotEmpty && mounted) {
+      for (var dua in _duas) {
+        final id = dua['id'].toString();
+        if (translations.containsKey(id)) {
+          dua['titleLang'] = translations[id]['title'];
+          dua['descLang'] = translations[id]['desc'];
+        }
+      }
+      if (mounted) setState(() { _filtered = List.from(_duas); _filterDuas(); });
     }
   }
 
@@ -570,8 +729,8 @@ class _DuaTabState extends State<DuaTab> {
     final cat = _categories.firstWhere(
         (c) => c['id'] == dua['category'],
         orElse: () => {'icon': '🤲', 'label': '', 'labelEn': '', 'id': ''});
-    final title = _lang.isThai ? (dua['titleTh'] ?? dua['title'] ?? '') : (dua['title'] ?? '');
-    final desc = _lang.isThai ? (dua['descTh'] ?? dua['description'] ?? '') : (dua['description'] ?? '');
+    final title = _lang.isThai ? (dua['titleTh'] ?? dua['title'] ?? '') : (dua['titleLang'] ?? dua['title'] ?? '');
+    final desc = _lang.isThai ? (dua['descTh'] ?? dua['description'] ?? '') : (dua['descLang'] ?? dua['description'] ?? '');
 
     showModalBottomSheet(
       context: context,
@@ -595,7 +754,7 @@ class _DuaTabState extends State<DuaTab> {
                 child: Row(children: [
                   Text(cat['icon']!, style: const TextStyle(fontSize: 14)),
                   const SizedBox(width: 4),
-                  Text(_lang.isThai ? cat['label']! : cat['labelEn']!,
+                  Text(_getCatLabel(cat),
                       style: TextStyle(fontSize: 12, color: _theme.iconColor, fontWeight: FontWeight.w600)),
                 ])),
               const Spacer(),
@@ -683,7 +842,7 @@ class _DuaTabState extends State<DuaTab> {
                 child: Row(children: [
                   Text(cat['icon']!, style: const TextStyle(fontSize: 14)),
                   const SizedBox(width: 4),
-                  Text(_lang.isThai ? cat['label']! : cat['labelEn']!,
+                  Text(_getCatLabel(cat),
                       style: TextStyle(fontSize: 13,
                           color: isSelected ? Colors.white : _theme.textColor,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
@@ -720,8 +879,8 @@ class _DuaTabState extends State<DuaTab> {
                           final cat = _categories.firstWhere(
                               (c) => c['id'] == dua['category'],
                               orElse: () => {'icon': '🤲', 'label': '', 'labelEn': '', 'id': ''});
-                          final title = _lang.isThai ? (dua['titleTh'] ?? dua['title'] ?? '') : (dua['title'] ?? '');
-                          final desc = _lang.isThai ? (dua['descTh'] ?? dua['description'] ?? '') : (dua['description'] ?? '');
+                          final title = _lang.isThai ? (dua['titleTh'] ?? dua['title'] ?? '') : (dua['titleLang'] ?? dua['title'] ?? '');
+                          final desc = _lang.isThai ? (dua['descTh'] ?? dua['description'] ?? '') : (dua['descLang'] ?? dua['description'] ?? '');
 
                           return GestureDetector(
                             onTap: () => _showDuaDetail(dua),

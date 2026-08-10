@@ -71,7 +71,7 @@ class _DuaLessonsPageState extends State<DuaLessonsPage>
                 child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22)),
               const SizedBox(width: 12),
               Text(
-                _lang.isThai ? 'ดุอา & บทเรียน' : 'Dua & Lessons',
+                _lang.duaLessons,
                 style: const TextStyle(color: Color(0xFFFFD700),
                     fontSize: 20, fontWeight: FontWeight.bold)),
             ]),
@@ -85,8 +85,8 @@ class _DuaLessonsPageState extends State<DuaLessonsPage>
             unselectedLabelColor: Colors.white60,
             labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             tabs: [
-              Tab(text: _lang.isThai ? '🤲 ดุอา' : '🤲 Dua'),
-              Tab(text: _lang.isThai ? '📚 บทเรียน' : '📚 Lessons'),
+              Tab(text: _lang.duaTab),
+              Tab(text: _lang.lessonsTab),
             ],
           ),
         ]),
