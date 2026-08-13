@@ -135,10 +135,20 @@ Respond in the same language the user uses (Thai or English).
     );
   }
 
+  List<String> _getSuggestions() {
+    switch (_lang.lang) {
+      case 'th': return ['5 หลักของอิสลามคืออะไร?', 'วิธีทำวุฎูอ์?', 'ความสำคัญของละหมาดฟัจร์?', 'สอนซูเราะห์อัลฟาติฮะห์'];
+      case 'ms': return ['Apakah 5 rukun Islam?', 'Bagaimana cara berwudhu?', 'Kepentingan solat Subuh?', 'Ajar saya Surah Al-Fatihah'];
+      case 'id': return ['Apa 5 rukun Islam?', 'Bagaimana cara berwudhu?', 'Pentingnya sholat Subuh?', 'Ajarkan Surah Al-Fatihah'];
+      case 'ar': return ['ما هي أركان الإسلام الخمسة؟', 'كيف أتوضأ؟', 'ما أهمية صلاة الفجر؟', 'علمني سورة الفاتحة'];
+      case 'ur': return ['اسلام کے 5 ارکان کیا ہیں؟', 'وضو کیسے کریں؟', 'فجر کی نماز کی اہمیت؟', 'سورہ الفاتحہ سکھائیں'];
+      case 'bn': return ['ইসলামের ৫টি স্তম্ভ কী?', 'কীভাবে ওজু করতে হয়?', 'ফজরের নামাজের গুরুত্ব?', 'সূরা আল-ফাতিহা শেখান'];
+      default: return ['What are the 5 pillars of Islam?', 'How do I perform Wudu?', 'What is the importance of Fajr prayer?', 'Teach me Surah Al-Fatiha'];
+    }
+  }
+
   Widget _buildWelcome() {
-    final suggestions = _lang.isThai
-        ? ['5 หลักของอิสลามคืออะไร?', 'วิธีทำวุฎูอ์?', 'ความสำคัญของละหมาดฟัจร์?', 'สอนซูเราะห์อัลฟาติฮะห์']
-        : ['What are the 5 pillars of Islam?', 'How do I perform Wudu?', 'What is the importance of Fajr prayer?', 'Teach me Surah Al-Fatiha'];
+    final suggestions = _getSuggestions();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),

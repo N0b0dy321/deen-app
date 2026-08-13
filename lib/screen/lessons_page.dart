@@ -2,6 +2,251 @@ import 'package:flutter/material.dart';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
 
+const Map<String, Map<String, List<String>>> kLessonTitleTranslations = {
+  'ms': {
+    'pillars': ['Syahadah (Pengakuan Iman)', 'Solat (Sembahyang)', 'Zakat (Derma)', 'Sawm (Puasa)', 'Haji (Ziarah)'],
+    'iman': ['Percaya kepada Allah', 'Percaya kepada Malaikat', 'Percaya kepada Kitab Suci', 'Percaya kepada Nabi', 'Percaya kepada Hari Kiamat', 'Percaya kepada Qada dan Qadar'],
+    'prayer': ['Syarat Solat', 'Cara Berwudhu', 'Niat dan Takbir', 'Bacaan dalam Berdiri', 'Rukuk', 'Sujud', 'Tahiyat dan Salam', 'Zikir Selepas Solat'],
+    'hadith': ['Amal Bergantung pada Niat', 'Islam Dibina atas Lima', 'Halal dan Haram Jelas', 'Tidak Beriman Sempurna', 'Agama adalah Keikhlasan', 'Tinggalkan yang Tidak Perlu', 'Senyum adalah Sedekah', 'Kasih Sayang kepada Semua', 'Mukmin yang Kuat', 'Menghilangkan Mudarat'],
+    'adab': ['Salam Islam', 'Adab Makan dan Minum', 'Menghormati Ibu Bapa', 'Kejujuran', 'Kebersihan (Taharah)'],
+    'history': ['Nabi Muhammad - Awal Kehidupan', 'Wahyu Pertama', 'Hijrah ke Madinah', 'Peperangan Penting', 'Empat Khalifah', 'Penyebaran Islam'],
+  },
+  'id': {
+    'pillars': ['Syahadat (Ikrar Iman)', 'Sholat (Sembahyang)', 'Zakat (Amal)', 'Shaum (Puasa)', 'Haji (Ziarah)'],
+    'iman': ['Iman kepada Allah', 'Iman kepada Malaikat', 'Iman kepada Kitab Suci', 'Iman kepada Nabi', 'Iman kepada Hari Kiamat', 'Iman kepada Qada dan Qadar'],
+    'prayer': ['Syarat Sholat', 'Cara Berwudhu', 'Niat dan Takbir', 'Bacaan dalam Berdiri', 'Ruku', 'Sujud', 'Tasyahud dan Salam', 'Dzikir Setelah Sholat'],
+    'hadith': ['Amal Tergantung Niat', 'Islam Dibangun atas Lima', 'Halal dan Haram Jelas', 'Tidak Beriman Sempurna', 'Agama adalah Ketulusan', 'Tinggalkan yang Tidak Perlu', 'Senyum adalah Sedekah', 'Kasih Sayang kepada Semua', 'Mukmin yang Kuat', 'Menghilangkan Kemudharatan'],
+    'adab': ['Salam Islam', 'Adab Makan dan Minum', 'Menghormati Orang Tua', 'Kejujuran', 'Kebersihan (Thaharah)'],
+    'history': ['Nabi Muhammad - Kehidupan Awal', 'Wahyu Pertama', 'Hijrah ke Madinah', 'Perang Penting', 'Empat Khalifah', 'Penyebaran Islam'],
+  },
+  'ar': {
+    'pillars': ['الشهادة (الإقرار بالإيمان)', 'الصلاة', 'الزكاة', 'الصوم', 'الحج'],
+    'iman': ['الإيمان بالله', 'الإيمان بالملائكة', 'الإيمان بالكتب', 'الإيمان بالأنبياء', 'الإيمان باليوم الآخر', 'الإيمان بالقضاء والقدر'],
+    'prayer': ['شروط الصلاة', 'كيفية الوضوء', 'النية والتكبير', 'القراءة في القيام', 'الركوع', 'السجود', 'التشهد والسلام', 'الأذكار بعد الصلاة'],
+    'hadith': ['الأعمال بالنيات', 'بني الإسلام على خمس', 'الحلال بين والحرام بين', 'لا يؤمن أحدكم', 'الدين النصيحة', 'ترك ما لا يعنيك', 'التبسم صدقة', 'الرحمة بالخلق', 'المؤمن القوي', 'لا ضرر ولا ضرار'],
+    'adab': ['السلام الإسلامي', 'آداب الأكل والشرب', 'احترام الوالدين', 'الصدق والأمانة', 'الطهارة'],
+    'history': ['النبي محمد - حياته الأولى', 'الوحي الأول', 'الهجرة إلى المدينة', 'المعارك الكبرى', 'الخلفاء الراشدون الأربعة', 'انتشار الإسلام'],
+  },
+  'ur': {
+    'pillars': ['شہادت (ایمان کا اقرار)', 'نماز', 'زکوٰۃ', 'روزہ', 'حج'],
+    'iman': ['اللہ پر ایمان', 'فرشتوں پر ایمان', 'کتابوں پر ایمان', 'نبیوں پر ایمان', 'قیامت کے دن پر ایمان', 'تقدیر پر ایمان'],
+    'prayer': ['نماز کی شرائط', 'وضو کا طریقہ', 'نیت اور تکبیر', 'قیام میں تلاوت', 'رکوع', 'سجدہ', 'تشہد اور سلام', 'نماز کے بعد اذکار'],
+    'hadith': ['اعمال کا دارومدار نیتوں پر', 'اسلام پانچ چیزوں پر بنا ہے', 'حلال اور حرام واضح ہیں', 'کامل ایمان', 'دین خیرخواہی ہے', 'غیر ضروری چھوڑنا', 'مسکراہٹ صدقہ ہے', 'تمام مخلوق پر رحم', 'مضبوط مومن', 'نقصان نہ پہنچانا'],
+    'adab': ['اسلامی سلام', 'کھانے پینے کے آداب', 'والدین کا احترام', 'سچائی اور دیانتداری', 'پاکیزگی (طہارت)'],
+    'history': ['نبی محمد - ابتدائی زندگی', 'پہلی وحی', 'مدینہ کی طرف ہجرت', 'اہم غزوات', 'چار خلفائے راشدین', 'اسلام کا پھیلاؤ'],
+  },
+  'bn': {
+    'pillars': ['শাহাদাহ (ঈমানের স্বীকৃতি)', 'সালাত (নামাজ)', 'যাকাত', 'সাওম (রোজা)', 'হজ'],
+    'iman': ['আল্লাহর প্রতি ঈমান', 'ফেরেশতাদের প্রতি ঈমান', 'কিতাবসমূহের প্রতি ঈমান', 'নবীদের প্রতি ঈমান', 'কিয়ামত দিবসের প্রতি ঈমান', 'তাকদীরের প্রতি ঈমান'],
+    'prayer': ['নামাজের শর্তসমূহ', 'ওযু করার নিয়ম', 'নিয়ত ও তাকবির', 'দাঁড়ানো অবস্থায় তিলাওয়াত', 'রুকু', 'সিজদাহ', 'তাশাহহুদ ও সালাম', 'নামাজের পরের যিকির'],
+    'hadith': ['আমল নিয়তের উপর নির্ভরশীল', 'ইসলাম পাঁচটি স্তম্ভের উপর প্রতিষ্ঠিত', 'হালাল ও হারাম স্পষ্ট', 'পরিপূর্ণ ঈমান', 'দ্বীন হলো কল্যাণকামিতা', 'অপ্রয়োজনীয় ছেড়ে দেওয়া', 'হাসি সদকাহ', 'সকল সৃষ্টির প্রতি দয়া', 'শক্তিশালী মুমিন', 'ক্ষতি না করা'],
+    'adab': ['ইসলামী সালাম', 'খাওয়া-দাওয়ার আদব', 'পিতামাতার প্রতি সম্মান', 'সততা ও সত্যবাদিতা', 'পবিত্রতা (তাহারাহ)'],
+    'history': ['নবী মুহাম্মদ - প্রারম্ভিক জীবন', 'প্রথম ওহী', 'মদিনায় হিজরত', 'গুরুত্বপূর্ণ যুদ্ধসমূহ', 'চার খলিফা', 'ইসলামের বিস্তার'],
+  },
+};
+
+
+String _getLangText(Map<String, dynamic> map, String key, String lang) {
+  final langKey = '${key}${lang[0].toUpperCase()}${lang.substring(1)}';
+  if (map.containsKey(langKey) && map[langKey] != null) return map[langKey] as String;
+  if (lang == 'th' && map.containsKey('${key}Th')) return map['${key}Th'] as String;
+  return map['${key}En'] as String? ?? '';
+}
+
+String _getLessonTitle(Map<String, dynamic> lesson, String catId, String lang, int index) {
+  if (lang == 'th') return lesson['titleTh'] as String? ?? lesson['titleEn'] as String? ?? '';
+  final langTitles = kLessonTitleTranslations[lang];
+  if (langTitles != null && langTitles.containsKey(catId)) {
+    final titles = langTitles[catId]!;
+    if (index < titles.length) return titles[index];
+  }
+  return lesson['titleEn'] as String? ?? '';
+}
+
+String _getLessonContent(Map<String, dynamic> lesson, String catId, String lang, int lessonNo) {
+  if (lang == 'th') return lesson['contentTh'] as String? ?? lesson['contentEn'] as String? ?? '';
+  final catMap = kLessonContentTranslations[catId];
+  if (catMap != null) {
+    final langMap = catMap[lang];
+    if (langMap != null && langMap.containsKey(lessonNo)) {
+      return langMap[lessonNo]!['content'] ?? lesson['contentEn'] as String? ?? '';
+    }
+  }
+  return lesson['contentEn'] as String? ?? '';
+}
+
+// ── Lesson Content Translations ────────────────────
+const Map<String, Map<String, Map<int, Map<String, String>>>> kLessonContentTranslations = {
+  'pillars': {
+    'ms': {
+      1: {'title': 'Syahadah', 'content': 'Syahadah adalah pengakuan iman:\n"Tiada tuhan selain Allah, dan Muhammad adalah utusan Allah"\n\n• Mengesahkan keesaan Allah (Tauhid)\n• Mengakui Muhammad sebagai nabi terakhir\n• Mesti diucapkan dengan pemahaman penuh'},
+      2: {'title': 'Solat', 'content': 'Muslim diwajibkan solat lima waktu sehari:\n\n1. Subuh - 2 rakaat\n2. Zohor - 4 rakaat\n3. Asar - 4 rakaat\n4. Maghrib - 3 rakaat\n5. Isyak - 4 rakaat\n\nWudhu diperlukan sebelum solat.'},
+      3: {'title': 'Zakat', 'content': 'Zakat adalah pemberian wajib sebahagian harta.\n\n• Kadar 2.5% daripada simpanan setahun\n• Menyucikan harta dan membantu yang memerlukan\n• Penerima: fakir miskin, penghutang, musafir'},
+      4: {'title': 'Sawm (Puasa)', 'content': 'Puasa Ramadan wajib bagi semua Muslim dewasa.\n\n• Menahan dari makan, minum dari subuh hingga maghrib\n• Ramadan adalah bulan ke-9 kalendar Islam\n• Puasa mengajar kesabaran dan empati'},
+      5: {'title': 'Haji', 'content': 'Haji adalah ziarah ke Mekah, wajib sekali seumur hidup.\n\n• Dilakukan pada bulan Zulhijjah\n• Ibadat utama: Tawaf, Saie, Wukuf di Arafah\n• Lebih 2 juta Muslim menunaikan haji setiap tahun'},
+    },
+    'id': {
+      1: {'title': 'Syahadat', 'content': 'Syahadat adalah ikrar iman:\n"Tidak ada tuhan selain Allah, dan Muhammad adalah utusan Allah"\n\n• Menegaskan keesaan Allah (Tauhid)\n• Mengakui Muhammad sebagai nabi terakhir\n• Harus diucapkan dengan pemahaman penuh'},
+      2: {'title': 'Shalat', 'content': 'Muslim diwajibkan shalat lima waktu sehari:\n\n1. Subuh - 2 rakaat\n2. Dzuhur - 4 rakaat\n3. Ashar - 4 rakaat\n4. Maghrib - 3 rakaat\n5. Isya - 4 rakaat\n\nWudhu diperlukan sebelum shalat.'},
+      3: {'title': 'Zakat', 'content': 'Zakat adalah pemberian wajib sebagian harta.\n\n• Kadar 2.5% dari tabungan selama satu tahun\n• Menyucikan harta dan membantu yang membutuhkan\n• Penerima: fakir miskin, penghutang, musafir'},
+      4: {'title': 'Shaum (Puasa)', 'content': 'Puasa Ramadhan wajib bagi semua Muslim dewasa.\n\n• Menahan dari makan, minum dari subuh hingga maghrib\n• Ramadhan adalah bulan ke-9 kalender Islam\n• Puasa mengajarkan kesabaran dan empati'},
+      5: {'title': 'Haji', 'content': 'Haji adalah ziarah ke Mekah, wajib sekali seumur hidup.\n\n• Dilakukan pada bulan Dzulhijjah\n• Ibadah utama: Tawaf, Sai, Wukuf di Arafah\n• Lebih dari 2 juta Muslim menunaikan haji setiap tahun'},
+    },
+    'ar': {
+      1: {'title': 'الشهادة', 'content': 'الشهادة هي الإقرار بالإيمان:\n"لا إله إلا الله محمد رسول الله"\n\n• تؤكد وحدانية الله\n• تعترف بمحمد ﷺ خاتم الأنبياء\n• يجب أن تُقال بإيمان كامل'},
+      2: {'title': 'الصلاة', 'content': 'يجب على المسلم الصلاة خمس مرات في اليوم:\n\n1. الفجر - ركعتان\n2. الظهر - أربع ركعات\n3. العصر - أربع ركعات\n4. المغرب - ثلاث ركعات\n5. العشاء - أربع ركعات\n\nالوضوء شرط قبل الصلاة.'},
+      3: {'title': 'الزكاة', 'content': 'الزكاة هي إعطاء نسبة محددة من المال.\n\n• النسبة 2.5٪ من المدخرات لحول كامل\n• تطهر المال وتساعد المحتاجين\n• المستحقون: الفقراء والغارمون وأبناء السبيل'},
+      4: {'title': 'الصوم', 'content': 'صيام رمضان واجب على جميع المسلمين البالغين.\n\n• الامتناع عن الأكل والشرب من الفجر إلى المغرب\n• رمضان هو الشهر التاسع في التقويم الإسلامي\n• الصوم يعلم الصبر والتعاطف'},
+      5: {'title': 'الحج', 'content': 'الحج هو الزيارة إلى مكة، واجب مرة في العمر لمن استطاع.\n\n• يُؤدى في شهر ذي الحجة\n• الشعائر: الطواف والسعي والوقوف بعرفة\n• أكثر من 2 مليون مسلم يؤدون الحج سنوياً'},
+    },
+    'ur': {
+      1: {'title': 'شہادت', 'content': 'شہادت ایمان کا اقرار ہے:\n"اللہ کے سوا کوئی معبود نہیں اور محمد ﷺ اللہ کے رسول ہیں"\n\n• اللہ کی وحدانیت کا اقرار\n• محمد ﷺ کو آخری نبی تسلیم کرنا'},
+      2: {'title': 'نماز', 'content': 'مسلمان پر دن میں پانچ وقت نماز فرض ہے:\n\n1. فجر - 2 رکعات\n2. ظہر - 4 رکعات\n3. عصر - 4 رکعات\n4. مغرب - 3 رکعات\n5. عشاء - 4 رکعات'},
+      3: {'title': 'زکوٰۃ', 'content': 'زکوٰۃ مال کا ایک حصہ صدقہ میں دینا فرض ہے۔\n\n• سال بھر کی بچت پر 2.5 فیصد\n• مال کو پاک کرتی ہے\n• مستحقین: فقراء، قرض دار، مسافر'},
+      4: {'title': 'روزہ', 'content': 'رمضان کا روزہ تمام بالغ مسلمانوں پر فرض ہے۔\n\n• فجر سے مغرب تک پرہیز\n• رمضان نواں اسلامی مہینہ ہے\n• روزہ صبر اور ہمدردی سکھاتا ہے'},
+      5: {'title': 'حج', 'content': 'حج مکہ کا سفر ہے، استطاعت رکھنے والے پر ایک بار فرض۔\n\n• ذی الحجہ میں ادا کیا جاتا ہے\n• ارکان: طواف، سعی، وقوف عرفات\n• ہر سال 20 لاکھ سے زائد مسلمان'},
+    },
+    'bn': {
+      1: {'title': 'শাহাদাহ', 'content': 'শাহাদাহ হলো ঈমানের স্বীকৃতি:\n"আল্লাহ ছাড়া কোনো ইলাহ নেই এবং মুহাম্মদ আল্লাহর রাসূল"\n\n• আল্লাহর একত্বের স্বীকৃতি\n• মুহাম্মদ ﷺ-কে শেষ নবী হিসেবে স্বীকার'},
+      2: {'title': 'সালাত', 'content': 'মুসলিমদের দিনে পাঁচ ওয়াক্ত নামাজ পড়তে হয়:\n\n1. ফজর - ২ রাকাত\n2. যোহর - ৪ রাকাত\n3. আসর - ৪ রাকাত\n4. মাগরিব - ৩ রাকাত\n5. ইশা - ৪ রাকাত'},
+      3: {'title': 'যাকাত', 'content': 'যাকাত হলো সম্পদের একটি অংশ বাধ্যতামূলকভাবে দান।\n\n• এক বছরের সঞ্চয়ের ২.৫%\n• সম্পদ পবিত্র করে\n• প্রাপক: গরীব, ঋণগ্রস্ত, মুসাফির'},
+      4: {'title': 'সাওম (রোজা)', 'content': 'রমজানের রোজা সকল প্রাপ্তবয়স্ক মুসলিমের জন্য ফরজ।\n\n• ফজর থেকে মাগরিব পর্যন্ত বিরত\n• রমজান নবম ইসলামী মাস\n• ধৈর্য ও সহানুভূতি শেখায়'},
+      5: {'title': 'হজ', 'content': 'হজ হলো মক্কায় তীর্থযাত্রা, সামর্থ্যবানের জন্য একবার ফরজ।\n\n• জিলহজ মাসে পালন\n• মূল ইবাদত: তাওয়াফ, সাঈ, আরাফাত\n• প্রতি বছর ২০ লক্ষেরও বেশি মুসলিম'},
+    },
+  },
+  'iman': {
+    'ms': {
+      1: {'title': 'Percaya kepada Allah', 'content': 'Percaya kepada keesaan Allah (Tauhid).\n\nAllah adalah:\n• Tuhan yang Maha Esa\n• Maha Mengetahui\n• Maha Berkuasa\n• Maha Penyayang\n• Mempunyai 99 nama indah'},
+      2: {'title': 'Percaya kepada Malaikat', 'content': 'Malaikat dicipta dari cahaya.\n\nMalaikat utama:\n• Jibril - Menyampaikan wahyu\n• Mikail - Mengawal rezeki\n• Israfil - Meniup sangkakala\n• Izrail - Malaikat maut'},
+      3: {'title': 'Percaya kepada Kitab Suci', 'content': 'Muslim percaya kepada semua kitab:\n• Taurat - Nabi Musa\n• Zabur - Nabi Daud\n• Injil - Nabi Isa\n• Al-Quran - Nabi Muhammad (terakhir)\n\nHanya Al-Quran yang kekal tidak berubah.'},
+      4: {'title': 'Percaya kepada Nabi', 'content': 'Allah mengutus 124,000 nabi.\n\nNabi utama:\n• Adam - Manusia pertama\n• Ibrahim - Bapa para nabi\n• Musa - Menerima Taurat\n• Isa - Menerima Injil\n• Muhammad ﷺ - Nabi terakhir'},
+      5: {'title': 'Percaya kepada Hari Kiamat', 'content': 'Setiap jiwa akan dihisab.\n\nPeristiwa:\n• Sangkakala ditiup\n• Semua jiwa dibangkitkan\n• Amal ditimbang\n• Orang soleh masuk Syurga\n• Orang jahat masuk Neraka'},
+      6: {'title': 'Percaya kepada Qada dan Qadar', 'content': 'Allah mengetahui segala sesuatu.\n\n4 Peringkat Qadar:\n1. Ilmu Allah\n2. Ditulis di Luh Mahfuz\n3. Kehendak Allah\n4. Penciptaan Allah'},
+    },
+    'id': {
+      1: {'title': 'Iman kepada Allah', 'content': 'Percaya kepada keesaan Allah (Tauhid).\n\nAllah adalah:\n• Tuhan Yang Maha Esa\n• Maha Mengetahui\n• Maha Kuasa\n• Maha Penyayang\n• Memiliki 99 nama indah'},
+      2: {'title': 'Iman kepada Malaikat', 'content': 'Malaikat diciptakan dari cahaya.\n\nMalaikat utama:\n• Jibril - Menyampaikan wahyu\n• Mikail - Mengatur rezeki\n• Israfil - Meniup sangkakala\n• Izrail - Malaikat kematian'},
+      3: {'title': 'Iman kepada Kitab Suci', 'content': 'Muslim percaya pada semua kitab:\n• Taurat - Nabi Musa\n• Zabur - Nabi Dawud\n• Injil - Nabi Isa\n• Al-Quran - Nabi Muhammad (terakhir)\n\nHanya Al-Quran yang tetap tidak berubah.'},
+      4: {'title': 'Iman kepada Nabi', 'content': 'Allah mengutus 124.000 nabi.\n\nNabi utama:\n• Adam - Manusia pertama\n• Ibrahim - Bapak para nabi\n• Musa - Menerima Taurat\n• Isa - Menerima Injil\n• Muhammad ﷺ - Nabi terakhir'},
+      5: {'title': 'Iman kepada Hari Kiamat', 'content': 'Setiap jiwa akan diadili.\n\nPeristiwa:\n• Sangkakala ditiup\n• Semua jiwa dibangkitkan\n• Amal ditimbang\n• Orang saleh masuk Surga\n• Orang jahat masuk Neraka'},
+      6: {'title': 'Iman kepada Qada dan Qadar', 'content': 'Allah mengetahui segalanya.\n\n4 Tingkatan Qadar:\n1. Ilmu Allah\n2. Ditulis di Lauh Mahfuz\n3. Kehendak Allah\n4. Penciptaan Allah'},
+    },
+    'ar': {
+      1: {'title': 'الإيمان بالله', 'content': 'الإيمان بوحدانية الله.\n\nالله هو:\n• الإله الواحد\n• عليم بكل شيء\n• قادر على كل شيء\n• رحيم بعباده\n• له 99 اسماً حسناً'},
+      2: {'title': 'الإيمان بالملائكة', 'content': 'الملائكة خُلقوا من نور.\n\nأبرز الملائكة:\n• جبريل - الوحي\n• ميكائيل - الرزق\n• إسرافيل - الصور\n• عزرائيل - الموت'},
+      3: {'title': 'الإيمان بالكتب', 'content': 'يؤمن المسلم بجميع الكتب:\n• التوراة - موسى\n• الزبور - داود\n• الإنجيل - عيسى\n• القرآن - محمد ﷺ (الأخير)\n\nالقرآن محفوظ من التحريف.'},
+      4: {'title': 'الإيمان بالأنبياء', 'content': 'أرسل الله 124,000 نبي.\n\nأبرز الأنبياء:\n• آدم - أول إنسان\n• إبراهيم - أبو الأنبياء\n• موسى - التوراة\n• عيسى - الإنجيل\n• محمد ﷺ - خاتم الأنبياء'},
+      5: {'title': 'الإيمان باليوم الآخر', 'content': 'ستُحاسَب كل نفس.\n\nالأحداث:\n• نفخ الصور\n• بعث الأرواح\n• وزن الأعمال\n• الجنة للمؤمنين\n• النار للكافرين'},
+      6: {'title': 'الإيمان بالقضاء والقدر', 'content': 'الله يعلم كل شيء.\n\n4 مراتب القدر:\n1. علم الله\n2. الكتابة في اللوح المحفوظ\n3. مشيئة الله\n4. خلق الله'},
+    },
+    'ur': {
+      1: {'title': 'اللہ پر ایمان', 'content': 'اللہ کی وحدانیت پر ایمان۔\n\nاللہ ہے:\n• ایک خدا\n• سب کچھ جاننے والا\n• سب پر قادر\n• بے حد مہربان\n• 99 خوبصورت نام'},
+      2: {'title': 'فرشتوں پر ایمان', 'content': 'فرشتے نور سے بنے ہیں۔\n\nاہم فرشتے:\n• جبریل - وحی\n• میکائیل - رزق\n• اسرافیل - صور\n• عزرائیل - موت'},
+      3: {'title': 'کتابوں پر ایمان', 'content': 'مسلمان تمام کتابوں پر ایمان رکھتے ہیں:\n• تورات - موسی علیہ السلام\n• زبور - داود علیہ السلام\n• انجیل - عیسی علیہ السلام\n• قرآن - محمد ﷺ (آخری)'},
+      4: {'title': 'نبیوں پر ایمان', 'content': 'اللہ نے 124,000 نبی بھیجے۔\n\nاہم نبی:\n• آدم - پہلے انسان\n• ابراہیم - انبیاء کے باپ\n• موسی - تورات\n• عیسی - انجیل\n• محمد ﷺ - آخری نبی'},
+      5: {'title': 'قیامت پر ایمان', 'content': 'ہر روح کا حساب ہوگا۔\n\nواقعات:\n• صور پھونکا جائے گا\n• ارواح اٹھائی جائیں گی\n• اعمال تولے جائیں گے\n• نیک جنت میں\n• بد جہنم میں'},
+      6: {'title': 'تقدیر پر ایمان', 'content': 'اللہ ہر چیز جانتا ہے۔\n\nقدر کے 4 درجے:\n1. اللہ کا علم\n2. لوح محفوظ میں لکھا\n3. اللہ کی مرضی\n4. اللہ کی تخلیق'},
+    },
+    'bn': {
+      1: {'title': 'আল্লাহর প্রতি ঈমান', 'content': 'আল্লাহর একত্বে বিশ্বাস।\n\nআল্লাহ হলেন:\n• একমাত্র ইলাহ\n• সর্বজ্ঞ\n• সর্বশক্তিমান\n• পরম দয়ালু\n• ৯৯টি সুন্দর নাম'},
+      2: {'title': 'ফেরেশতাদের প্রতি ঈমান', 'content': 'ফেরেশতারা আলো থেকে সৃষ্ট।\n\nপ্রধান ফেরেশতা:\n• জিবরাঈল - ওহী\n• মীকাঈল - রিজিক\n• ইসরাফীল - শিঙা\n• আযরাঈল - মৃত্যু'},
+      3: {'title': 'কিতাবসমূহের প্রতি ঈমান', 'content': 'মুসলিমরা সকল কিতাবে বিশ্বাস রাখেন:\n• তাওরাত - মূসা আ.\n• যাবুর - দাউদ আ.\n• ইনজিল - ঈসা আ.\n• কুরআন - মুহাম্মদ ﷺ (সর্বশেষ)'},
+      4: {'title': 'নবীদের প্রতি ঈমান', 'content': 'আল্লাহ ১,২৪,০০০ নবী পাঠিয়েছেন।\n\nপ্রধান নবী:\n• আদম আ. - প্রথম মানুষ\n• ইবরাহীম আ. - নবীদের পিতা\n• মূসা আ. - তাওরাত\n• ঈসা আ. - ইনজিল\n• মুহাম্মদ ﷺ - শেষ নবী'},
+      5: {'title': 'কিয়ামত দিবসের প্রতি ঈমান', 'content': 'প্রতিটি আত্মার বিচার হবে।\n\nঘটনাবলী:\n• শিঙা ফোঁকা হবে\n• আত্মা পুনরুত্থিত হবে\n• আমল ওজন হবে\n• নেককার জান্নাতে\n• পাপীরা জাহান্নামে'},
+      6: {'title': 'তাকদীরের প্রতি ঈমান', 'content': 'আল্লাহ সব কিছু জানেন।\n\nক্বাদরের ৪ স্তর:\n1. আল্লাহর ইলম\n2. লাওহে মাহফুজে লিপিবদ্ধ\n3. আল্লাহর ইচ্ছা\n4. আল্লাহর সৃষ্টি'},
+    },
+  },
+  'adab': {
+    'ms': {
+      1: {'title': 'Salam Islam', 'content': 'Memberi salam adalah amalan terbaik.\n\nTahap salam:\n1. "Assalamualaikum"\n2. "+ Warahmatullah"\n3. "+ Wabarakatuh"\n\nAdab:\n• Yang muda kepada yang tua\n• Membalas salam adalah wajib'},
+      2: {'title': 'Adab Makan dan Minum', 'content': '• Bismillah sebelum makan\n• Makan dengan tangan kanan\n• Jangan membazir\n• Makan secara sederhana\n• Alhamdulillah selepas makan'},
+      3: {'title': 'Menghormati Ibu Bapa', 'content': 'Kewajipan terpenting selepas menyembah Allah.\n\n• Bercakap dengan sopan\n• Taat dalam perkara yang dibenarkan\n• Sentiasa berdoa untuk mereka\n\n"Syurga di bawah tapak kaki ibu"'},
+      4: {'title': 'Kejujuran', 'content': '"Kejujuran membawa kepada kebaikan, kebaikan membawa kepada syurga."\n\nAmalkan kejujuran dalam:\n• Perbualan harian\n• Urusan perniagaan\n• Janji dan komitmen'},
+      5: {'title': 'Kebersihan (Taharah)', 'content': '"Kebersihan adalah sebahagian daripada iman"\n\nJenis penyucian:\n1. Wudhu\n2. Mandi wajib\n3. Tayammum\n\nTermasuk kebersihan hati dari hasad, sombong dan riak.'},
+    },
+    'id': {
+      1: {'title': 'Salam Islam', 'content': 'Memberi salam adalah amalan terbaik.\n\nTingkatan salam:\n1. "Assalamualaikum"\n2. "+ Warahmatullah"\n3. "+ Wabarakatuh"\n\nAdab:\n• Yang muda kepada yang tua\n• Membalas salam adalah wajib'},
+      2: {'title': 'Adab Makan dan Minum', 'content': '• Bismillah sebelum makan\n• Makan dengan tangan kanan\n• Jangan membuang makanan\n• Makan secukupnya\n• Alhamdulillah setelah makan'},
+      3: {'title': 'Menghormati Orang Tua', 'content': 'Kewajiban terpenting setelah menyembah Allah.\n\n• Berbicara dengan sopan\n• Taat dalam hal yang diperbolehkan\n• Selalu berdoa untuk mereka\n\n"Surga di bawah telapak kaki ibu"'},
+      4: {'title': 'Kejujuran', 'content': '"Kejujuran membawa kepada kebaikan, kebaikan membawa kepada surga."\n\nPraktikkan kejujuran dalam:\n• Percakapan sehari-hari\n• Urusan bisnis\n• Janji dan komitmen'},
+      5: {'title': 'Kebersihan (Thaharah)', 'content': '"Kebersihan adalah sebagian dari iman"\n\nJenis penyucian:\n1. Wudhu\n2. Mandi wajib\n3. Tayammum\n\nTermasuk kebersihan hati dari hasad, sombong dan riya.'},
+    },
+    'ar': {
+      1: {'title': 'السلام الإسلامي', 'content': 'نشر السلام من أفضل الأعمال.\n\nدرجات السلام:\n1. "السلام عليكم"\n2. "+ ورحمة الله"\n3. "+ وبركاته"\n\nآداب: الأصغر يبدأ، رد السلام واجب'},
+      2: {'title': 'آداب الأكل والشرب', 'content': '• قل بسم الله قبل الأكل\n• الأكل باليد اليمنى\n• لا إسراف\n• الاعتدال في الأكل\n• قل الحمد لله بعد الأكل'},
+      3: {'title': 'احترام الوالدين', 'content': 'من أهم الواجبات بعد عبادة الله.\n\n• التحدث بأدب\n• الطاعة في المعروف\n• الدعاء لهما دائماً\n\n"الجنة تحت أقدام الأمهات"'},
+      4: {'title': 'الصدق والأمانة', 'content': '"الصدق يهدي إلى البر، والبر يهدي إلى الجنة."\n\nالتزم بالصدق في:\n• الحديث اليومي\n• المعاملات التجارية\n• الوعود'},
+      5: {'title': 'الطهارة', 'content': '"الطهور شطر الإيمان"\n\nأنواع الطهارة:\n1. الوضوء\n2. الغسل\n3. التيمم\n\nتشمل طهارة القلب من الحسد والكبر والرياء.'},
+    },
+    'ur': {
+      1: {'title': 'اسلامی سلام', 'content': 'سلام پھیلانا بہترین عمل ہے۔\n\nسلام کے درجے:\n1. "السلام علیکم"\n2. "+ ورحمۃ اللہ"\n3. "+ وبرکاتہ"\n\nچھوٹا بڑے کو سلام کرے، جواب واجب ہے'},
+      2: {'title': 'کھانے پینے کے آداب', 'content': '• بسم اللہ سے شروع\n• دائیں ہاتھ سے کھائیں\n• ضائع نہ کریں\n• اعتدال سے کھائیں\n• الحمد للہ کہیں'},
+      3: {'title': 'والدین کا احترام', 'content': 'اللہ کی عبادت کے بعد سب سے اہم فریضہ۔\n\n• نرم لہجے میں بات\n• جائز امور میں اطاعت\n• ہمیشہ دعا\n\n"جنت ماں کے قدموں تلے"'},
+      4: {'title': 'سچائی', 'content': '"سچائی نیکی کی طرف، نیکی جنت کی طرف لے جاتی ہے۔"\n\nسچائی:\n• روزمرہ گفتگو میں\n• تجارت میں\n• وعدوں میں'},
+      5: {'title': 'پاکیزگی (طہارت)', 'content': '"پاکیزگی نصف ایمان ہے"\n\nطہارت کی اقسام:\n1. وضو\n2. غسل\n3. تیمم\n\nدل کی پاکیزگی بھی ضروری ہے۔'},
+    },
+    'bn': {
+      1: {'title': 'ইসলামী সালাম', 'content': 'সালাম প্রচার করা সেরা আমল।\n\nসালামের স্তর:\n1. "আস-সালামু আলাইকুম"\n2. "+ ওয়া রাহমাতুল্লাহ"\n3. "+ ওয়া বারাকাতুহু"\n\nছোট বড়কে সালাম দেবে, জবাব ওয়াজিব'},
+      2: {'title': 'খাওয়া-দাওয়ার আদব', 'content': '• বিসমিল্লাহ বলে শুরু\n• ডান হাতে খান\n• অপচয় করবেন না\n• পরিমিত খান\n• আলহামদুলিল্লাহ বলুন'},
+      3: {'title': 'পিতামাতার সম্মান', 'content': 'আল্লাহর ইবাদতের পরে সবচেয়ে গুরুত্বপূর্ণ।\n\n• বিনয়ের সাথে কথা\n• আনুগত্য করুন\n• সর্বদা দোয়া করুন\n\n"জান্নাত মায়ের পায়ের নিচে"'},
+      4: {'title': 'সততা', 'content': '"সততা নেকীর দিকে, নেকী জান্নাতের দিকে নিয়ে যায়।"\n\nসততা অনুশীলন:\n• দৈনন্দিন কথায়\n• ব্যবসায়\n• প্রতিশ্রুতিতে'},
+      5: {'title': 'পবিত্রতা (তাহারাহ)', 'content': '"পরিষ্কার-পরিচ্ছন্নতা ঈমানের অর্ধেক"\n\nপবিত্রতার প্রকারভেদ:\n1. ওযু\n2. গোসল\n3. তায়াম্মুম\n\nঅন্তরের পবিত্রতাও জরুরি।'},
+    },
+  },
+  'prayer': {
+    'ms': {
+      1: {'title': 'Syarat Solat', 'content': 'Sebelum solat, syarat berikut mesti dipenuhi:\n\n1. Beragama Islam\n2. Berakal dan baligh\n3. Dalam keadaan suci (Wudhu)\n4. Pakaian dan tempat bersih\n5. Menghadap kiblat\n6. Waktu solat telah masuk\n7. Niat dalam hati'},
+      2: {'title': 'Cara Berwudhu', 'content': 'Langkah-langkah Wudhu:\n\n1. Baca Bismillah\n2. Basuh kedua tangan 3 kali\n3. Kumur-kumur 3 kali\n4. Hirup air ke hidung 3 kali\n5. Basuh muka 3 kali\n6. Basuh tangan kanan hingga siku 3 kali, kemudian kiri\n7. Sapu kepala sekali\n8. Sapu telinga sekali\n9. Basuh kaki kanan hingga buku lali 3 kali, kemudian kiri\n10. Baca Syahadah'},
+      3: {'title': 'Niat dan Takbir', 'content': 'Memulakan solat:\n\n1. Berdiri menghadap kiblat\n2. Buat niat dalam hati\n3. Angkat kedua tangan ke paras telinga\n4. Ucap Takbiratul Ihram: "Allahu Akbar"\n5. Letakkan tangan kanan atas tangan kiri di dada'},
+      4: {'title': 'Bacaan dalam Berdiri', 'content': 'Selepas Takbir, baca:\n\n1. Doa Iftitah (sunat)\n2. Surah Al-Fatihah (wajib setiap rakaat)\n3. Surah atau ayat tambahan\n\nTanpa Al-Fatihah solat tidak sah.'},
+      5: {'title': 'Rukuk', 'content': 'Melakukan Rukuk:\n\n1. Ucap "Allahu Akbar" sambil membongkok\n2. Bongkok dengan belakang lurus, tangan di lutut\n3. Baca: "Subhana Rabbiyal Adhim" (3 kali)\n4. Bangun sambil ucap: "Sami\'allahu liman hamidah"\n5. Ucap: "Rabbana lakal hamd"'},
+      6: {'title': 'Sujud', 'content': 'Melakukan Sujud:\n\n1. Ucap "Allahu Akbar" ketika turun\n2. 7 anggota badan menyentuh lantai:\n   - Dahi dan hidung\n   - Kedua tapak tangan\n   - Kedua lutut\n   - Hujung kedua kaki\n3. Baca: "Subhana Rabbiyal A\'la" (3 kali)\n4. Bangun ucap "Allahu Akbar"\n5. Duduk sebentar, kemudian sujud kedua'},
+      7: {'title': 'Tahiyat dan Salam', 'content': 'Duduk terakhir:\n\n1. Baca At-Tahiyyat\n2. Baca Selawat Ibrahimiyyah\n3. Baca doa sebelum salam\n4. Beri salam:\n   - Pusing kanan: "Assalamu Alaikum Warahmatullah"\n   - Pusing kiri: "Assalamu Alaikum Warahmatullah"\n\nSolat selesai!'},
+      8: {'title': 'Zikir Selepas Solat', 'content': 'Zikir yang disyorkan:\n\n1. "Astaghfirullah" 3 kali\n2. Ayatul Kursi\n3. "Subhanallah" 33 kali\n4. "Alhamdulillah" 33 kali\n5. "Allahu Akbar" 33 kali'},
+    },
+    'id': {
+      1: {'title': 'Syarat Sholat', 'content': 'Sebelum sholat, syarat berikut harus dipenuhi:\n\n1. Beragama Islam\n2. Berakal dan baligh\n3. Dalam keadaan suci (Wudhu)\n4. Pakaian dan tempat bersih\n5. Menghadap kiblat\n6. Waktu sholat sudah masuk\n7. Niat dalam hati'},
+      2: {'title': 'Cara Berwudhu', 'content': 'Langkah-langkah Wudhu:\n\n1. Baca Bismillah\n2. Cuci kedua tangan 3 kali\n3. Berkumur 3 kali\n4. Hirup air ke hidung 3 kali\n5. Cuci muka 3 kali\n6. Cuci tangan kanan sampai siku 3 kali, lalu kiri\n7. Usap kepala sekali\n8. Usap telinga sekali\n9. Cuci kaki kanan sampai mata kaki 3 kali, lalu kiri\n10. Baca Syahadat'},
+      3: {'title': 'Niat dan Takbir', 'content': 'Memulai sholat:\n\n1. Berdiri menghadap kiblat\n2. Buat niat dalam hati\n3. Angkat kedua tangan setinggi telinga\n4. Ucap Takbiratul Ihram: "Allahu Akbar"\n5. Letakkan tangan kanan di atas tangan kiri di dada'},
+      4: {'title': 'Bacaan dalam Berdiri', 'content': 'Setelah Takbir, baca:\n\n1. Doa Iftitah (sunnah)\n2. Surah Al-Fatihah (wajib setiap rakaat)\n3. Surah atau ayat tambahan\n\nTanpa Al-Fatihah sholat tidak sah.'},
+      5: {'title': 'Ruku', 'content': 'Melakukan Ruku:\n\n1. Ucap "Allahu Akbar" sambil membungkuk\n2. Bungkuk dengan punggung lurus, tangan di lutut\n3. Baca: "Subhana Rabbiyal Adhim" (3 kali)\n4. Bangkit sambil ucap: "Sami\'allahu liman hamidah"\n5. Ucap: "Rabbana lakal hamd"'},
+      6: {'title': 'Sujud', 'content': 'Melakukan Sujud:\n\n1. Ucap "Allahu Akbar" saat turun\n2. 7 anggota badan menyentuh lantai:\n   - Dahi dan hidung\n   - Kedua telapak tangan\n   - Kedua lutut\n   - Ujung kedua kaki\n3. Baca: "Subhana Rabbiyal A\'la" (3 kali)\n4. Bangkit ucap "Allahu Akbar"\n5. Duduk sebentar, lalu sujud kedua'},
+      7: {'title': 'Tasyahud dan Salam', 'content': 'Duduk terakhir:\n\n1. Baca At-Tahiyyat\n2. Baca Shalawat Ibrahimiyyah\n3. Baca doa sebelum salam\n4. Beri salam:\n   - Putar kanan: "Assalamu Alaikum Warahmatullah"\n   - Putar kiri: "Assalamu Alaikum Warahmatullah"\n\nSholat selesai!'},
+      8: {'title': 'Dzikir Setelah Sholat', 'content': 'Dzikir yang dianjurkan:\n\n1. "Astaghfirullah" 3 kali\n2. Ayatul Kursi\n3. "Subhanallah" 33 kali\n4. "Alhamdulillah" 33 kali\n5. "Allahu Akbar" 33 kali'},
+    },
+    'ar': {
+      1: {'title': 'شروط الصلاة', 'content': 'قبل الصلاة يجب توفر:\n\n1. الإسلام\n2. العقل والبلوغ\n3. الطهارة (الوضوء)\n4. طهارة الثوب والمكان\n5. استقبال القبلة\n6. دخول وقت الصلاة\n7. النية في القلب'},
+      2: {'title': 'كيفية الوضوء', 'content': 'خطوات الوضوء:\n\n1. قل بسم الله\n2. اغسل الكفين 3 مرات\n3. المضمضة 3 مرات\n4. الاستنشاق 3 مرات\n5. اغسل الوجه 3 مرات\n6. اغسل اليدين إلى المرفق 3 مرات\n7. امسح الرأس مرة\n8. امسح الأذنين مرة\n9. اغسل القدمين 3 مرات\n10. اقرأ الشهادة'},
+      3: {'title': 'النية والتكبير', 'content': 'بدء الصلاة:\n\n1. قف مستقبلاً القبلة\n2. انوِ في قلبك\n3. ارفع يديك إلى أذنيك\n4. قل تكبيرة الإحرام: "الله أكبر"\n5. ضع اليمنى على اليسرى على الصدر'},
+      4: {'title': 'القراءة في القيام', 'content': 'بعد التكبير اقرأ:\n\n1. دعاء الاستفتاح (مستحب)\n2. سورة الفاتحة (ركن في كل ركعة)\n3. سورة أو آيات إضافية\n\nبدون الفاتحة لا تصح الصلاة.'},
+      5: {'title': 'الركوع', 'content': 'أداء الركوع:\n\n1. قل "الله أكبر" وأنت راكع\n2. استوِ في الركوع، يداك على ركبتيك\n3. قل: "سبحان ربي العظيم" (3 مرات)\n4. ارفع قائلاً: "سمع الله لمن حمده"\n5. قل: "ربنا لك الحمد"'},
+      6: {'title': 'السجود', 'content': 'أداء السجود:\n\n1. قل "الله أكبر" وأنت نازل\n2. 7 أعضاء تلمس الأرض:\n   - الجبهة والأنف\n   - الكفان\n   - الركبتان\n   - أطراف القدمين\n3. قل: "سبحان ربي الأعلى" (3 مرات)\n4. ارفع قائلاً "الله أكبر"\n5. اجلس ثم اسجد ثانياً'},
+      7: {'title': 'التشهد والسلام', 'content': 'الجلسة الأخيرة:\n\n1. اقرأ التحيات\n2. اقرأ الصلاة الإبراهيمية\n3. ادعُ قبل السلام\n4. أدِّ السلام:\n   - يميناً: "السلام عليكم ورحمة الله"\n   - يساراً: "السلام عليكم ورحمة الله"\n\nانتهت الصلاة!'},
+      8: {'title': 'الأذكار بعد الصلاة', 'content': 'الأذكار المستحبة:\n\n1. "أستغفر الله" 3 مرات\n2. آية الكرسي\n3. "سبحان الله" 33 مرة\n4. "الحمد لله" 33 مرة\n5. "الله أكبر" 33 مرة'},
+    },
+    'ur': {
+      1: {'title': 'نماز کی شرائط', 'content': 'نماز سے پہلے یہ شرائط ضروری ہیں:\n\n1. مسلمان ہونا\n2. عاقل اور بالغ ہونا\n3. پاکیزہ ہونا (وضو)\n4. کپڑے اور جگہ پاک ہو\n5. قبلہ رخ ہونا\n6. نماز کا وقت داخل ہو\n7. دل میں نیت'},
+      2: {'title': 'وضو کا طریقہ', 'content': 'وضو کے مراحل:\n\n1. بسم اللہ کہیں\n2. دونوں ہاتھ 3 بار دھوئیں\n3. 3 بار کلی کریں\n4. 3 بار ناک میں پانی لیں\n5. چہرہ 3 بار دھوئیں\n6. کہنی تک ہاتھ 3 بار\n7. سر کا مسح\n8. کانوں کا مسح\n9. ٹخنے تک پاؤں 3 بار\n10. شہادت پڑھیں'},
+      3: {'title': 'نیت اور تکبیر', 'content': 'نماز شروع کرنا:\n\n1. قبلہ رخ کھڑے ہوں\n2. دل میں نیت کریں\n3. کانوں تک ہاتھ اٹھائیں\n4. تکبیر تحریمہ: "اللہ اکبر"\n5. سینے پر دائیں ہاتھ بائیں پر رکھیں'},
+      4: {'title': 'قیام میں قرآت', 'content': 'تکبیر کے بعد پڑھیں:\n\n1. ثناء (سنت)\n2. سورہ فاتحہ (ہر رکعت میں فرض)\n3. اضافی سورہ یا آیات\n\nبغیر فاتحہ نماز نہیں ہوتی۔'},
+      5: {'title': 'رکوع', 'content': 'رکوع کرنا:\n\n1. "اللہ اکبر" کہتے ہوئے جھکیں\n2. کمر سیدھی، ہاتھ گھٹنوں پر\n3. "سبحان ربی العظیم" (3 بار)\n4. "سمع اللہ لمن حمدہ" کہتے ہوئے اٹھیں\n5. "ربنا لک الحمد" کہیں'},
+      6: {'title': 'سجدہ', 'content': 'سجدہ کرنا:\n\n1. "اللہ اکبر" کہتے ہوئے جھکیں\n2. 7 اعضاء زمین سے لگیں:\n   - پیشانی اور ناک\n   - دونوں ہتھیلیاں\n   - دونوں گھٹنے\n   - پاؤں کے انگلیاں\n3. "سبحان ربی الاعلی" (3 بار)\n4. "اللہ اکبر" کہتے اٹھیں'},
+      7: {'title': 'تشہد اور سلام', 'content': 'آخری بیٹھک:\n\n1. التحیات پڑھیں\n2. درود ابراہیمی پڑھیں\n3. سلام سے پہلے دعا\n4. سلام پھیریں:\n   - دائیں: "السلام علیکم ورحمۃ اللہ"\n   - بائیں: "السلام علیکم ورحمۃ اللہ"\n\nنماز مکمل!'},
+      8: {'title': 'نماز کے بعد اذکار', 'content': 'مستحب اذکار:\n\n1. "استغفر اللہ" 3 بار\n2. آیۃ الکرسی\n3. "سبحان اللہ" 33 بار\n4. "الحمد للہ" 33 بار\n5. "اللہ اکبر" 33 بار'},
+    },
+    'bn': {
+      1: {'title': 'নামাজের শর্তসমূহ', 'content': 'নামাজের আগে শর্তসমূহ পূরণ করতে হবে:\n\n1. মুসলিম হওয়া\n2. সুস্থ মস্তিষ্ক ও প্রাপ্তবয়স্ক\n3. পবিত্র অবস্থায় থাকা (ওযু)\n4. কাপড় ও স্থান পবিত্র\n5. কিবলামুখী হওয়া\n6. নামাজের সময় হওয়া\n7. মনে নিয়ত করা'},
+      2: {'title': 'ওযু করার নিয়ম', 'content': 'ওযুর ধাপসমূহ:\n\n1. বিসমিল্লাহ বলুন\n2. উভয় হাত ৩ বার ধুন\n3. ৩ বার কুলি করুন\n4. ৩ বার নাকে পানি দিন\n5. মুখ ৩ বার ধুন\n6. কনুই পর্যন্ত হাত ৩ বার\n7. মাথা একবার মাসেহ করুন\n8. কান একবার মাসেহ করুন\n9. গোড়ালি পর্যন্ত পা ৩ বার\n10. শাহাদাহ পড়ুন'},
+      3: {'title': 'নিয়ত ও তাকবির', 'content': 'নামাজ শুরু করা:\n\n1. কিবলামুখী হয়ে দাঁড়ান\n2. মনে নিয়ত করুন\n3. কানের লতি পর্যন্ত হাত তুলুন\n4. তাকবিরে তাহরিমা: "আল্লাহু আকবার"\n5. ডান হাত বাম হাতের উপর বুকে রাখুন'},
+      4: {'title': 'দাঁড়ানো অবস্থায় তিলাওয়াত', 'content': 'তাকবিরের পরে পড়ুন:\n\n1. দোয়া ইফতিতাহ (সুন্নত)\n2. সূরা আল-ফাতিহা (প্রতি রাকাতে ওয়াজিব)\n3. অতিরিক্ত সূরা বা আয়াত\n\nআল-ফাতিহা ছাড়া নামাজ হয় না।'},
+      5: {'title': 'রুকু', 'content': 'রুকু করা:\n\n1. "আল্লাহু আকবার" বলে ঝুঁকুন\n2. পিঠ সোজা, হাত হাঁটুতে\n3. "সুবহানা রব্বিয়াল আযীম" (৩ বার)\n4. "সামিআল্লাহু লিমান হামিদাহ" বলে উঠুন\n5. "রব্বানা লাকাল হামদ" বলুন'},
+      6: {'title': 'সিজদাহ', 'content': 'সিজদাহ করা:\n\n1. "আল্লাহু আকবার" বলে নামুন\n2. ৭টি অঙ্গ মাটি স্পর্শ করবে:\n   - কপাল ও নাক\n   - উভয় হাতের তালু\n   - উভয় হাঁটু\n   - উভয় পায়ের আঙুল\n3. "সুবহানা রব্বিয়াল আলা" (৩ বার)\n4. "আল্লাহু আকবার" বলে উঠুন'},
+      7: {'title': 'তাশাহহুদ ও সালাম', 'content': 'শেষ বৈঠক:\n\n1. আত-তাহিয়্যাত পড়ুন\n2. দরুদে ইবরাহিম পড়ুন\n3. সালামের আগে দোয়া\n4. সালাম ফেরান:\n   - ডানে: "আস-সালামু আলাইকুম ওয়া রাহমাতুল্লাহ"\n   - বামে: "আস-সালামু আলাইকুম ওয়া রাহমাতুল্লাহ"\n\nনামাজ সম্পন্ন!'},
+      8: {'title': 'নামাজের পরের যিকির', 'content': 'সুপারিশকৃত যিকির:\n\n1. "আস্তাগফিরুল্লাহ" ৩ বার\n2. আয়াতুল কুরসী\n3. "সুবহানাল্লাহ" ৩৩ বার\n4. "আলহামদুলিল্লাহ" ৩৩ বার\n5. "আল্লাহু আকবার" ৩৩ বার'},
+    },
+  },
+};
+
 // ── Lesson Data ────────────────────────────────────
 class LessonData {
   static List<Map<String, dynamic>> getLesson(String id) {
@@ -288,37 +533,45 @@ class _LessonsPageState extends State<LessonsPage> {
   final _lang = LanguageService();
 
   final List<Map<String, dynamic>> _categories = [
-    {'id': 'pillars', 'icon': '🕌', 'titleEn': '5 Pillars of Islam', 'titleTh': '5 เสาหลักของอิสลาม',
-     'subtitleEn': 'The foundation of Islamic faith', 'subtitleTh': 'รากฐานของศาสนาอิสลาม',
+    {'id': 'pillars', 'icon': '🕌',
+     'titleEn': '5 Pillars of Islam', 'titleTh': '5 เสาหลักของอิสลาม', 'titleMs': '5 Rukun Islam', 'titleId': '5 Rukun Islam', 'titleAr': 'أركان الإسلام الخمسة', 'titleUr': 'اسلام کے 5 ارکان', 'titleBn': 'ইসলামের ৫ স্তম্ভ',
+     'subtitleEn': 'The foundation of Islamic faith', 'subtitleTh': 'รากฐานของศาสนาอิสลาม', 'subtitleMs': 'Asas agama Islam', 'subtitleId': 'Dasar agama Islam', 'subtitleAr': 'أساس الإسلام', 'subtitleUr': 'اسلام کی بنیاد', 'subtitleBn': 'ইসলামের ভিত্তি',
      'color': const Color(0xFF1B5E20), 'lessons': 5},
-    {'id': 'iman', 'icon': '💫', 'titleEn': '6 Pillars of Iman', 'titleTh': '6 หลักอีหม่าน',
-     'subtitleEn': 'Articles of Islamic faith', 'subtitleTh': 'หลักความเชื่อในอิสลาม',
+    {'id': 'iman', 'icon': '💫',
+     'titleEn': '6 Pillars of Iman', 'titleTh': '6 หลักอีหม่าน', 'titleMs': '6 Rukun Iman', 'titleId': '6 Rukun Iman', 'titleAr': 'أركان الإيمان الستة', 'titleUr': 'ایمان کے 6 ارکان', 'titleBn': 'ঈমানের ৬ স্তম্ভ',
+     'subtitleEn': 'Articles of Islamic faith', 'subtitleTh': 'หลักความเชื่อในอิสลาม', 'subtitleMs': 'Kepercayaan asas Islam', 'subtitleId': 'Kepercayaan dasar Islam', 'subtitleAr': 'عقائد الإيمان', 'subtitleUr': 'ایمان کے عقائد', 'subtitleBn': 'ইসলামী বিশ্বাসের মূলনীতি',
      'color': const Color(0xFF1565C0), 'lessons': 6},
-    {'id': 'prayer', 'icon': '🙏', 'titleEn': 'How to Pray', 'titleTh': 'วิธีละหมาด',
-     'subtitleEn': 'Step by step prayer guide', 'subtitleTh': 'คู่มือละหมาดทีละขั้นตอน',
+    {'id': 'prayer', 'icon': '🙏',
+     'titleEn': 'How to Pray', 'titleTh': 'วิธีละหมาด', 'titleMs': 'Cara Solat', 'titleId': 'Cara Sholat', 'titleAr': 'كيفية الصلاة', 'titleUr': 'نماز کا طریقہ', 'titleBn': 'নামাজের পদ্ধতি',
+     'subtitleEn': 'Step by step prayer guide', 'subtitleTh': 'คู่มือละหมาดทีละขั้นตอน', 'subtitleMs': 'Panduan solat langkah demi langkah', 'subtitleId': 'Panduan sholat langkah demi langkah', 'subtitleAr': 'دليل الصلاة خطوة بخطوة', 'subtitleUr': 'نماز کی مرحلہ وار رہنمائی', 'subtitleBn': 'ধাপে ধাপে নামাজের গাইড',
      'color': const Color(0xFF6A1B9A), 'lessons': 8},
-    {'id': 'hadith', 'icon': '📜', 'titleEn': '40 Hadith', 'titleTh': '40 หะดีษ',
-     'subtitleEn': 'Key teachings of Prophet Muhammad', 'subtitleTh': 'คำสอนสำคัญของท่านนบี',
+    {'id': 'hadith', 'icon': '📜',
+     'titleEn': '40 Hadith', 'titleTh': '40 หะดีษ', 'titleMs': '40 Hadith', 'titleId': '40 Hadis', 'titleAr': '٤٠ حديثاً', 'titleUr': '40 احادیث', 'titleBn': '৪০ হাদিস',
+     'subtitleEn': 'Key teachings of Prophet Muhammad', 'subtitleTh': 'คำสอนสำคัญของท่านนบี', 'subtitleMs': 'Ajaran utama Nabi Muhammad', 'subtitleId': 'Ajaran utama Nabi Muhammad', 'subtitleAr': 'تعاليم النبي محمد الأساسية', 'subtitleUr': 'نبی محمد کی اہم تعلیمات', 'subtitleBn': 'নবী মুহাম্মদের মূল শিক্ষা',
      'color': const Color(0xFF4E342E), 'lessons': 10},
-    {'id': 'adab', 'icon': '🤝', 'titleEn': 'Islamic Manners', 'titleTh': 'มารยาทอิสลาม',
-     'subtitleEn': 'Etiquette in daily life', 'subtitleTh': 'มารยาทในชีวิตประจำวัน',
+    {'id': 'adab', 'icon': '🤝',
+     'titleEn': 'Islamic Manners', 'titleTh': 'มารยาทอิสลาม', 'titleMs': 'Adab Islam', 'titleId': 'Adab Islam', 'titleAr': 'الآداب الإسلامية', 'titleUr': 'اسلامی آداب', 'titleBn': 'ইসলামী আদব',
+     'subtitleEn': 'Etiquette in daily life', 'subtitleTh': 'มารยาทในชีวิตประจำวัน', 'subtitleMs': 'Adab dalam kehidupan harian', 'subtitleId': 'Etika dalam kehidupan sehari-hari', 'subtitleAr': 'الآداب في الحياة اليومية', 'subtitleUr': 'روزمرہ زندگی میں آداب', 'subtitleBn': 'দৈনন্দিন জীবনে শিষ্টাচার',
      'color': const Color(0xFF00695C), 'lessons': 5},
-    {'id': 'history', 'icon': '🏛️', 'titleEn': 'Islamic History', 'titleTh': 'ประวัติศาสตร์อิสลาม',
-     'subtitleEn': 'Key events in Islamic history', 'subtitleTh': 'เหตุการณ์สำคัญในประวัติอิสลาม',
+    {'id': 'history', 'icon': '🏛️',
+     'titleEn': 'Islamic History', 'titleTh': 'ประวัติศาสตร์อิสลาม', 'titleMs': 'Sejarah Islam', 'titleId': 'Sejarah Islam', 'titleAr': 'التاريخ الإسلامي', 'titleUr': 'اسلامی تاریخ', 'titleBn': 'ইসলামের ইতিহাস',
+     'subtitleEn': 'Key events in Islamic history', 'subtitleTh': 'เหตุการณ์สำคัญในประวัติอิสลาม', 'subtitleMs': 'Peristiwa penting dalam sejarah Islam', 'subtitleId': 'Peristiwa penting dalam sejarah Islam', 'subtitleAr': 'أحداث رئيسية في التاريخ الإسلامي', 'subtitleUr': 'اسلامی تاریخ کے اہم واقعات', 'subtitleBn': 'ইসলামের ইতিহাসের গুরুত্বপূর্ণ ঘটনা',
      'color': const Color(0xFFE65100), 'lessons': 6},
   ];
+
+  void _rebuild() { if (mounted) setState(() {}); }
 
   @override
   void initState() {
     super.initState();
-    _theme.addListener(() => setState(() {}));
-    _lang.addListener(() => setState(() {}));
+    _theme.addListener(_rebuild);
+    _lang.addListener(_rebuild);
   }
 
   @override
   void dispose() {
-    _theme.removeListener(() => setState(() {}));
-    _lang.removeListener(() => setState(() {}));
+    _theme.removeListener(_rebuild);
+    _lang.removeListener(_rebuild);
     super.dispose();
   }
 
@@ -358,10 +611,10 @@ class _LessonsPageState extends State<LessonsPage> {
             const SizedBox(height: 8),
             const Text('📚', style: TextStyle(fontSize: 40)),
             const SizedBox(height: 8),
-            Text(_lang.isThai ? 'บทเรียน' : 'Lessons',
+            Text(_lang.lang == 'th' ? 'บทเรียน' : 'Lessons',
                 style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
-            Text(_lang.isThai ? 'เรียนรู้อิสลามทีละขั้นตอน' : 'Learn Islam step by step',
+            Text(_lang.lang == 'th' ? 'เรียนรู้อิสลามทีละขั้นตอน' : 'Learn Islam step by step',
                 style: const TextStyle(color: Colors.white70, fontSize: 13)),
             const SizedBox(height: 16),
           ]),
@@ -371,8 +624,8 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Widget _buildCard(Map<String, dynamic> cat) {
-    final title = _lang.isThai ? cat['titleTh'] : cat['titleEn'];
-    final subtitle = _lang.isThai ? cat['subtitleTh'] : cat['subtitleEn'];
+    final title = _getLangText(cat, 'title', _lang.lang);
+    final subtitle = _getLangText(cat, 'subtitle', _lang.lang);
     final color = cat['color'] as Color;
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(
@@ -400,7 +653,7 @@ class _LessonsPageState extends State<LessonsPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-              child: Text('${cat['lessons']} ${_lang.isThai ? 'บทเรียน' : 'lessons'}',
+              child: Text('${cat['lessons']} ${_lang.lang == 'th' ? 'บทเรียน' : 'lessons'}',
                   style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600))),
           ])),
           Padding(padding: const EdgeInsets.only(right: 12),
@@ -420,7 +673,7 @@ class LessonDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = lang.isThai ? category['titleTh'] : category['titleEn'];
+    final title = _getLangText(category, 'title', lang.lang);
     final color = category['color'] as Color;
     final lessons = LessonData.getLesson(category['id']);
 
@@ -457,10 +710,20 @@ class LessonDetailPage extends StatelessWidget {
             itemCount: lessons.length,
             itemBuilder: (_, i) {
               final lesson = lessons[i];
-              final lessonTitle = lang.isThai ? lesson['titleTh'] : lesson['titleEn'];
+              final lessonTitle = _getLessonTitle(lesson, category['id'] as String, lang.lang, i);
               return GestureDetector(
                 onTap: () => Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => LessonContentPage(lesson: lesson, color: color, lang: lang, theme: theme))),
+                    builder: (_) {
+                      final lessonWithCat = Map<String, dynamic>.from(lesson);
+                      lessonWithCat['catId'] = category['id'];
+                      return LessonContentPage(
+                        lesson: lessonWithCat,
+                        color: color,
+                        lang: lang,
+                        theme: theme,
+                        translatedTitle: _getLessonTitle(lesson, category['id'] as String, lang.lang, i),
+                      );
+                    })),
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
@@ -494,12 +757,15 @@ class LessonContentPage extends StatelessWidget {
   final Color color;
   final LanguageService lang;
   final ThemeService theme;
-  const LessonContentPage({super.key, required this.lesson, required this.color, required this.lang, required this.theme});
+  final String? translatedTitle;
+  const LessonContentPage({super.key, required this.lesson, required this.color, required this.lang, required this.theme, this.translatedTitle});
 
   @override
   Widget build(BuildContext context) {
-    final title = lang.isThai ? lesson['titleTh'] : lesson['titleEn'];
-    final content = lang.isThai ? lesson['contentTh'] : lesson['contentEn'];
+    final title = translatedTitle ?? (lang.lang == 'th' ? lesson['titleTh'] : lesson['titleEn']);
+    final catId = lesson['catId'] as String? ?? '';
+    final lessonNo = lesson['no'] as int? ?? 0;
+    final content = _getLessonContent(lesson, catId, lang.lang, lessonNo);
     final arabic = lesson['arabic'] ?? '';
 
     return Scaffold(
@@ -516,7 +782,7 @@ class LessonContentPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(20)),
-            child: Text('${lang.isThai ? 'บทที่' : 'Lesson'} ${lesson['no']}',
+            child: Text('${lang.lang == 'th' ? 'บทที่' : 'Lesson'} ${lesson['no']}',
                 style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13))),
           const SizedBox(height: 16),
           Text(title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: theme.textColor)),
@@ -558,37 +824,45 @@ class _LessonsTabState extends State<LessonsTab> {
   final _lang = LanguageService();
 
   final List<Map<String, dynamic>> _categories = [
-    {'id': 'pillars', 'icon': '🕌', 'titleEn': '5 Pillars of Islam', 'titleTh': '5 เสาหลักของอิสลาม',
-     'subtitleEn': 'The foundation of Islamic faith', 'subtitleTh': 'รากฐานของศาสนาอิสลาม',
+    {'id': 'pillars', 'icon': '🕌',
+     'titleEn': '5 Pillars of Islam', 'titleTh': '5 เสาหลักของอิสลาม', 'titleMs': '5 Rukun Islam', 'titleId': '5 Rukun Islam', 'titleAr': 'أركان الإسلام الخمسة', 'titleUr': 'اسلام کے 5 ارکان', 'titleBn': 'ইসলামের ৫ স্তম্ভ',
+     'subtitleEn': 'The foundation of Islamic faith', 'subtitleTh': 'รากฐานของศาสนาอิสลาม', 'subtitleMs': 'Asas agama Islam', 'subtitleId': 'Dasar agama Islam', 'subtitleAr': 'أساس الإسلام', 'subtitleUr': 'اسلام کی بنیاد', 'subtitleBn': 'ইসলামের ভিত্তি',
      'color': const Color(0xFF1B5E20), 'lessons': 5},
-    {'id': 'iman', 'icon': '💫', 'titleEn': '6 Pillars of Iman', 'titleTh': '6 หลักอีหม่าน',
-     'subtitleEn': 'Articles of Islamic faith', 'subtitleTh': 'หลักความเชื่อในอิสลาม',
+    {'id': 'iman', 'icon': '💫',
+     'titleEn': '6 Pillars of Iman', 'titleTh': '6 หลักอีหม่าน', 'titleMs': '6 Rukun Iman', 'titleId': '6 Rukun Iman', 'titleAr': 'أركان الإيمان الستة', 'titleUr': 'ایمان کے 6 ارکان', 'titleBn': 'ঈমানের ৬ স্তম্ভ',
+     'subtitleEn': 'Articles of Islamic faith', 'subtitleTh': 'หลักความเชื่อในอิสลาม', 'subtitleMs': 'Kepercayaan asas Islam', 'subtitleId': 'Kepercayaan dasar Islam', 'subtitleAr': 'عقائد الإيمان', 'subtitleUr': 'ایمان کے عقائد', 'subtitleBn': 'ইসলামী বিশ্বাসের মূলনীতি',
      'color': const Color(0xFF1565C0), 'lessons': 6},
-    {'id': 'prayer', 'icon': '🙏', 'titleEn': 'How to Pray', 'titleTh': 'วิธีละหมาด',
-     'subtitleEn': 'Step by step prayer guide', 'subtitleTh': 'คู่มือละหมาดทีละขั้นตอน',
+    {'id': 'prayer', 'icon': '🙏',
+     'titleEn': 'How to Pray', 'titleTh': 'วิธีละหมาด', 'titleMs': 'Cara Solat', 'titleId': 'Cara Sholat', 'titleAr': 'كيفية الصلاة', 'titleUr': 'نماز کا طریقہ', 'titleBn': 'নামাজের পদ্ধতি',
+     'subtitleEn': 'Step by step prayer guide', 'subtitleTh': 'คู่มือละหมาดทีละขั้นตอน', 'subtitleMs': 'Panduan solat langkah demi langkah', 'subtitleId': 'Panduan sholat langkah demi langkah', 'subtitleAr': 'دليل الصلاة خطوة بخطوة', 'subtitleUr': 'نماز کی مرحلہ وار رہنمائی', 'subtitleBn': 'ধাপে ধাপে নামাজের গাইড',
      'color': const Color(0xFF6A1B9A), 'lessons': 8},
-    {'id': 'hadith', 'icon': '📜', 'titleEn': '40 Hadith', 'titleTh': '40 หะดีษ',
-     'subtitleEn': 'Key teachings of Prophet Muhammad', 'subtitleTh': 'คำสอนสำคัญของท่านนบี',
+    {'id': 'hadith', 'icon': '📜',
+     'titleEn': '40 Hadith', 'titleTh': '40 หะดีษ', 'titleMs': '40 Hadith', 'titleId': '40 Hadis', 'titleAr': '٤٠ حديثاً', 'titleUr': '40 احادیث', 'titleBn': '৪০ হাদিস',
+     'subtitleEn': 'Key teachings of Prophet Muhammad', 'subtitleTh': 'คำสอนสำคัญของท่านนบี', 'subtitleMs': 'Ajaran utama Nabi Muhammad', 'subtitleId': 'Ajaran utama Nabi Muhammad', 'subtitleAr': 'تعاليم النبي محمد الأساسية', 'subtitleUr': 'نبی محمد کی اہم تعلیمات', 'subtitleBn': 'নবী মুহাম্মদের মূল শিক্ষা',
      'color': const Color(0xFF4E342E), 'lessons': 10},
-    {'id': 'adab', 'icon': '🤝', 'titleEn': 'Islamic Manners', 'titleTh': 'มารยาทอิสลาม',
-     'subtitleEn': 'Etiquette in daily life', 'subtitleTh': 'มารยาทในชีวิตประจำวัน',
+    {'id': 'adab', 'icon': '🤝',
+     'titleEn': 'Islamic Manners', 'titleTh': 'มารยาทอิสลาม', 'titleMs': 'Adab Islam', 'titleId': 'Adab Islam', 'titleAr': 'الآداب الإسلامية', 'titleUr': 'اسلامی آداب', 'titleBn': 'ইসলামী আদব',
+     'subtitleEn': 'Etiquette in daily life', 'subtitleTh': 'มารยาทในชีวิตประจำวัน', 'subtitleMs': 'Adab dalam kehidupan harian', 'subtitleId': 'Etika dalam kehidupan sehari-hari', 'subtitleAr': 'الآداب في الحياة اليومية', 'subtitleUr': 'روزمرہ زندگی میں آداب', 'subtitleBn': 'দৈনন্দিন জীবনে শিষ্টাচার',
      'color': const Color(0xFF00695C), 'lessons': 5},
-    {'id': 'history', 'icon': '🏛️', 'titleEn': 'Islamic History', 'titleTh': 'ประวัติศาสตร์อิสลาม',
-     'subtitleEn': 'Key events in Islamic history', 'subtitleTh': 'เหตุการณ์สำคัญในประวัติอิสลาม',
+    {'id': 'history', 'icon': '🏛️',
+     'titleEn': 'Islamic History', 'titleTh': 'ประวัติศาสตร์อิสลาม', 'titleMs': 'Sejarah Islam', 'titleId': 'Sejarah Islam', 'titleAr': 'التاريخ الإسلامي', 'titleUr': 'اسلامی تاریخ', 'titleBn': 'ইসলামের ইতিহাস',
+     'subtitleEn': 'Key events in Islamic history', 'subtitleTh': 'เหตุการณ์สำคัญในประวัติอิสลาม', 'subtitleMs': 'Peristiwa penting dalam sejarah Islam', 'subtitleId': 'Peristiwa penting dalam sejarah Islam', 'subtitleAr': 'أحداث رئيسية في التاريخ الإسلامي', 'subtitleUr': 'اسلامی تاریخ کے اہم واقعات', 'subtitleBn': 'ইসলামের ইতিহাসের গুরুত্বপূর্ণ ঘটনা',
      'color': const Color(0xFFE65100), 'lessons': 6},
   ];
+
+  void _rebuild() { if (mounted) setState(() {}); }
 
   @override
   void initState() {
     super.initState();
-    _theme.addListener(() => setState(() {}));
-    _lang.addListener(() => setState(() {}));
+    _theme.addListener(_rebuild);
+    _lang.addListener(_rebuild);
   }
 
   @override
   void dispose() {
-    _theme.removeListener(() => setState(() {}));
-    _lang.removeListener(() => setState(() {}));
+    _theme.removeListener(_rebuild);
+    _lang.removeListener(_rebuild);
     super.dispose();
   }
 
@@ -599,8 +873,8 @@ class _LessonsTabState extends State<LessonsTab> {
       itemCount: _categories.length,
       itemBuilder: (_, i) {
         final cat = _categories[i];
-        final title = _lang.isThai ? cat['titleTh'] : cat['titleEn'];
-        final subtitle = _lang.isThai ? cat['subtitleTh'] : cat['subtitleEn'];
+        final title = _getLangText(cat, 'title', _lang.lang);
+        final subtitle = _getLangText(cat, 'subtitle', _lang.lang);
         final color = cat['color'] as Color;
         return GestureDetector(
           onTap: () => Navigator.push(context, MaterialPageRoute(
@@ -628,7 +902,7 @@ class _LessonsTabState extends State<LessonsTab> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-                  child: Text('${cat['lessons']} ${_lang.isThai ? 'บทเรียน' : 'lessons'}',
+                  child: Text('${cat['lessons']} ${_lang.lang == 'th' ? 'บทเรียน' : 'lessons'}',
                       style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600))),
               ])),
               Padding(padding: const EdgeInsets.only(right: 12),

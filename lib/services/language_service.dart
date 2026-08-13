@@ -74,6 +74,41 @@ class LanguageService extends ChangeNotifier {
     'id': 'Doa & Pelajaran', 'ar': 'الأدعية والدروس', 'ur': 'دعا اور سبق', 'bn': 'দোয়া ও পাঠ',
   });
 
+  String get duaTab => _t({
+    'en': 'Dua', 'th': 'ดุอา', 'ms': 'Doa',
+    'id': 'Doa', 'ar': 'الأدعية', 'ur': 'دعا', 'bn': 'দোয়া',
+  });
+
+  String get lessonsTab => _t({
+    'en': 'Lessons', 'th': 'บทเรียน', 'ms': 'Pelajaran',
+    'id': 'Pelajaran', 'ar': 'الدروس', 'ur': 'سبق', 'bn': 'পাঠ',
+  });
+
+  String get copied => _t({
+    'en': 'Copied!', 'th': 'คัดลอกแล้ว!', 'ms': 'Disalin!',
+    'id': 'Disalin!', 'ar': 'تم النسخ!', 'ur': 'کاپی ہو گیا!', 'bn': 'কপি হয়েছে!',
+  });
+
+  String get transliteration => _t({
+    'en': 'Transliteration', 'th': 'คำอ่าน', 'ms': 'Transliterasi',
+    'id': 'Transliterasi', 'ar': 'النطق', 'ur': 'تلفظ', 'bn': 'উচ্চারণ',
+  });
+
+  String get searchDua => _t({
+    'en': 'Search duas...', 'th': 'ค้นหาดุอา...', 'ms': 'Cari doa...',
+    'id': 'Cari doa...', 'ar': 'ابحث عن دعاء...', 'ur': 'دعا تلاش کریں...', 'bn': 'দোয়া খুঁজুন...',
+  });
+
+  String get noDuaFound => _t({
+    'en': 'No duas found', 'th': 'ไม่พบดุอา', 'ms': 'Tiada doa ditemui',
+    'id': 'Doa tidak ditemukan', 'ar': 'لم يتم العثور على دعاء', 'ur': 'کوئی دعا نہیں ملی', 'bn': 'কোনো দোয়া পাওয়া যায়নি',
+  });
+
+  String duaFound(int count) => _t({
+    'en': '$count duas found', 'th': 'พบ $count ดุอา', 'ms': 'Jumpa $count doa',
+    'id': 'Ditemukan $count doa', 'ar': 'وجد $count دعاء', 'ur': '$count دعا ملی', 'bn': '$count দোয়া পাওয়া গেছে',
+  });
+
   String get askChatbot => _t({
     'en': 'Ask the Chatbot', 'th': 'ถามแชทบอต', 'ms': 'Tanya Chatbot',
     'id': 'Tanya Chatbot', 'ar': 'اسأل المساعد', 'ur': 'چیٹ بوٹ سے پوچھیں', 'bn': 'চ্যাটবট জিজ্ঞেস করুন',
