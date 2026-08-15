@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/prayer_service.dart';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
@@ -57,18 +60,20 @@ class _SettingsPageState extends State<SettingsPage> {
     {'label': 'Dubai (Southeast Asia)', 'value': '16'},
   ];
 
+  void _rebuild() { if (mounted) setState(() {}); }
+
   @override
   void initState() {
     super.initState();
-    _theme.addListener(() => setState(() {}));
-    _lang.addListener(() => setState(() {}));
+    _theme.addListener(_rebuild);
+    _lang.addListener(_rebuild);
     _loadSettings();
   }
 
   @override
   void dispose() {
-    _theme.removeListener(() => setState(() {}));
-    _lang.removeListener(() => setState(() {}));
+    _theme.removeListener(_rebuild);
+    _lang.removeListener(_rebuild);
     super.dispose();
   }
 
@@ -108,26 +113,88 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _shareApp() async {
+    final text = _lang.isThai
+        ? 'ลองใช้แอพ DEEN - แอพอิสลามสำหรับชีวิตประจำวัน 🕌\nโหลดฟรีได้เลย!'
+        : 'Try DEEN - Your Islamic companion app 🕌\nFree to download!';
+    await Share.share(text, subject: 'DEEN App');
+  }
+
+  Future<void> _rateApp() async {
+    // เปลี่ยน package name ตามจริง
+    const packageName = 'com.example.flutter_application_1';
+    final uri = Uri.parse('market://details?id=$packageName');
+    final fallback = Uri.parse('https://play.google.com/store/apps/details?id=$packageName');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(fallback, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(_lang.isThai ? 'ไม่สามารถเปิด Play Store ได้' : 'Cannot open Play Store'),
+          backgroundColor: Colors.red.shade700));
+      }
+    }
+  }
+
+  void _copyVersion() {
+    Clipboard.setData(const ClipboardData(text: 'DEEN v1.0.0'));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(_lang.isThai ? 'คัดลอกแล้ว' : 'Copied'),
+      duration: const Duration(seconds: 1),
+      backgroundColor: const Color(0xFF1B5E20)));
+  }
+
   void _showAboutDialog() {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: _theme.cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(children: [
-          const Icon(Icons.mosque, color: Color(0xFF1B5E20), size: 26),
-          const SizedBox(width: 10),
-          Text('DEEN', style: TextStyle(color: _theme.textColor, fontWeight: FontWeight.bold)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: 72, height: 72,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1B5E20),
+              borderRadius: BorderRadius.circular(18)),
+            child: const Icon(Icons.mosque, color: Colors.white, size: 40)),
+          const SizedBox(height: 14),
+          Text('DEEN', style: TextStyle(
+              fontSize: 22, fontWeight: FontWeight.bold, color: _theme.textColor)),
+          const SizedBox(height: 4),
+          GestureDetector(
+            onLongPress: _copyVersion,
+            child: Text('Version 1.0.0',
+                style: TextStyle(fontSize: 13, color: _theme.subTextColor))),
+          const SizedBox(height: 12),
+          Text(
+            _lang.isThai
+                ? 'แอพอิสลามสำหรับชีวิตประจำวัน\nพัฒนาด้วยความรักและศรัทธา 🕌'
+                : 'Your Islamic companion for daily life\nBuilt with love and faith 🕌',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, color: _theme.subTextColor, height: 1.6)),
+          const SizedBox(height: 16),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+            TextButton.icon(
+              onPressed: _rateApp,
+              icon: const Icon(Icons.star_outline, color: Color(0xFF1B5E20), size: 18),
+              label: Text(_lang.isThai ? 'ให้คะแนน' : 'Rate',
+                  style: const TextStyle(color: Color(0xFF1B5E20)))),
+            TextButton.icon(
+              onPressed: _shareApp,
+              icon: const Icon(Icons.share_outlined, color: Color(0xFF1B5E20), size: 18),
+              label: Text(_lang.isThai ? 'แชร์' : 'Share',
+                  style: const TextStyle(color: Color(0xFF1B5E20)))),
+          ]),
         ]),
-        content: Text(
-          _lang.isThai
-              ? 'แอพอิสลามสำหรับชีวิตประจำวัน\nเวอร์ชัน 1.0.0\nสร้างด้วยใจ ❤️'
-              : 'Your Islamic companion app\nVersion 1.0.0\nMade with ❤️',
-          style: TextStyle(color: _theme.subTextColor, height: 1.6)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK', style: TextStyle(color: Color(0xFF1B5E20)))),
+            child: Text('OK', style: TextStyle(color: _theme.iconColor, fontWeight: FontWeight.w600))),
         ],
       ),
     );
@@ -464,12 +531,12 @@ class _SettingsPageState extends State<SettingsPage> {
             icon: Icons.star_outline, iconColor: Colors.amber,
             label: _lang.isThai ? 'ให้คะแนนแอพ' : 'Rate App',
             value: '', textColor: textColor, subColor: subColor,
-            onTap: () {}),
+            onTap: _rateApp),
           _buildNavRow(
             icon: Icons.share_outlined, iconColor: Colors.green,
             label: _lang.isThai ? 'แชร์แอพ' : 'Share App',
             value: '', textColor: textColor, subColor: subColor,
-            onTap: () {}),
+            onTap: _shareApp),
         ]),
 
         const SizedBox(height: 8),
