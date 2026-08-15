@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
@@ -673,7 +674,11 @@ String _getDuaTrans(Map<String, dynamic> dua, String lang) {
       return kDuaTranslations[id]!['transTh'] ?? dua['transliteration'] ?? '';
     }
   }
-  // Other languages - use Latin transliteration from API
+  // UR/BN - use script transliteration if available
+  if (lang == 'ur' || lang == 'bn') {
+    return dua['transLang'] ?? dua['transliteration'] ?? '';
+  }
+  // MS/ID/EN - use Latin transliteration from API
   return dua['transliteration'] ?? '';
 }
 
@@ -754,16 +759,91 @@ class _DuaPageState extends State<DuaPage> {
     if (!mounted) return;
     // Use hardcoded translations - instant, no API needed
     final langMap = kDuaAllTranslations[lang];
-    if (langMap == null) return;
-    for (var dua in _duas) {
-      final id = dua['id'] as int;
-      if (langMap.containsKey(id)) {
-        dua['titleLang'] = langMap[id]!['title'];
-        dua['descLang'] = langMap[id]!['desc'];
+    if (langMap != null) {
+      for (var dua in _duas) {
+        final id = dua['id'] as int;
+        if (langMap.containsKey(id)) {
+          dua['titleLang'] = langMap[id]!['title'];
+          dua['descLang'] = langMap[id]!['desc'];
+        }
       }
     }
     if (mounted) setState(() { _filtered = List.from(_duas); });
     _filterDuas();
+
+    // For UR/BN - also translate transliteration via Gemini + cache
+    if (lang == 'ur' || lang == 'bn') {
+      await _applyTransLiteration(lang);
+    }
+  }
+
+  Future<void> _applyTransLiteration(String lang) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'dua_translit_$lang';
+    final cached = prefs.getString(cacheKey);
+    Map<String, dynamic> transMap = {};
+
+    if (cached != null) {
+      transMap = json.decode(cached);
+    } else {
+      // Translate via Gemini in batches
+      transMap = await _translateTransliteration(lang);
+      if (transMap.isNotEmpty) {
+        await prefs.setString(cacheKey, json.encode(transMap));
+      }
+    }
+
+    if (!mounted) return;
+    for (var dua in _duas) {
+      final id = dua['id'].toString();
+      if (transMap.containsKey(id)) {
+        dua['transLang'] = transMap[id];
+      }
+    }
+    if (mounted) setState(() { _filtered = List.from(_duas); });
+    _filterDuas();
+  }
+
+  Future<Map<String, dynamic>> _translateTransliteration(String lang) async {
+    const geminiKey = 'AQ.Ab8RN6JiAfYN7ZtqxvALEExa_HfwiwRNURKZvzdIKNYN9Qfs8A';
+    const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+    final langName = lang == 'ur' ? 'Urdu script (اردو)' : 'Bengali script (বাংলা)';
+    final Map<String, dynamic> result = {};
+    const batchSize = 25;
+
+    try {
+      for (int i = 0; i < _duas.length; i += batchSize) {
+        final batch = _duas.sublist(i, (i + batchSize).clamp(0, _duas.length));
+        final items = batch.map((d) => '${d['id']}|${d['transliteration'] ?? ''}').join('\n');
+        final prompt = 'Convert these Islamic dua Latin transliterations to $langName phonetic script. '
+            'Reply ONLY with JSON array, no markdown.\n'
+            'Format: [{"id":1,"trans":"..."}]\n\n'
+            'Items (id|latin_transliteration):\n$items';
+
+        final res = await http.post(
+          Uri.parse('\$geminiUrl?key=\$geminiKey'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'contents': [{'parts': [{'text': prompt}]}],
+            'generationConfig': {'temperature': 0.1},
+          }),
+        ).timeout(const Duration(seconds: 30));
+
+        if (res.statusCode == 200) {
+          final data = json.decode(res.body);
+          final text = data['candidates'][0]['content']['parts'][0]['text'] as String;
+          final jsonStr = text.replaceAll('```json', '').replaceAll('```', '').trim();
+          final translated = json.decode(jsonStr) as List;
+          for (final item in translated) {
+            result[item['id'].toString()] = item['trans'];
+          }
+        }
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+    } catch (e) {
+      print('Transliteration error: \$e');
+    }
+    return result;
   }
 
   void _filterDuas() {
@@ -812,8 +892,6 @@ class _DuaPageState extends State<DuaPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: _theme.iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(20)),
                 child: Row(children: [
-                  Text(cat['icon'] as String, style: const TextStyle(fontSize: 14)),
-                  const SizedBox(width: 4),
                   Text(_getCatLabel(cat as Map<String, String>, lang),
                       style: TextStyle(fontSize: 12, color: _theme.iconColor, fontWeight: FontWeight.w600)),
                 ])),
@@ -936,8 +1014,6 @@ class _DuaPageState extends State<DuaPage> {
                   border: Border.all(color: isSelected ? _theme.iconColor
                       : (_theme.isDark ? ThemeService.darkBorder : Colors.grey.shade300))),
                 child: Row(children: [
-                  Text(cat['icon'] as String, style: const TextStyle(fontSize: 14)),
-                  const SizedBox(width: 4),
                   Text(_getCatLabel(cat as Map<String, String>, lang),
                       style: TextStyle(fontSize: 13,
                           color: isSelected ? Colors.white : _theme.textColor,
@@ -964,36 +1040,47 @@ class _DuaPageState extends State<DuaPage> {
     return GestureDetector(
       onTap: () => _showDetail(dua),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: _theme.cardColor, borderRadius: BorderRadius.circular(16),
-          border: _theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
-          boxShadow: [BoxShadow(color: _theme.shadowColor, blurRadius: 6, offset: const Offset(0, 2))]),
+          color: _theme.cardColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFE8F5E9)),
+          boxShadow: _theme.isDark ? null : [
+            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))]),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Container(width: 40, height: 40,
-              decoration: BoxDecoration(color: _theme.iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-              child: Center(child: Text(cat['icon'] as String, style: const TextStyle(fontSize: 20)))),
-            const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(_getDuaTitle(dua, lang),
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _theme.textColor)),
-              Text(_getDuaDesc(dua, lang),
-                  style: TextStyle(fontSize: 12, color: _theme.subTextColor),
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(_getDuaTitle(dua, lang),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _theme.textColor)),
+                const SizedBox(height: 2),
+                Text(_getDuaDesc(dua, lang),
+                    style: TextStyle(fontSize: 11, color: _theme.subTextColor),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              ])),
+              GestureDetector(
+                onTap: () => _copyDua(dua),
+                child: Padding(padding: const EdgeInsets.all(4),
+                    child: Icon(Icons.copy_outlined, color: _theme.subTextColor, size: 15))),
             ])),
-            IconButton(icon: Icon(Icons.copy_outlined, color: _theme.subTextColor, size: 18),
-                onPressed: () => _copyDua(dua),
-                padding: EdgeInsets.zero, constraints: const BoxConstraints()),
-          ]),
-          const SizedBox(height: 12),
-          Text(dua['dua'] ?? '', textAlign: TextAlign.right, textDirection: TextDirection.rtl,
-              maxLines: 2, overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 20, height: 1.8, color: _theme.textColor)),
-          const SizedBox(height: 6),
-          Text(_getDuaTrans(dua, lang), maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 12, color: _theme.subTextColor, fontStyle: FontStyle.italic)),
+          Container(height: 0.5, margin: const EdgeInsets.symmetric(horizontal: 14),
+              color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFEEEEEE)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Text(dua['dua'] ?? '',
+                  textAlign: TextAlign.right, textDirection: TextDirection.rtl,
+                  maxLines: 2, overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 19, height: 1.9, color: _theme.textColor)),
+              if (_getDuaTrans(dua, lang).isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(_getDuaTrans(dua, lang),
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: _theme.subTextColor, fontStyle: FontStyle.italic)),
+              ],
+            ])),
         ]),
       ));
   }
@@ -1088,16 +1175,91 @@ class _DuaTabState extends State<DuaTab> {
     if (!mounted) return;
     // Use hardcoded translations - instant, no API needed
     final langMap = kDuaAllTranslations[lang];
-    if (langMap == null) return;
-    for (var dua in _duas) {
-      final id = dua['id'] as int;
-      if (langMap.containsKey(id)) {
-        dua['titleLang'] = langMap[id]!['title'];
-        dua['descLang'] = langMap[id]!['desc'];
+    if (langMap != null) {
+      for (var dua in _duas) {
+        final id = dua['id'] as int;
+        if (langMap.containsKey(id)) {
+          dua['titleLang'] = langMap[id]!['title'];
+          dua['descLang'] = langMap[id]!['desc'];
+        }
       }
     }
     if (mounted) setState(() { _filtered = List.from(_duas); });
     _filterDuas();
+
+    // For UR/BN - also translate transliteration via Gemini + cache
+    if (lang == 'ur' || lang == 'bn') {
+      await _applyTransLiteration(lang);
+    }
+  }
+
+  Future<void> _applyTransLiteration(String lang) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'dua_translit_$lang';
+    final cached = prefs.getString(cacheKey);
+    Map<String, dynamic> transMap = {};
+
+    if (cached != null) {
+      transMap = json.decode(cached);
+    } else {
+      // Translate via Gemini in batches
+      transMap = await _translateTransliteration(lang);
+      if (transMap.isNotEmpty) {
+        await prefs.setString(cacheKey, json.encode(transMap));
+      }
+    }
+
+    if (!mounted) return;
+    for (var dua in _duas) {
+      final id = dua['id'].toString();
+      if (transMap.containsKey(id)) {
+        dua['transLang'] = transMap[id];
+      }
+    }
+    if (mounted) setState(() { _filtered = List.from(_duas); });
+    _filterDuas();
+  }
+
+  Future<Map<String, dynamic>> _translateTransliteration(String lang) async {
+    const geminiKey = 'AQ.Ab8RN6JiAfYN7ZtqxvALEExa_HfwiwRNURKZvzdIKNYN9Qfs8A';
+    const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+    final langName = lang == 'ur' ? 'Urdu script (اردو)' : 'Bengali script (বাংলা)';
+    final Map<String, dynamic> result = {};
+    const batchSize = 25;
+
+    try {
+      for (int i = 0; i < _duas.length; i += batchSize) {
+        final batch = _duas.sublist(i, (i + batchSize).clamp(0, _duas.length));
+        final items = batch.map((d) => '${d['id']}|${d['transliteration'] ?? ''}').join('\n');
+        final prompt = 'Convert these Islamic dua Latin transliterations to $langName phonetic script. '
+            'Reply ONLY with JSON array, no markdown.\n'
+            'Format: [{"id":1,"trans":"..."}]\n\n'
+            'Items (id|latin_transliteration):\n$items';
+
+        final res = await http.post(
+          Uri.parse('\$geminiUrl?key=\$geminiKey'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'contents': [{'parts': [{'text': prompt}]}],
+            'generationConfig': {'temperature': 0.1},
+          }),
+        ).timeout(const Duration(seconds: 30));
+
+        if (res.statusCode == 200) {
+          final data = json.decode(res.body);
+          final text = data['candidates'][0]['content']['parts'][0]['text'] as String;
+          final jsonStr = text.replaceAll('```json', '').replaceAll('```', '').trim();
+          final translated = json.decode(jsonStr) as List;
+          for (final item in translated) {
+            result[item['id'].toString()] = item['trans'];
+          }
+        }
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+    } catch (e) {
+      print('Transliteration error: \$e');
+    }
+    return result;
   }
 
   void _filterDuas() {
@@ -1146,8 +1308,6 @@ class _DuaTabState extends State<DuaTab> {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: _theme.iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(20)),
                 child: Row(children: [
-                  Text(cat['icon'] as String, style: const TextStyle(fontSize: 14)),
-                  const SizedBox(width: 4),
                   Text(_getCatLabel(cat as Map<String, String>, lang),
                       style: TextStyle(fontSize: 12, color: _theme.iconColor, fontWeight: FontWeight.w600)),
                 ])),
@@ -1225,8 +1385,6 @@ class _DuaTabState extends State<DuaTab> {
                   border: Border.all(color: isSelected ? _theme.iconColor
                       : (_theme.isDark ? ThemeService.darkBorder : Colors.grey.shade300))),
                 child: Row(children: [
-                  Text(cat['icon'] as String, style: const TextStyle(fontSize: 14)),
-                  const SizedBox(width: 4),
                   Text(_getCatLabel(cat as Map<String, String>, lang),
                       style: TextStyle(fontSize: 13,
                           color: isSelected ? Colors.white : _theme.textColor,
@@ -1259,36 +1417,47 @@ class _DuaTabState extends State<DuaTab> {
                           return GestureDetector(
                             onTap: () => _showDetail(dua),
                             child: Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
+                              margin: const EdgeInsets.only(bottom: 10),
                               decoration: BoxDecoration(
-                                color: _theme.cardColor, borderRadius: BorderRadius.circular(16),
-                                border: _theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
-                                boxShadow: [BoxShadow(color: _theme.shadowColor, blurRadius: 6, offset: const Offset(0, 2))]),
+                                color: _theme.cardColor,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFE8F5E9)),
+                                boxShadow: _theme.isDark ? null : [
+                                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))]),
                               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Row(children: [
-                                  Container(width: 40, height: 40,
-                                    decoration: BoxDecoration(color: _theme.iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-                                    child: Center(child: Text(cat['icon'] as String, style: const TextStyle(fontSize: 20)))),
-                                  const SizedBox(width: 12),
-                                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                    Text(_getDuaTitle(dua, lang),
-                                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _theme.textColor)),
-                                    Text(_getDuaDesc(dua, lang),
-                                        style: TextStyle(fontSize: 12, color: _theme.subTextColor),
-                                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
+                                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                      Text(_getDuaTitle(dua, lang),
+                                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _theme.textColor)),
+                                      const SizedBox(height: 2),
+                                      Text(_getDuaDesc(dua, lang),
+                                          style: TextStyle(fontSize: 11, color: _theme.subTextColor),
+                                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                                    ])),
+                                    GestureDetector(
+                                      onTap: () => _copyDua(dua),
+                                      child: Padding(padding: const EdgeInsets.all(4),
+                                          child: Icon(Icons.copy_outlined, color: _theme.subTextColor, size: 15))),
                                   ])),
-                                  IconButton(icon: Icon(Icons.copy_outlined, color: _theme.subTextColor, size: 18),
-                                      onPressed: () => _copyDua(dua),
-                                      padding: EdgeInsets.zero, constraints: const BoxConstraints()),
-                                ]),
-                                const SizedBox(height: 12),
-                                Text(dua['dua'] ?? '', textAlign: TextAlign.right, textDirection: TextDirection.rtl,
-                                    maxLines: 2, overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 20, height: 1.8, color: _theme.textColor)),
-                                const SizedBox(height: 6),
-                                Text(_getDuaTrans(dua, lang), maxLines: 1, overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 12, color: _theme.subTextColor, fontStyle: FontStyle.italic)),
+                                Container(height: 0.5, margin: const EdgeInsets.symmetric(horizontal: 14),
+                                    color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFEEEEEE)),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+                                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                                    Text(dua['dua'] ?? '',
+                                        textAlign: TextAlign.right, textDirection: TextDirection.rtl,
+                                        maxLines: 2, overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 19, height: 1.9, color: _theme.textColor)),
+                                    if (_getDuaTrans(dua, lang).isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Text(_getDuaTrans(dua, lang),
+                                          maxLines: 1, overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(fontSize: 11, color: _theme.subTextColor, fontStyle: FontStyle.italic)),
+                                    ],
+                                  ])),
                               ])));
                         })),
     ]);

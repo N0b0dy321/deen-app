@@ -17,28 +17,31 @@ class _DuaLessonsPageState extends State<DuaLessonsPage>
   final _lang = LanguageService();
   late TabController _tabController;
 
+  void _rebuild() { if (mounted) setState(() {}); }
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _theme.addListener(() => setState(() {}));
-    _lang.addListener(() => setState(() {}));
+    _theme.addListener(_rebuild);
+    _lang.addListener(_rebuild);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _theme.removeListener(() => setState(() {}));
-    _lang.removeListener(() => setState(() {}));
+    _theme.removeListener(_rebuild);
+    _lang.removeListener(_rebuild);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = _theme.isDark;
     return Scaffold(
       backgroundColor: _theme.bgColor,
       body: Column(children: [
-        _buildHeader(context),
+        _buildHeader(context, isDark),
         Expanded(child: TabBarView(
           controller: _tabController,
           children: [
@@ -50,40 +53,48 @@ class _DuaLessonsPageState extends State<DuaLessonsPage>
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, bool isDark) {
     return Container(
-      width: double.infinity,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
-          colors: _theme.isDark
-              ? [const Color(0xFF0D3B1E), const Color(0xFF1A5C32)]
-              : [const Color(0xFF1B5E20), const Color(0xFF2E7D32)]),
+        color: isDark ? const Color(0xFF0D2E1A) : const Color(0xFF1B5E20),
         borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24))),
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 8, offset: const Offset(0, 3))
+        ]),
       child: SafeArea(
         child: Column(children: [
+          // Top bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.fromLTRB(6, 8, 16, 0),
             child: Row(children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22)),
-              const SizedBox(width: 12),
+              IconButton(
+                icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                onPressed: () => Navigator.pop(context)),
               Text(
                 _lang.duaLessons,
-                style: const TextStyle(color: Color(0xFFFFD700),
-                    fontSize: 20, fontWeight: FontWeight.bold)),
-            ]),
-          ),
-          // Tab Bar
+                style: const TextStyle(
+                  color: Color(0xFFFFD700),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3)),
+            ])),
+          const SizedBox(height: 4),
+          // Tab bar
           TabBar(
             controller: _tabController,
             indicatorColor: const Color(0xFFFFD700),
-            indicatorWeight: 3,
-            labelColor: const Color(0xFFFFD700),
-            unselectedLabelColor: Colors.white60,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            indicatorWeight: 2,
+            indicatorSize: TabBarIndicatorSize.label,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white38,
+            labelStyle: const TextStyle(
+              fontWeight: FontWeight.w600, fontSize: 14),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.normal, fontSize: 14),
             tabs: [
               Tab(text: _lang.duaTab),
               Tab(text: _lang.lessonsTab),

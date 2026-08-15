@@ -10,6 +10,8 @@ const Map<String, Map<String, List<String>>> kLessonTitleTranslations = {
     'hadith': ['Amal Bergantung pada Niat', 'Islam Dibina atas Lima', 'Halal dan Haram Jelas', 'Tidak Beriman Sempurna', 'Agama adalah Keikhlasan', 'Tinggalkan yang Tidak Perlu', 'Senyum adalah Sedekah', 'Kasih Sayang kepada Semua', 'Mukmin yang Kuat', 'Menghilangkan Mudarat'],
     'adab': ['Salam Islam', 'Adab Makan dan Minum', 'Menghormati Ibu Bapa', 'Kejujuran', 'Kebersihan (Taharah)'],
     'history': ['Nabi Muhammad - Awal Kehidupan', 'Wahyu Pertama', 'Hijrah ke Madinah', 'Peperangan Penting', 'Empat Khalifah', 'Penyebaran Islam'],
+    'fasting': ['Kelebihan Puasa', 'Syarat Puasa', 'Perkara yang Membatalkan Puasa', 'Adab Berpuasa', 'Puasa Sunat', 'Lailatul Qadr', 'Zakat Fitrah'],
+    'special_prayer': ['Solat Eidulfitri', 'Solat Eiduladha', 'Solat Jenazah', 'Solat Tarawih', 'Solat Istisqa (Minta Hujan)', 'Solat Kusuf/Khusuf (Gerhana)'],
   },
   'id': {
     'pillars': ['Syahadat (Ikrar Iman)', 'Sholat (Sembahyang)', 'Zakat (Amal)', 'Shaum (Puasa)', 'Haji (Ziarah)'],
@@ -18,6 +20,8 @@ const Map<String, Map<String, List<String>>> kLessonTitleTranslations = {
     'hadith': ['Amal Tergantung Niat', 'Islam Dibangun atas Lima', 'Halal dan Haram Jelas', 'Tidak Beriman Sempurna', 'Agama adalah Ketulusan', 'Tinggalkan yang Tidak Perlu', 'Senyum adalah Sedekah', 'Kasih Sayang kepada Semua', 'Mukmin yang Kuat', 'Menghilangkan Kemudharatan'],
     'adab': ['Salam Islam', 'Adab Makan dan Minum', 'Menghormati Orang Tua', 'Kejujuran', 'Kebersihan (Thaharah)'],
     'history': ['Nabi Muhammad - Kehidupan Awal', 'Wahyu Pertama', 'Hijrah ke Madinah', 'Perang Penting', 'Empat Khalifah', 'Penyebaran Islam'],
+    'fasting': ['Keutamaan Puasa', 'Syarat Puasa', 'Hal yang Membatalkan Puasa', 'Adab Berpuasa', 'Puasa Sunnah', 'Lailatul Qadr', 'Zakat Fitrah'],
+    'special_prayer': ['Sholat Idul Fitri', 'Sholat Idul Adha', 'Sholat Jenazah', 'Sholat Tarawih', 'Sholat Istisqa (Minta Hujan)', 'Sholat Kusuf/Khusuf (Gerhana)'],
   },
   'ar': {
     'pillars': ['الشهادة (الإقرار بالإيمان)', 'الصلاة', 'الزكاة', 'الصوم', 'الحج'],
@@ -26,6 +30,8 @@ const Map<String, Map<String, List<String>>> kLessonTitleTranslations = {
     'hadith': ['الأعمال بالنيات', 'بني الإسلام على خمس', 'الحلال بين والحرام بين', 'لا يؤمن أحدكم', 'الدين النصيحة', 'ترك ما لا يعنيك', 'التبسم صدقة', 'الرحمة بالخلق', 'المؤمن القوي', 'لا ضرر ولا ضرار'],
     'adab': ['السلام الإسلامي', 'آداب الأكل والشرب', 'احترام الوالدين', 'الصدق والأمانة', 'الطهارة'],
     'history': ['النبي محمد - حياته الأولى', 'الوحي الأول', 'الهجرة إلى المدينة', 'المعارك الكبرى', 'الخلفاء الراشدون الأربعة', 'انتشار الإسلام'],
+    'fasting': ['فضل الصيام', 'شروط الصيام', 'مبطلات الصيام', 'آداب الصيام', 'الصيام المستحب', 'ليلة القدر', 'زكاة الفطر'],
+    'special_prayer': ['صلاة عيد الفطر', 'صلاة عيد الأضحى', 'صلاة الجنازة', 'صلاة التراويح', 'صلاة الاستسقاء', 'صلاة الكسوف والخسوف'],
   },
   'ur': {
     'pillars': ['شہادت (ایمان کا اقرار)', 'نماز', 'زکوٰۃ', 'روزہ', 'حج'],
@@ -34,6 +40,8 @@ const Map<String, Map<String, List<String>>> kLessonTitleTranslations = {
     'hadith': ['اعمال کا دارومدار نیتوں پر', 'اسلام پانچ چیزوں پر بنا ہے', 'حلال اور حرام واضح ہیں', 'کامل ایمان', 'دین خیرخواہی ہے', 'غیر ضروری چھوڑنا', 'مسکراہٹ صدقہ ہے', 'تمام مخلوق پر رحم', 'مضبوط مومن', 'نقصان نہ پہنچانا'],
     'adab': ['اسلامی سلام', 'کھانے پینے کے آداب', 'والدین کا احترام', 'سچائی اور دیانتداری', 'پاکیزگی (طہارت)'],
     'history': ['نبی محمد - ابتدائی زندگی', 'پہلی وحی', 'مدینہ کی طرف ہجرت', 'اہم غزوات', 'چار خلفائے راشدین', 'اسلام کا پھیلاؤ'],
+    'fasting': ['روزے کی فضیلت', 'روزے کی شرائط', 'روزہ توڑنے والی چیزیں', 'روزے کے آداب', 'نفل روزے', 'لیلۃ القدر', 'زکاۃ الفطر'],
+    'special_prayer': ['عید الفطر کی نماز', 'عید الاضحیٰ کی نماز', 'نماز جنازہ', 'تراویح', 'نماز استسقاء', 'نماز کسوف/خسوف'],
   },
   'bn': {
     'pillars': ['শাহাদাহ (ঈমানের স্বীকৃতি)', 'সালাত (নামাজ)', 'যাকাত', 'সাওম (রোজা)', 'হজ'],
@@ -42,6 +50,8 @@ const Map<String, Map<String, List<String>>> kLessonTitleTranslations = {
     'hadith': ['আমল নিয়তের উপর নির্ভরশীল', 'ইসলাম পাঁচটি স্তম্ভের উপর প্রতিষ্ঠিত', 'হালাল ও হারাম স্পষ্ট', 'পরিপূর্ণ ঈমান', 'দ্বীন হলো কল্যাণকামিতা', 'অপ্রয়োজনীয় ছেড়ে দেওয়া', 'হাসি সদকাহ', 'সকল সৃষ্টির প্রতি দয়া', 'শক্তিশালী মুমিন', 'ক্ষতি না করা'],
     'adab': ['ইসলামী সালাম', 'খাওয়া-দাওয়ার আদব', 'পিতামাতার প্রতি সম্মান', 'সততা ও সত্যবাদিতা', 'পবিত্রতা (তাহারাহ)'],
     'history': ['নবী মুহাম্মদ - প্রারম্ভিক জীবন', 'প্রথম ওহী', 'মদিনায় হিজরত', 'গুরুত্বপূর্ণ যুদ্ধসমূহ', 'চার খলিফা', 'ইসলামের বিস্তার'],
+    'fasting': ['রোজার ফযীলত', 'রোজার শর্তসমূহ', 'রোজা ভাঙার কারণ', 'রোজার আদব', 'নফল রোজা', 'লাইলাতুল কদর', 'যাকাতুল ফিতর'],
+    'special_prayer': ['ঈদুল ফিতরের নামাজ', 'ঈদুল আযহার নামাজ', 'জানাজার নামাজ', 'তারাবির নামাজ', 'ইস্তিসকার নামাজ', 'কুসুফ/খুসুফের নামাজ'],
   },
 };
 
@@ -245,9 +255,177 @@ const Map<String, Map<String, Map<int, Map<String, String>>>> kLessonContentTran
       8: {'title': 'নামাজের পরের যিকির', 'content': 'সুপারিশকৃত যিকির:\n\n1. "আস্তাগফিরুল্লাহ" ৩ বার\n2. আয়াতুল কুরসী\n3. "সুবহানাল্লাহ" ৩৩ বার\n4. "আলহামদুলিল্লাহ" ৩৩ বার\n5. "আল্লাহু আকবার" ৩৩ বার'},
     },
   },
+  'fasting': {
+    'ms': {
+      1: {'title': 'Kelebihan Puasa', 'content': 'Allah berfirman dalam Hadis Qudsi:\n"Setiap amalan anak Adam adalah untuknya kecuali puasa; ia untuk-Ku dan Aku yang membalasnya."\n\nKelebihan puasa:\n• Menyucikan jiwa dan badan\n• Mengajar kesabaran dan kawalan diri\n• Membangunkan empati terhadap golongan miskin\n• Ganjaran berlipat ganda dari Allah\n• Pintu Rayyan di Syurga hanya untuk orang yang berpuasa'},
+      2: {'title': 'Syarat Puasa', 'content': 'Yang wajib berpuasa:\n• Muslim, berakal dan baligh\n• Sihat (tidak sakit teruk)\n• Tidak bermusafir\n\nYang dikecualikan:\n• Yang sakit - ganti kemudian\n• Musafir - ganti kemudian\n• Wanita hamil/menyusu - ganti atau bayar fidyah\n• Warga tua - bayar fidyah\n• Kanak-kanak - tidak wajib\n\nFidyah = memberi makan seorang fakir setiap hari yang ditinggalkan'},
+      3: {'title': 'Perkara yang Membatalkan Puasa', 'content': 'Perkara yang batalkan puasa:\n• Makan atau minum dengan sengaja\n• Hubungan seksual\n• Muntah dengan sengaja\n• Haid atau nifas\n\nPerkara yang TIDAK batalkan puasa:\n• Makan atau minum secara tidak sengaja (lupa)\n• Berkumur atau menghirup air ke hidung\n• Suntikan (untuk tujuan perubatan)\n• Menggunakan titisan mata\n• Mencium pasangan (tanpa menelan)'},
+      4: {'title': 'Adab Berpuasa', 'content': 'Amalan sunat semasa berpuasa:\n• Makan sahur (makan sebelum fajar)\n• Lewatkan sahur hingga hampir Subuh\n• Segera berbuka ketika Maghrib\n• Berbuka dengan kurma dan air\n• Perbanyak bacaan Al-Quran\n• Tingkatkan sedekah\n• Solat Tarawih\n• Elakkan kata-kata buruk dan pertengkaran\n• Banyak berdoa terutama waktu berbuka'},
+      5: {'title': 'Puasa Sunat', 'content': 'Puasa sunat yang digalakkan:\n\n• 6 hari Syawal (selepas Ramadan)\n  → Seperti puasa setahun penuh\n• Isnin dan Khamis\n  → Nabi berpuasa pada hari ini\n• 3 Hari Putih (13, 14, 15 setiap bulan)\n• Hari Arafah (9 Zulhijjah)\n  → Menghapus dosa 2 tahun\n• Hari Asyura (10 Muharram)\n  → Menghapus dosa 1 tahun'},
+      6: {'title': 'Lailatul Qadr', 'content': '"Malam Kemuliaan lebih baik daripada seribu bulan" (Al-Quran 97:3)\n\nFakta penting:\n• Jatuh pada 10 malam terakhir ganjil Ramadan (21, 23, 25, 27, 29)\n• Paling berkemungkinan malam ke-27\n• Malaikat turun dan kedamaian merata\n• Ibadat malam ini = ibadat 83 tahun\n\nCara mencarinya:\n• Solat Tarawih dan Tahajjud\n• Banyak membaca Al-Quran\n• Banyak berdoa\n• Bersedekah\n• Iktikaf (duduk di masjid)'},
+      7: {'title': 'Zakat Fitrah', 'content': 'Zakat Fitrah adalah sedekah wajib di akhir Ramadan.\n\n"Nabi mewajibkan Zakat Fitrah sebagai penyucian bagi orang yang berpuasa dan sebagai makanan bagi golongan miskin."\n\nHukum:\n• Wajib ke atas setiap Muslim yang ada lebihan makanan\n• Kadar: 1 Sa (kira-kira 2.5-3 kg) makanan asasi atau nilai tunainya\n• Mesti dibayar sebelum solat Eid\n• Diberikan kepada fakir miskin\n\nTujuan:\n• Menyucikan orang yang berpuasa\n• Membawa kegembiraan kepada golongan miskin pada Eid'},
+    },
+    'id': {
+      1: {'title': 'Keutamaan Puasa', 'content': 'Allah berfirman dalam Hadis Qudsi:\n"Setiap amalan anak Adam adalah untuknya kecuali puasa; itu untuk-Ku dan Aku yang membalasnya."\n\nKeutamaan puasa:\n• Menyucikan jiwa dan raga\n• Mengajarkan kesabaran dan pengendalian diri\n• Mengembangkan empati terhadap kaum miskin\n• Pahala berlipat ganda dari Allah\n• Pintu Rayyan di Surga hanya untuk orang yang berpuasa'},
+      2: {'title': 'Syarat Puasa', 'content': 'Yang wajib berpuasa:\n• Muslim, berakal dan baligh\n• Sehat (tidak sakit parah)\n• Tidak dalam perjalanan\n\nYang dikecualikan:\n• Yang sakit - qadha kemudian\n• Musafir - qadha kemudian\n• Wanita hamil/menyusui - qadha atau bayar fidyah\n• Orang tua - bayar fidyah\n• Anak-anak - belum wajib\n\nFidyah = memberi makan seorang fakir setiap hari yang ditinggalkan'},
+      3: {'title': 'Hal yang Membatalkan Puasa', 'content': 'Yang membatalkan puasa:\n• Makan atau minum dengan sengaja\n• Hubungan seksual\n• Muntah dengan sengaja\n• Haid atau nifas\n\nYang TIDAK membatalkan puasa:\n• Makan atau minum karena lupa\n• Berkumur atau menghirup air ke hidung\n• Suntikan (untuk tujuan medis)\n• Menggunakan tetes mata\n• Mencium pasangan (tanpa menelan)'},
+      4: {'title': 'Adab Berpuasa', 'content': 'Amalan sunnah saat berpuasa:\n• Makan sahur (makan sebelum fajar)\n• Akhirkan sahur hingga hampir Subuh\n• Segera berbuka saat Maghrib\n• Berbuka dengan kurma dan air\n• Perbanyak bacaan Al-Quran\n• Tingkatkan sedekah\n• Sholat Tarawih\n• Hindari perkataan buruk dan pertengkaran\n• Banyak berdoa terutama waktu berbuka'},
+      5: {'title': 'Puasa Sunnah', 'content': 'Puasa sunnah yang dianjurkan:\n\n• 6 hari Syawal (setelah Ramadhan)\n  → Seperti puasa setahun penuh\n• Senin dan Kamis\n  → Nabi berpuasa pada hari ini\n• 3 Hari Putih (13, 14, 15 setiap bulan)\n• Hari Arafah (9 Dzulhijjah)\n  → Menghapus dosa 2 tahun\n• Hari Asyura (10 Muharram)\n  → Menghapus dosa 1 tahun'},
+      6: {'title': 'Lailatul Qadr', 'content': '"Malam Kemuliaan lebih baik dari seribu bulan" (Al-Quran 97:3)\n\nFakta penting:\n• Jatuh pada 10 malam terakhir ganjil Ramadhan (21, 23, 25, 27, 29)\n• Paling mungkin malam ke-27\n• Malaikat turun dan kedamaian merata\n• Ibadah malam ini = ibadah 83 tahun\n\nCara mencarinya:\n• Sholat Tarawih dan Tahajjud\n• Banyak membaca Al-Quran\n• Banyak berdoa\n• Bersedekah\n• Iktikaf (berdiam di masjid)'},
+      7: {'title': 'Zakat Fitrah', 'content': 'Zakat Fitrah adalah sedekah wajib di akhir Ramadhan.\n\n"Nabi mewajibkan Zakat Fitrah sebagai penyucian bagi orang yang berpuasa dan sebagai makanan bagi golongan miskin."\n\nHukum:\n• Wajib bagi setiap Muslim yang memiliki kelebihan makanan\n• Kadar: 1 Sa (sekitar 2.5-3 kg) makanan pokok atau nilai uangnya\n• Harus dibayar sebelum sholat Eid\n• Diberikan kepada fakir miskin\n\nTujuan:\n• Menyucikan orang yang berpuasa\n• Membawa kebahagiaan bagi kaum miskin di Eid'},
+    },
+    'ar': {
+      1: {'title': 'فضل الصيام', 'content': 'قال الله في الحديث القدسي:\n"كل عمل ابن آدم له إلا الصيام فإنه لي وأنا أجزي به."\n\nفضائل الصيام:\n• يطهر الروح والجسد\n• يعلم الصبر والضبط النفسي\n• ينمي التعاطف مع الفقراء\n• مضاعفة الثواب من الله\n• باب الريان في الجنة للصائمين فقط'},
+      2: {'title': 'شروط الصيام', 'content': 'من يجب عليه الصوم:\n• مسلم، عاقل، بالغ\n• صحيح (غير مريض مرضاً شديداً)\n• غير مسافر\n\nالمعذورون:\n• المريض - يقضي لاحقاً\n• المسافر - يقضي لاحقاً\n• الحامل والمرضع - تقضي أو تفتدي\n• العجوز - يفتدي\n• الأطفال - غير واجب\n\nالفدية = إطعام مسكين عن كل يوم'},
+      3: {'title': 'مبطلات الصيام', 'content': 'مبطلات الصيام:\n• الأكل والشرب عمداً\n• الجماع\n• التقيؤ عمداً\n• الحيض والنفاس\n\nما لا يفطر:\n• الأكل والشرب ناسياً\n• المضمضة والاستنشاق\n• الحقنة للعلاج\n• قطرة العين\n• تقبيل الزوجة دون ابتلاع'},
+      4: {'title': 'آداب الصيام', 'content': 'السنن أثناء الصيام:\n• تناول السحور (الأكل قبل الفجر)\n• تأخير السحور حتى قرب الفجر\n• الإفطار فور المغرب\n• الإفطار على تمر وماء\n• الإكثار من قراءة القرآن\n• الإكثار من الصدقة\n• صلاة التراويح\n• تجنب الكلام السيئ والجدال\n• الإكثار من الدعاء خاصة عند الإفطار'},
+      5: {'title': 'الصيام المستحب', 'content': 'الصيام المستحب:\n\n• 6 أيام من شوال (بعد رمضان)\n  ← كصيام السنة كاملة\n• الاثنين والخميس\n  ← كان النبي يصومهما\n• الأيام البيض (13 و14 و15 من كل شهر)\n• يوم عرفة (9 ذو الحجة)\n  ← يكفر ذنوب سنتين\n• يوم عاشوراء (10 محرم)\n  ← يكفر ذنوب سنة'},
+      6: {'title': 'ليلة القدر', 'content': '"لَيْلَةُ الْقَدْرِ خَيْرٌ مِّنْ أَلْفِ شَهْرٍ" (القدر: 3)\n\nحقائق مهمة:\n• في العشر الأواخر الفردية من رمضان (21، 23، 25، 27، 29)\n• أرجحها ليلة 27\n• تنزل الملائكة وتسود السلامة\n• العبادة فيها = عبادة 83 سنة\n\nكيف تتحراها:\n• صلاة التراويح والتهجد\n• الإكثار من قراءة القرآن\n• الإكثار من الدعاء\n• الصدقة\n• الاعتكاف في المسجد'},
+      7: {'title': 'زكاة الفطر', 'content': 'زكاة الفطر صدقة واجبة في ختام رمضان.\n\n"فرض رسول الله زكاة الفطر طهرة للصائم من اللغو والرفث وطعمة للمساكين."\n\nالأحكام:\n• واجبة على كل مسلم يملك فضلاً عن قوته\n• المقدار: صاع (2.5-3 كجم تقريباً) من الطعام الأساسي أو ما يعادله\n• تُخرج قبل صلاة العيد\n• تُعطى للفقراء والمساكين\n\nالغرض:\n• تطهير الصائم\n• إدخال السرور على الفقراء في العيد'},
+    },
+    'ur': {
+      1: {'title': 'روزے کی فضیلت', 'content': 'اللہ نے حدیث قدسی میں فرمایا:\n"ابن آدم کا ہر عمل اس کے لیے ہے سوائے روزے کے، وہ میرے لیے ہے اور میں ہی اس کا بدلہ دوں گا۔"\n\nروزے کی فضیلتیں:\n• روح اور جسم کو پاک کرتا ہے\n• صبر اور نفس پر قابو سکھاتا ہے\n• غریبوں سے ہمدردی پیدا کرتا ہے\n• اللہ کی طرف سے کئی گنا اجر\n• جنت میں ریان کا دروازہ صرف روزہ داروں کے لیے'},
+      2: {'title': 'روزے کی شرائط', 'content': 'جن پر روزہ فرض ہے:\n• مسلمان، عاقل اور بالغ\n• صحت مند (شدید بیمار نہ ہو)\n• مسافر نہ ہو\n\nمعذور افراد:\n• بیمار - بعد میں قضا\n• مسافر - بعد میں قضا\n• حاملہ/دودھ پلانے والی - قضا یا فدیہ\n• بوڑھا - فدیہ\n• بچے - واجب نہیں\n\nفدیہ = ہر چھوٹے روزے کے بدلے ایک مسکین کو کھانا'},
+      3: {'title': 'روزہ توڑنے والی چیزیں', 'content': 'روزہ توڑنے والی چیزیں:\n• جان بوجھ کر کھانا پینا\n• جنسی تعلق\n• جان بوجھ کر قے کرنا\n• حیض یا نفاس\n\nجو روزہ نہیں توڑتیں:\n• بھول کر کھانا پینا\n• کلی یا ناک میں پانی ڈالنا\n• علاج کے لیے انجیکشن\n• آنکھ کے قطرے\n• بیوی کا بوسہ (نگلنے کے بغیر)'},
+      4: {'title': 'روزے کے آداب', 'content': 'روزے کے دوران سنت اعمال:\n• سحری کھانا (فجر سے پہلے)\n• سحری کو فجر کے قریب تک مؤخر کرنا\n• مغرب کے وقت فوری افطار\n• کھجور اور پانی سے افطار\n• قرآن کی کثرت سے تلاوت\n• صدقہ بڑھانا\n• تراویح پڑھنا\n• بری باتوں اور جھگڑے سے بچنا\n• کثرت سے دعا خاص طور پر افطار کے وقت'},
+      5: {'title': 'نفل روزے', 'content': 'مستحب نفل روزے:\n\n• شوال کے 6 روزے (رمضان کے بعد)\n  ← پورے سال روزے رکھنے کے برابر\n• پیر اور جمعرات\n  ← نبی ان دنوں روزہ رکھتے تھے\n• ایام بیض (ہر مہینے کی 13، 14، 15)\n• عرفہ کا روزہ (9 ذی الحجہ)\n  ← دو سال کے گناہ معاف\n• عاشورہ کا روزہ (10 محرم)\n  ← ایک سال کے گناہ معاف'},
+      6: {'title': 'لیلۃ القدر', 'content': '"شب قدر ہزار مہینوں سے بہتر ہے" (القرآن 97:3)\n\naہم حقائق:\n• رمضان کے آخری 10 طاق راتوں میں (21، 23، 25، 27، 29)\n• سب سے زیادہ امکان 27ویں رات\n• فرشتے اترتے ہیں اور سلامتی چھا جاتی ہے\n• اس رات کی عبادت = 83 سال کی عبادت\n\nتلاش کیسے کریں:\n• تراویح اور تہجد پڑھیں\n• کثرت سے قرآن پڑھیں\n• کثرت سے دعا کریں\n• صدقہ کریں\n• اعتکاف (مسجد میں بیٹھنا)'},
+      7: {'title': 'زکاۃ الفطر', 'content': 'زکاۃ الفطر رمضان کے اختتام پر واجب صدقہ ہے۔\n\n"نبی نے زکاۃ الفطر روزہ دار کو لغو اور فحش باتوں سے پاک کرنے اور مساکین کے لیے کھانے کے طور پر مقرر فرمایا۔"\n\nاحکام:\n• ہر اس مسلمان پر واجب جو اپنی ضرورت سے زیادہ کھانا رکھتا ہو\n• مقدار: 1 صاع (تقریباً 2.5-3 کلو) بنیادی غذا یا اس کی قیمت\n• عید کی نماز سے پہلے ادا کی جائے\n• فقراء اور مساکین کو دی جائے\n\nمقصد:\n• روزہ دار کو پاک کرنا\n• عید پر غریبوں کو خوشی دینا'},
+    },
+    'bn': {
+      1: {'title': 'রোজার ফযীলত', 'content': 'আল্লাহ হাদিসে কুদসীতে বলেছেন:\n"আদম সন্তানের প্রতিটি আমল তার জন্য, রোজা ছাড়া; তা আমার জন্য এবং আমিই তার প্রতিদান দেব।"\n\nরোজার ফযীলত:\n• আত্মা ও শরীর পবিত্র করে\n• ধৈর্য ও আত্মনিয়ন্ত্রণ শেখায়\n• গরিবদের প্রতি সহানুভূতি জাগায়\n• আল্লাহর পক্ষ থেকে বহুগুণ পুরস্কার\n• জান্নাতের রাইয়ান দরজা শুধু রোজাদারদের জন্য'},
+      2: {'title': 'রোজার শর্তসমূহ', 'content': 'যাদের উপর রোজা ফরজ:\n• মুসলিম, সুস্থ মস্তিষ্ক ও প্রাপ্তবয়স্ক\n• সুস্বাস্থ্য (মারাত্মক অসুস্থ নয়)\n• মুসাফির নয়\n\nযারা মাফ:\n• অসুস্থ - পরে কাজা\n• মুসাফির - পরে কাজা\n• গর্ভবতী/দুধপানকারী - কাজা বা ফিদিয়া\n• বৃদ্ধ - ফিদিয়া\n• শিশু - ফরজ নয়\n\nফিদিয়া = প্রতিটি মিস করা রোজার জন্য একজন গরিবকে খাওয়ানো'},
+      3: {'title': 'রোজা ভাঙার কারণ', 'content': 'যা রোজা ভাঙে:\n• ইচ্ছাকৃত খাওয়া বা পান করা\n• যৌন সম্পর্ক\n• ইচ্ছাকৃত বমি করা\n• হায়েয বা নিফাস\n\nযা রোজা ভাঙে না:\n• ভুলে খাওয়া বা পান করা\n• কুলি বা নাকে পানি দেওয়া\n• চিকিৎসার জন্য ইনজেকশন\n• চোখের ড্রপ ব্যবহার\n• স্ত্রীকে চুম্বন (গিলে না ফেললে)'},
+      4: {'title': 'রোজার আদব', 'content': 'রোজার সময় সুন্নত আমল:\n• সাহরি খাওয়া (ফজরের আগে)\n• সাহরি ফজরের কাছ পর্যন্ত দেরি করা\n• মাগরিবে সঙ্গে সঙ্গে ইফতার\n• খেজুর ও পানি দিয়ে ইফতার\n• বেশি বেশি কুরআন তিলাওয়াত\n• সদকা বাড়ানো\n• তারাবির নামাজ\n• খারাপ কথা ও ঝগড়া থেকে বিরত\n• বেশি বেশি দোয়া বিশেষত ইফতারের সময়'},
+      5: {'title': 'নফল রোজা', 'content': 'প্রস্তাবিত নফল রোজা:\n\n• শাওয়ালের ৬ রোজা (রমজানের পরে)\n  ← পুরো বছর রোজার সমান\n• সোমবার ও বৃহস্পতিবার\n  ← নবী এই দিনগুলোতে রোজা রাখতেন\n• আইয়ামে বিজ (প্রতি মাসের ১৩, ১৪, ১৫)\n• আরাফার দিন (৯ জিলহজ)\n  ← দুই বছরের গুনাহ মাফ\n• আশুরার দিন (১০ মুহাররম)\n  ← এক বছরের গুনাহ মাফ'},
+      6: {'title': 'লাইলাতুল কদর', 'content': '"শবে কদর হাজার মাসের চেয়ে উত্তম" (কুরআন ৯৭:৩)\n\nগুরুত্বপূর্ণ তথ্য:\n• রমজানের শেষ ১০ বিজোড় রাতে (২১, ২৩, ২৫, ২৭, ২৯)\n• সবচেয়ে বেশি সম্ভাবনা ২৭তম রাতে\n• ফেরেশতারা নামেন এবং শান্তি বিরাজ করে\n• এই রাতের ইবাদত = ৮৩ বছরের ইবাদত\n\nকীভাবে খুঁজবেন:\n• তারাবি ও তাহাজ্জুদ পড়ুন\n• বেশি বেশি কুরআন পড়ুন\n• বেশি বেশি দোয়া করুন\n• সদকা দিন\n• ইতিকাফ (মসজিদে অবস্থান)'},
+      7: {'title': 'যাকাতুল ফিতর', 'content': 'যাকাতুল ফিতর রমজানের শেষে ওয়াজিব সদকা।\n\n"নবী যাকাতুল ফিতর নির্ধারণ করেছেন রোজাদারকে অনর্থক কথা ও অশ্লীলতা থেকে পবিত্র করতে এবং গরিবদের খাবার হিসেবে।"\n\nবিধান:\n• প্রতিটি মুসলিমের উপর ওয়াজিব যার প্রয়োজনের বাইরে খাবার আছে\n• পরিমাণ: ১ সা (প্রায় ২.৫-৩ কেজি) প্রধান খাবার বা সমপরিমাণ অর্থ\n• ঈদের নামাজের আগে আদায় করতে হবে\n• গরিব ও অভাবীদের দিতে হবে\n\nউদ্দেশ্য:\n• রোজাদারকে পবিত্র করা\n• ঈদে গরিবদের আনন্দ দেওয়া'},
+    },
+  },
+  'special_prayer': {
+    'ms': {
+      1: {'title': 'Solat Eidulfitri', 'content': 'Solat Aidilfitri dilakukan pada 1 Syawal selepas Ramadan.\n\nHukum: Sunat Muakkadah\n\nCara solat:\n1. Niat solat Eid\n2. Takbiratul Ihram\n3. Rakaat pertama: 7 takbir tambahan\n4. Baca Al-Fatihah + Surah Al-Ala\n5. Rakaat kedua: 5 takbir tambahan\n6. Baca Al-Fatihah + Surah Al-Ghashiyah\n7. Imam sampaikan 2 khutbah selepas solat\n\nSunat Eid:\n• Makan sebelum pergi solat Eidulfitri\n• Mandi dan pakai pakaian terbaik\n• Baca takbir dalam perjalanan\n• Ambil jalan berbeza pergi dan balik'},
+      2: {'title': 'Solat Eiduladha', 'content': 'Solat Aidiladha dilakukan pada 10 Zulhijjah.\n\nCara sama seperti solat Eidulfitri.\n\nPerbezaan:\n• JANGAN makan sebelum solat (sunat makan selepas)\n• Qurban dilakukan selepas solat\n• Hari qurban: 10, 11, 12, 13 Zulhijjah\n\nHukum qurban:\n• Sunat Muakkadah bagi yang mampu\n• Haiwan: unta, lembu, kerbau, kambing, biri-biri\n• Daging dibahagi 3 bahagian:\n  - Untuk diri sendiri dan keluarga\n  - Untuk sanak saudara dan rakan\n  - Untuk fakir miskin'},
+      3: {'title': 'Solat Jenazah', 'content': 'Solat jenazah adalah Fardhu Kifayah.\n\nSyarat:\n• Si mati mestilah Muslim\n• Jenazah mesti dimandikan dan dikafankan\n\nCara solat:\n1. Berdiri menghadap kiblat\n2. Takbir pertama: baca Al-Fatihah\n3. Takbir kedua: baca selawat ke atas Nabi\n4. Takbir ketiga: baca doa untuk si mati\n   "Allahummaghfir lahu warhamhu wa afihi wa\'fu anhu"\n5. Takbir keempat: doa pendek atau diam\n6. Beri salam kanan dan kiri\n\nCatatan:\n• Tiada rukuk atau sujud\n• Semua dilakukan dalam keadaan berdiri'},
+      4: {'title': 'Solat Tarawih', 'content': 'Tarawih ialah solat malam khas pada bulan Ramadan.\n\nHukum: Sunat Muakkadah\n\nBilangan rakaat:\n• Paling umum: 20 rakaat\n• Juga sah: 8 rakaat\n• Witir: 1 atau 3 rakaat di akhir\n\nCara:\n• Solat 2 rakaat setiap set\n• Rehat pendek (tarwihah) antara set\n• Khatam Al-Quran dalam Ramadan\n\nKelebihan:\n• "Sesiapa yang mendirikan solat Ramadan dengan iman dan mengharap pahala, diampunkan dosanya yang lalu" (Bukhari)'},
+      5: {'title': 'Solat Istisqa', 'content': 'Solat Istisqa dilakukan untuk memohon hujan semasa kemarau.\n\nCara:\n• 2 rakaat seperti solat Eid\n• Imam sampaikan 2 khutbah\n• Perbanyak doa dan istighfar\n• Hadap kiblat semasa berdoa\n\nDoa Istisqa:\n"Allahummasqina ghaysan mughithan marian marian nafian ghayra dharr"\n\nSyarat doa dimakbulkan:\n• Taubat sebelum solat\n• Bersedekah kepada fakir\n• Selesaikan pertikaian dan kezaliman'},
+      6: {'title': 'Solat Kusuf/Khusuf', 'content': '"Matahari dan bulan adalah dua tanda dari tanda-tanda Allah. Ia tidak berlaku gerhana kerana kematian sesiapa." (Bukhari)\n\nKusuf = Gerhana matahari\nKhusuf = Gerhana bulan\n\nCara (unik, berbeza dari solat biasa):\n1. Rakaat pertama:\n   - Baca Al-Fatihah + surah panjang\n   - Rukuk panjang\n   - Bangun dari rukuk\n   - Baca Al-Fatihah + surah lagi (lebih pendek)\n   - Rukuk panjang kedua\n   - Bangun, kemudian sujud 2 kali\n2. Rakaat kedua: sama seperti rakaat pertama\n\nTempoh: Teruskan sehingga gerhana berakhir'},
+    },
+    'id': {
+      1: {'title': 'Sholat Idul Fitri', 'content': 'Sholat Idul Fitri dilakukan pada 1 Syawal setelah Ramadhan.\n\nHukum: Sunnah Muakkadah\n\nCara sholat:\n1. Niat sholat Ied\n2. Takbiratul Ihram\n3. Rakaat pertama: 7 takbir tambahan\n4. Baca Al-Fatihah + Surah Al-Ala\n5. Rakaat kedua: 5 takbir tambahan\n6. Baca Al-Fatihah + Surah Al-Ghashiyah\n7. Imam menyampaikan 2 khutbah setelah sholat\n\nSunnah Eid:\n• Makan sebelum sholat Idul Fitri\n• Mandi dan pakai pakaian terbaik\n• Baca takbir dalam perjalanan\n• Ambil jalan berbeda pergi dan pulang'},
+      2: {'title': 'Sholat Idul Adha', 'content': 'Sholat Idul Adha dilakukan pada 10 Dzulhijjah.\n\nCara sama seperti sholat Idul Fitri.\n\nPerbedaan:\n• JANGAN makan sebelum sholat\n• Qurban dilakukan setelah sholat\n• Hari qurban: 10, 11, 12, 13 Dzulhijjah\n\nHukum qurban:\n• Sunnah Muakkadah bagi yang mampu\n• Hewan: unta, sapi, kerbau, kambing, domba\n• Daging dibagi 3 bagian:\n  - Untuk diri sendiri dan keluarga\n  - Untuk kerabat dan teman\n  - Untuk fakir miskin'},
+      3: {'title': 'Sholat Jenazah', 'content': 'Sholat jenazah adalah Fardhu Kifayah.\n\nSyarat:\n• Jenazah harus Muslim\n• Jenazah harus dimandikan dan dikafankan\n\nCara sholat:\n1. Berdiri menghadap kiblat\n2. Takbir pertama: baca Al-Fatihah\n3. Takbir kedua: baca shalawat atas Nabi\n4. Takbir ketiga: baca doa untuk jenazah\n   "Allahummaghfir lahu warhamhu wa afihi wa\'fu anhu"\n5. Takbir keempat: doa pendek atau diam\n6. Salam kanan dan kiri\n\nCatatan:\n• Tidak ada ruku atau sujud\n• Semua dilakukan dalam posisi berdiri'},
+      4: {'title': 'Sholat Tarawih', 'content': 'Tarawih adalah sholat malam khusus di bulan Ramadhan.\n\nHukum: Sunnah Muakkadah\n\nJumlah rakaat:\n• Paling umum: 20 rakaat\n• Juga sah: 8 rakaat\n• Witir: 1 atau 3 rakaat di akhir\n\nCara:\n• Sholat 2 rakaat setiap set\n• Istirahat pendek (tarwihah) antar set\n• Khatam Al-Quran dalam Ramadhan\n\nKeutamaan:\n• "Barangsiapa mendirikan sholat Ramadhan dengan iman dan mengharap pahala, diampuni dosanya yang lalu" (Bukhari)'},
+      5: {'title': 'Sholat Istisqa', 'content': 'Sholat Istisqa dilakukan untuk memohon hujan saat kemarau.\n\nCara:\n• 2 rakaat seperti sholat Eid\n• Imam menyampaikan 2 khutbah\n• Perbanyak doa dan istighfar\n• Hadap kiblat saat berdoa\n\nDoa Istisqa:\n"Allahummasqina ghaysan mughitsan marian marian nafian ghayra dharr"\n\nSyarat doa dikabulkan:\n• Taubat sebelum sholat\n• Bersedekah kepada fakir\n• Selesaikan perselisihan dan kezaliman'},
+      6: {'title': 'Sholat Kusuf/Khusuf', 'content': '"Matahari dan bulan adalah dua tanda dari tanda-tanda Allah. Keduanya tidak mengalami gerhana karena kematian seseorang." (Bukhari)\n\nKusuf = Gerhana matahari\nKhusuf = Gerhana bulan\n\nCara (unik, berbeda dari sholat biasa):\n1. Rakaat pertama:\n   - Baca Al-Fatihah + surah panjang\n   - Ruku panjang\n   - Bangkit dari ruku\n   - Baca Al-Fatihah + surah lagi (lebih pendek)\n   - Ruku panjang kedua\n   - Bangkit, kemudian sujud 2 kali\n2. Rakaat kedua: sama seperti rakaat pertama\n\nDurasi: Teruskan sampai gerhana berakhir'},
+    },
+    'ar': {
+      1: {'title': 'صلاة عيد الفطر', 'content': 'تُؤدَّى صلاة عيد الفطر في أول شوال بعد رمضان.\n\nالحكم: سنة مؤكدة\n\nطريقة الصلاة:\n1. النية لصلاة العيد\n2. تكبيرة الإحرام\n3. الركعة الأولى: 7 تكبيرات إضافية\n4. قراءة الفاتحة + سورة الأعلى\n5. الركعة الثانية: 5 تكبيرات إضافية\n6. قراءة الفاتحة + سورة الغاشية\n7. خطبتان بعد الصلاة\n\nسنن العيد:\n• الأكل قبل صلاة عيد الفطر\n• الاغتسال ولبس أحسن الثياب\n• قراءة التكبير في الطريق\n• المجيء والعودة من طريقين مختلفين'},
+      2: {'title': 'صلاة عيد الأضحى', 'content': 'تُؤدَّى صلاة عيد الأضحى في العاشر من ذي الحجة.\n\nالطريقة كصلاة عيد الفطر.\n\nالفروق:\n• لا تأكل قبل الصلاة (السنة الأكل بعدها)\n• الأضحية بعد الصلاة\n• أيام النحر: 10، 11، 12، 13 ذو الحجة\n\nالأضحية:\n• سنة مؤكدة لمن يستطيع\n• الأنعام: إبل، بقر، غنم\n• تقسيم اللحم 3 أجزاء:\n  - لنفسه وعائلته\n  - للأقارب والأصدقاء\n  - للفقراء والمساكين'},
+      3: {'title': 'صلاة الجنازة', 'content': 'صلاة الجنازة فرض كفاية.\n\nالشروط:\n• أن يكون الميت مسلماً\n• أن يُغسَّل ويُكفَّن\n\nطريقة الصلاة:\n1. الوقوف مستقبل القبلة\n2. التكبيرة الأولى: قراءة الفاتحة\n3. التكبيرة الثانية: الصلاة على النبي\n4. التكبيرة الثالثة: الدعاء للميت\n   "اللهم اغفر له وارحمه وعافه واعف عنه"\n5. التكبيرة الرابعة: دعاء قصير أو سكوت\n6. التسليم يميناً وشمالاً\n\nملاحظة:\n• لا ركوع ولا سجود\n• كل شيء في القيام'},
+      4: {'title': 'صلاة التراويح', 'content': 'التراويح صلاة الليل الخاصة في رمضان.\n\nالحكم: سنة مؤكدة\n\nعدد الركعات:\n• الأشهر: 20 ركعة\n• يجوز أيضاً: 8 ركعات\n• الوتر: 1 أو 3 ركعات في النهاية\n\nالطريقة:\n• صلاة ركعتين في كل مجموعة\n• استراحة قصيرة بين المجموعات\n• ختم القرآن في رمضان\n\nالفضل:\n• "من قام رمضان إيماناً واحتساباً غُفر له ما تقدم من ذنبه" (البخاري)'},
+      5: {'title': 'صلاة الاستسقاء', 'content': 'صلاة الاستسقاء تُؤدَّى لطلب المطر في أوقات الجفاف.\n\nالطريقة:\n• ركعتان كصلاة العيد\n• الإمام يخطب خطبتين\n• الإكثار من الدعاء والاستغفار\n• استقبال القبلة عند الدعاء\n\nدعاء الاستسقاء:\n"اللهم أسقنا غيثاً مغيثاً مريئاً مريئاً نافعاً غير ضار"\n\nشروط إجابة الدعاء:\n• التوبة قبل الصلاة\n• الصدقة على الفقراء\n• إزالة الظلم والمظالم'},
+      6: {'title': 'صلاة الكسوف والخسوف', 'content': '"الشمس والقمر آيتان من آيات الله لا يخسفان لموت أحد" (البخاري)\n\nالكسوف = كسوف الشمس\nالخسوف = خسوف القمر\n\nالطريقة (مميزة):\n1. الركعة الأولى:\n   - قراءة الفاتحة + سورة طويلة\n   - ركوع طويل\n   - الرفع من الركوع\n   - قراءة الفاتحة + سورة مرة أخرى\n   - ركوع طويل ثانٍ\n   - الرفع ثم السجود\n2. الركعة الثانية: كالأولى\n\nالمدة: تستمر حتى ينتهي الخسوف'},
+    },
+    'ur': {
+      1: {'title': 'عید الفطر کی نماز', 'content': 'عید الفطر کی نماز یکم شوال کو رمضان کے بعد پڑھی جاتی ہے۔\n\nحکم: سنت مؤکدہ\n\nنماز کا طریقہ:\n1. عید کی نماز کی نیت\n2. تکبیر تحریمہ\n3. پہلی رکعت: 7 اضافی تکبیریں\n4. الفاتحہ + سورۃ الاعلی\n5. دوسری رکعت: 5 اضافی تکبیریں\n6. الفاتحہ + سورۃ الغاشیہ\n7. نماز کے بعد 2 خطبے\n\nعید کی سنتیں:\n• عید الفطر کی نماز سے پہلے کچھ کھانا\n• غسل اور بہترین لباس\n• راستے میں تکبیر پڑھنا\n• آتے جاتے مختلف راستہ'},
+      2: {'title': 'عید الاضحیٰ کی نماز', 'content': '10 ذوالحجہ کو عید الاضحیٰ کی نماز پڑھی جاتی ہے۔\n\nطریقہ عید الفطر جیسا۔\n\nفرق:\n• نماز سے پہلے نہ کھائیں\n• قربانی نماز کے بعد\n• قربانی کے دن: 10، 11، 12، 13 ذوالحجہ\n\nقربانی:\n• صاحب استطاعت پر سنت مؤکدہ\n• جانور: اونٹ، گائے، بھینس، بکرا، بھیڑ\n• گوشت 3 حصوں میں:\n  - اپنے اور گھر والوں کے لیے\n  - رشتہ داروں اور دوستوں کے لیے\n  - غریبوں کے لیے'},
+      3: {'title': 'نماز جنازہ', 'content': 'نماز جنازہ فرض کفایہ ہے۔\n\nشرائط:\n• میت مسلمان ہو\n• غسل اور کفن دیا گیا ہو\n\nطریقہ:\n1. قبلہ رخ کھڑے ہوں\n2. پہلی تکبیر: الفاتحہ\n3. دوسری تکبیر: نبی پر درود\n4. تیسری تکبیر: میت کے لیے دعا\n   "اللہم اغفر لہ وارحمہ وعافہ واعف عنہ"\n5. چوتھی تکبیر: مختصر دعا یا خاموشی\n6. دائیں بائیں سلام\n\nنوٹ:\n• رکوع یا سجدہ نہیں\n• سب کھڑے ہو کر'},
+      4: {'title': 'نماز تراویح', 'content': 'تراویح رمضان کی خصوصی رات کی نماز ہے۔\n\nحکم: سنت مؤکدہ\n\nرکعات:\n• سب سے عام: 20 رکعات\n• یہ بھی جائز: 8 رکعات\n• وتر: آخر میں 1 یا 3 رکعات\n\nطریقہ:\n• 2 رکعات کا ہر سیٹ\n• سیٹوں کے درمیان مختصر آرام\n• رمضان میں قرآن ختم\n\nفضیلت:\n• "جو رمضان میں ایمان اور ثواب کی نیت سے قیام کرے اس کے پچھلے گناہ معاف" (بخاری)'},
+      5: {'title': 'نماز استسقاء', 'content': 'نماز استسقاء قحط کے وقت بارش مانگنے کے لیے پڑھی جاتی ہے۔\n\nطریقہ:\n• 2 رکعات عید جیسی\n• امام 2 خطبے دیتا ہے\n• کثرت سے دعا اور استغفار\n• دعا کے وقت قبلہ رخ\n\nدعا:\n"اللہم اسقنا غیثاً مغیثاً مریئاً نافعاً غیر ضار"\n\nقبولیت کی شرائط:\n• نماز سے پہلے توبہ\n• فقراء کو صدقہ\n• ظلم اور جھگڑوں کا ازالہ'},
+      6: {'title': 'نماز کسوف/خسوف', 'content': '"سورج اور چاند اللہ کی نشانیوں میں سے دو نشانیاں ہیں، کسی کی موت سے گرہن نہیں لگتا" (بخاری)\n\nکسوف = سورج گرہن\nخسوف = چاند گرہن\n\nطریقہ (منفرد):\n1. پہلی رکعت:\n   - الفاتحہ + لمبی سورت\n   - لمبا رکوع\n   - رکوع سے اٹھنا\n   - الفاتحہ + سورت پھر\n   - دوسرا لمبا رکوع\n   - اٹھنا، پھر 2 سجدے\n2. دوسری رکعت: پہلی جیسی\n\nمدت: گرہن ختم ہونے تک'},
+    },
+    'bn': {
+      1: {'title': 'ঈদুল ফিতরের নামাজ', 'content': 'ঈদুল ফিতরের নামাজ রমজানের পর ১ শাওয়ালে পড়া হয়।\n\nহুকুম: সুন্নতে মুআক্কাদাহ\n\nনামাজের পদ্ধতি:\n1. ঈদের নামাজের নিয়ত\n2. তাকবিরে তাহরিমা\n3. প্রথম রাকাত: ৭টি অতিরিক্ত তাকবির\n4. আল-ফাতিহা + সূরা আল-আলা\n5. দ্বিতীয় রাকাত: ৫টি অতিরিক্ত তাকবির\n6. আল-ফাতিহা + সূরা আল-গাশিয়াহ\n7. নামাজের পর ২টি খুতবা\n\nঈদের সুন্নত:\n• ঈদুল ফিতরের নামাজের আগে খাওয়া\n• গোসল ও সুন্দর পোশাক\n• পথে তাকবির পড়া\n• যাওয়া-আসার পথ আলাদা রাখা'},
+      2: {'title': 'ঈদুল আযহার নামাজ', 'content': '১০ জিলহজে ঈদুল আযহার নামাজ পড়া হয়।\n\nপদ্ধতি ঈদুল ফিতরের মতো।\n\nপার্থক্য:\n• নামাজের আগে না খাওয়া\n• নামাজের পর কুরবানি\n• কুরবানির দিন: ১০, ১১, ১২, ১৩ জিলহজ\n\nকুরবানি:\n• সামর্থ্যবানের জন্য সুন্নতে মুআক্কাদাহ\n• পশু: উট, গরু, মহিষ, ছাগল, ভেড়া\n• গোশত ৩ ভাগে:\n  - নিজের ও পরিবারের জন্য\n  - আত্মীয় ও বন্ধুদের জন্য\n  - গরিবদের জন্য'},
+      3: {'title': 'জানাজার নামাজ', 'content': 'জানাজার নামাজ ফরজে কিফায়া।\n\nশর্ত:\n• মৃত ব্যক্তি মুসলিম হতে হবে\n• গোসল ও কাফন দেওয়া হতে হবে\n\nপদ্ধতি:\n1. কিবলামুখী দাঁড়ান\n2. প্রথম তাকবির: আল-ফাতিহা\n3. দ্বিতীয় তাকবির: নবীর উপর দরুদ\n4. তৃতীয় তাকবির: মৃতের জন্য দোয়া\n   "আল্লাহুম্মাগফিরলাহু ওয়ারহামহু ওয়াআফিহি ওয়াআফু আনহু"\n5. চতুর্থ তাকবির: সংক্ষিপ্ত দোয়া বা নীরবতা\n6. ডানে বামে সালাম\n\nবিশেষ:\n• রুকু বা সিজদা নেই\n• সব দাঁড়িয়ে'},
+      4: {'title': 'তারাবির নামাজ', 'content': 'তারাবি রমজানের বিশেষ রাতের নামাজ।\n\nহুকুম: সুন্নতে মুআক্কাদাহ\n\nরাকাত সংখ্যা:\n• সবচেয়ে প্রচলিত: ২০ রাকাত\n• এটিও সহিহ: ৮ রাকাত\n• বিতর: শেষে ১ বা ৩ রাকাত\n\nপদ্ধতি:\n• প্রতি সেটে ২ রাকাত\n• সেটের মাঝে সংক্ষিপ্ত বিশ্রাম\n• রমজানে কুরআন খতম\n\nফযীলত:\n• "যে ঈমান ও সওয়াবের আশায় রমজানে কিয়াম করে তার আগের গুনাহ মাফ" (বুখারি)'},
+      5: {'title': 'ইস্তিসকার নামাজ', 'content': 'খরার সময় বৃষ্টির জন্য ইস্তিসকার নামাজ পড়া হয়।\n\nপদ্ধতি:\n• ঈদের মতো ২ রাকাত\n• ইমাম ২টি খুতবা দেন\n• বেশি বেশি দোয়া ও ইস্তিগফার\n• দোয়ার সময় কিবলামুখী\n\nদোয়া:\n"আল্লাহুম্মাসকিনা গাইসান মুগিসান মারিআন নাফিআন গাইরা দার্র"\n\nদোয়া কবুলের শর্ত:\n• নামাজের আগে তাওবা\n• গরিবদের সদকা\n• জুলুম ও ঝগড়া নিরসন'},
+      6: {'title': 'কুসুফ/খুসুফের নামাজ', 'content': '"সূর্য ও চাঁদ আল্লাহর নিদর্শনের দুটি নিদর্শন। কারো মৃত্যুতে গ্রহণ হয় না।" (বুখারি)\n\nকুসুফ = সূর্যগ্রহণ\nখুসুফ = চন্দ্রগ্রহণ\n\nপদ্ধতি (অনন্য):\n1. প্রথম রাকাত:\n   - আল-ফাতিহা + লম্বা সূরা\n   - দীর্ঘ রুকু\n   - রুকু থেকে উঠা\n   - আল-ফাতিহা + সূরা আবার\n   - দ্বিতীয় দীর্ঘ রুকু\n   - উঠে ২টি সিজদাহ\n2. দ্বিতীয় রাকাত: প্রথমের মতো\n\nসময়কাল: গ্রহণ শেষ না হওয়া পর্যন্ত'},
+    },
+  },
+};
+const Map<String, Map<int, Map<String, String>>> kLessonTransliterations = {
+  'pillars': {
+    1: {'latin': 'La ilaha illallahu Muhammadur Rasulullah', 'th': 'ลา อิลาฮะ อิลลัลลอฮุ มุฮัมมะดุร เราะซูลุลลอฮ์'},
+    2: {'latin': 'As-salatu imadud-din', 'th': 'อัศ-ศอลาตุ อิมาดุดดีน'},
+    3: {'latin': 'Wa aqimus-salata wa atuz-zakata', 'th': 'วะ อะกีมุศ ศอลาตะ วะ อาตุซ ซะกาต'},
+    4: {'latin': 'Shahru Ramadanal-ladhi unzila fihil-Quran', 'th': 'ชะฮ์รุ รอมะดอนัลลาซี อุนซิละ ฟีฮิล กุรอาน'},
+    5: {'latin': 'Walillahi alan-nasi hijjul-bayt', 'th': 'วะลิลลาฮิ อะลันนาสิ ฮิจญุล บัยต์'},
+  },
+  'iman': {
+    1: {'latin': 'Qul Huwallahu Ahad', 'th': 'กุล ฮุวัลลอฮุ อะฮัด'},
+    2: {'latin': 'Wal-malaikati wal-kitabi wan-nabiyyin', 'th': 'วัลมะลาอิกะติ วัลกิตาบิ วันนะบิยยีน'},
+    3: {'latin': 'Inna nahnu nazzalnadh-dhikra wa inna lahu lahafidhun', 'th': 'อินนา นะฮ์นุ นัซซัลนาซ ซิกรอ วะอินนา ละฮู ละฮาฝิซูน'},
+    4: {'latin': 'Lakin Rasulallahi wa khataman-nabiyyin', 'th': 'ลากิน เราะซูลัลลอฮิ วะคอตะมันนะบิยยีน'},
+    5: {'latin': 'Wa nadhaalul-mawaziinal-qista li-yawmil-qiyamah', 'th': 'วะนะดะอุล มะวาซีนัล กิสฏะ ลิยะวมิล กิยามะฮ์'},
+    6: {'latin': 'Inna kulla shayin khalaqnahu biqadar', 'th': 'อินนา กุลละ ชัยอิน คอลักนาฮู บิกอดัร'},
+  },
+  'prayer': {
+    1: {'latin': 'Innas-salata kanat alal-muminiina kitaban mawquta', 'th': 'อินนัศ ศอลาตะ กานัต อะลัล มุอ์มินีนะ กิตาบัน เมากูตา'},
+    2: {'latin': 'Ya ayyuhal-ladhina amanu idha qumtum ilas-salati faghsilu wujuhakum', 'th': 'ยา อัยยุฮัลลาซีนะ อามะนู อิซา กุมตุม อิลัศ ศอลาติ ฝักซิลู วุญูฮะกุม'},
+    3: {'latin': 'Allahu Akbar', 'th': 'อัลลอฮุอักบัร'},
+    4: {'latin': 'Bismillahir-rahmanir-rahim', 'th': 'บิสมิลลาฮิร เราะฮ์มานิร เราะฮ์ีม'},
+    5: {'latin': 'Subhana Rabbiyal-Adhim', 'th': 'สุบฮานะ รอบบิยัล อะซีม'},
+    6: {'latin': 'Subhana Rabbiyal-Ala', 'th': 'สุบฮานะ รอบบิยัล อะอ์ลา'},
+    7: {'latin': 'At-tahiyyatu lillahi was-salawatu wat-tayyibat', 'th': 'อัตตะฮิยยาตุ ลิลลาฮิ วัศศอลาวาตุ วัฏฏ็อยยิบาต'},
+    8: {'latin': 'Fa idha qadhaitumussalata fadhkurullaha', 'th': 'ฝะ อิซา กอดอยตุมุศ ศอลาตะ ฝัซกุรุลลอฮ์'},
+  },
+  'hadith': {
+    1: {'latin': 'Innamal-amalu bin-niyyat', 'th': 'อินนะมัล อะมาลุ บิน นิยยาต'},
+    2: {'latin': 'Buniyal-Islamu ala khams', 'th': 'บุนิยัล อิสลามุ อะลา คัมส์'},
+    3: {'latin': 'Al-halalu bayyinun wal-haramu bayyinun', 'th': 'อัลฮะลาลุ บัยยินุน วัลฮะรามุ บัยยินุน'},
+    4: {'latin': 'La yuminu ahadukum hatta yuhibba li-akhihi ma yuhibbu li-nafsih', 'th': 'ลา ยุอ์มินุ อะฮะดุกุม ฮัตตา ยุฮิบบะ ลิอะคีฮิ มา ยุฮิบบุ ลินัฝซิฮ์'},
+    5: {'latin': 'Ad-dinu an-nasihah', 'th': 'อัดดีนุ อัน นะศีฮะฮ์'},
+    6: {'latin': 'Min husni Islamil-maryi tarkuhu ma la yanihi', 'th': 'มิน ฮุสนิ อิสลามิล มัรอิ ตัรกุฮู มา ลา ยะนีฮี'},
+    7: {'latin': 'Tabasumuka fi wajhi akhika laka sadaqah', 'th': 'ตะบัสสุมุกะ ฝี วัจฮิ อะคีกะ ละกะ ศอดะกะฮ์'},
+    8: {'latin': 'Irhamuu man fil-ardhi yarhamkum man fis-sama', 'th': 'อิรฮะมู มัน ฝิล อัรดิ ยัรฮะมกุม มัน ฝิสสะมา'},
+    9: {'latin': 'Al-muminul-qawiyyu khayrun wa ahabbu ilallahi minal-muminidhdhаif', 'th': 'อัลมุอ์มินุล กอวิยยุ คอยรุน วะ อะฮับบุ อิลัลลอฮิ มินัล มุอ์มินิดดออีฝ์'},
+    10: {'latin': 'La dharara wa la dhirar', 'th': 'ลา ดอรอรอ วะลา ดิรอร'},
+  },
+  'adab': {
+    1: {'latin': 'Assalamu alaykum wa rahmatullahi wa barakatuh', 'th': 'อัสสะลามุอะลัยกุม วะเราะฮ์มะตุลลอฮิ วะบะเราะกาตุฮ์'},
+    2: {'latin': 'Bismillah', 'th': 'บิสมิลลาฮ์'},
+    3: {'latin': 'Wa qadha rabbuka alla tabudu illa iyyahu wa bil-walidayni ihsana', 'th': 'วะ กอดอ รอบบุกะ อัลลา ตะอ์บุดู อิลลา อิยยาฮุ วะบิล วาลิดัยนิ อิฮ์ซานา'},
+    4: {'latin': 'Alaykum bis-sidqi fa innas-sidqa yahdi ilal-birr', 'th': 'อะลัยกุม บิศศิดกิ ฝะ อินนัศ ศิดกะ ยะฮ์ดี อิลัล บิรร์'},
+    5: {'latin': 'At-tahuru shatrul-iman', 'th': 'อัฏฏะฮูรุ ชัฏรุล อีมาน'},
+  },
+  'history': {
+    1: {'latin': 'Muhammadur Rasulullah', 'th': 'มุฮัมมะดุร เราะซูลุลลอฮ์'},
+    2: {'latin': 'Iqra bismi rabbikalladhi khalaq', 'th': 'อิกรอ บิสมิ รอบบิกัลลาซี คอลอก'},
+    3: {'latin': 'Innal-ladhina amanu wa hajaru wa jahadu fi sabilillah', 'th': 'อินนัลลาซีนะ อามะนู วะฮาญะรู วะญาฮะดู ฝี ซะบีลิลลาฮ์'},
+    4: {'latin': 'Wa aiddu lahum mastatatam min quwwah', 'th': 'วะ อะอิดดู ละฮุม มัสตะฏ็อตุม มิน กุววะฮ์'},
+    5: {'latin': 'Khulafaur-Rashidun', 'th': 'คุลาฝาอุรรอชิดูน'},
+    6: {'latin': 'Huwal-ladhi arsala rasulahu bil-huda', 'th': 'ฮุวัลลาซี อัรสะละ เราะซูละฮู บิลฮุดา'},
+  },
+  'fasting': {
+    1: {'latin': 'Kullu amali bni adama lahu illasswama fa innahu li wa ana ajzi bihi', 'th': 'กุลลุ อะมะลิ บนิ อาดะมะ ละฮู อิลลัศศิยามะ ฝะ อินนะฮู ลี วะ อะนา อัจ์ซี บิฮี'},
+    2: {'latin': 'Ya ayyuhal-ladhina amanu kutiba alaykumus-siyam', 'th': 'ยา อัยยุฮัลลาซีนะ อามะนู กุติบะ อะลัยกุมุศ ศิยาม'},
+    3: {'latin': 'Wa kulu washrabu hatta yatabayyana lakumul-khaytu al-abyadhu', 'th': 'วะ กุลู วัชรอบู ฮัตตา ยะตะบัยยะนะ ละกุมุล คอยฏุล อับยัดุ'},
+    4: {'latin': 'Idha kana yawmu sawmi ahadikum fala yarfuth wa la yaskhab', 'th': 'อิซา กานะ ยะวมุ เซาวมิ อะฮะดิกุม ฝะลา ยัรฝุษ วะลา ยัศคอบ'},
+    5: {'latin': 'Man sama yawman fi sabilillahi baada Allahu wajhahu anis-nari sabiina kharifa', 'th': 'มัน ศอมะ ยะวมัน ฝี ซะบีลิลลาฮิ บะอัดะ อัลลอฮุ วัจฮะฮู อะนิน นาริ ซับอีนะ คอรีฝา'},
+    6: {'latin': 'Laylatul-Qadri khayrun min alfi shahr', 'th': 'ลัยลาตุล กอดรี คอยรุน มิน อัลฝิ ชะฮ์ร'},
+    7: {'latin': 'Faradha Rasulullahi zakatil-fitri tuhuratan lissaim', 'th': 'ฝะรอดอ เราะซูลุลลอฮิ ซะกาติล ฝิฏรี ฏุฮูรอตัน ลิศศออิม'},
+  },
+  'special_prayer': {
+    1: {'latin': 'Wa qumu lillahi qaanitin', 'th': 'วะ กูมู ลิลลาฮิ กอนิตีน'},
+    2: {'latin': 'Inna salati wa nusuki wa mahyaya wa mamati lillahi rabbil-alamin', 'th': 'อินนา ศอลาตี วะ นุสุกี วะ มะฮ์ยายะ วะ มะมาตี ลิลลาฮิ รอบบิล อาลามีน'},
+    3: {'latin': 'Wa la taqulu liman yuqtalu fi sabilillahi amwat', 'th': 'วะลา ตะกูลู ลิมัน ยุกตะลู ฝี ซะบีลิลลาฮิ อัมวาต'},
+    4: {'latin': 'Wa min al-layli fa-tahajjad bihi nafilatan laka', 'th': 'วะ มินัลลัยลิ ฝะตะฮัจญัด บิฮี นาฝิละตัน ลาก'},
+    5: {'latin': 'Wastaqhimullaha rabbakum thumma tubu ilayh', 'th': 'วัสตัฆฟิรู อัลลอฮะ รอบบะกุม ษุมมะ ตูบู อิลัยฮ์'},
+    6: {'latin': 'Inna shams wal-qamara ayatani min ayatillah', 'th': 'อินนัช ชัมสะ วัลกอมะรอ อายะตานิ มิน อายาติลลาฮ์'},
+  },
 };
 
-// ── Lesson Data ────────────────────────────────────
+String _getLessonTrans(Map<String, dynamic> lesson, String lang) {
+  if (lang == 'ar') return '';
+  final catId = lesson['catId'] as String? ?? '';
+  final no = lesson['no'] as int? ?? 0;
+  final transMap = kLessonTransliterations[catId]?[no];
+  if (transMap == null) return '';
+  if (lang == 'th') return transMap['th'] ?? transMap['latin'] ?? '';
+  return transMap['latin'] ?? '';
+}
 class LessonData {
   static List<Map<String, dynamic>> getLesson(String id) {
     switch (id) {
@@ -257,6 +435,8 @@ class LessonData {
       case 'hadith': return _hadith;
       case 'adab': return _adab;
       case 'history': return _history;
+      case 'fasting': return _fasting;
+      case 'special_prayer': return _specialPrayer;
       default: return [];
     }
   }
@@ -518,9 +698,91 @@ class LessonData {
       'contentTh': 'อิสลามแพร่กระจายอย่างรวดเร็วทั่วโลก:\n\n• ศตวรรษที่ 7: คาบสมุทรอาหรับ เปอร์เซีย ไบแซนไทน์\n• ศตวรรษที่ 8: แอฟริกาเหนือ สเปน เอเชียกลาง\n• ศตวรรษที่ 9-10: เส้นทางการค้าสู่เอเชียตะวันออกเฉียงใต้\n• ปัจจุบัน: มุสลิม 1.8 พันล้านคนทั่วโลก (24% ของประชากรโลก)\n\nอิสลามแพร่กระจายผ่านการค้า วิชาการ และสารของอัลกุรอาน',
     },
   ];
-}
 
-// ── LessonsPage ────────────────────────────────────
+  static final List<Map<String, dynamic>> _fasting = [
+    {
+      'no': 1, 'titleEn': 'The Virtues of Fasting', 'titleTh': 'คุณค่าของการถือศีลอด',
+      'arabic': 'كُلُّ عَمَلِ ابْنِ آدَمَ لَهُ إِلَّا الصَّوْمَ فَإِنَّهُ لِي وَأَنَا أَجْزِي بِهِ',
+      'contentEn': 'Allah says in the Hadith Qudsi:\n"Every deed of the son of Adam is for him except fasting; it is for Me and I shall reward it."\n\nVirtues of fasting:\n• Purifies the soul and body\n• Teaches patience and self-control\n• Develops empathy for the poor\n• Multiplied rewards from Allah\n• The gate of Rayyan in Paradise is only for those who fast\n• Fasting is a shield against sins',
+      'contentTh': 'อัลลอฮ์ตรัสในหะดีษกุดซี:\n"ทุกการกระทำของบุตรอาดัมเป็นของเขา ยกเว้นการถือศีลอด มันเป็นของข้า และข้าจะตอบแทน"\n\nคุณค่าของการถือศีลอด:\n• ชำระจิตใจและร่างกาย\n• สอนความอดทนและการควบคุมตนเอง\n• พัฒนาความเห็นอกเห็นใจผู้ยากจน\n• รางวัลทวีคูณจากอัลลอฮ์\n• ประตูร็อยยานในสวรรค์สำหรับผู้ถือศีลอดเท่านั้น\n• การถือศีลอดเป็นโล่ป้องกันบาป',
+    },
+    {
+      'no': 2, 'titleEn': 'Conditions of Fasting', 'titleTh': 'เงื่อนไขของการถือศีลอด',
+      'arabic': 'يَا أَيُّهَا الَّذِينَ آمَنُوا كُتِبَ عَلَيْكُمُ الصِّيَامُ',
+      'contentEn': 'Who must fast:\n• Muslim, sane, and adult (puberty)\n• Physically able (not seriously ill)\n• Not traveling (though can make up later)\n\nWho is exempt:\n• The ill - make up later\n• Travelers - make up later\n• Pregnant/breastfeeding women - make up or pay fidyah\n• The elderly who cannot fast - pay fidyah\n• Children - not obligatory\n\nFidyah = feeding one poor person per day missed',
+      'contentTh': 'ผู้ที่ต้องถือศีลอด:\n• มุสลิม มีสติสัมปชัญญะ และบรรลุนิติภาวะ\n• มีสุขภาพแข็งแรง (ไม่ป่วยหนัก)\n• ไม่ได้เดินทาง (แต่ชดเชยได้)\n\nผู้ที่ได้รับการยกเว้น:\n• ผู้ป่วย - ชดเชยภายหลัง\n• นักเดินทาง - ชดเชยภายหลัง\n• สตรีตั้งครรภ์/ให้นม - ชดเชยหรือจ่ายฟิดยะห์\n• ผู้สูงอายุที่ไม่สามารถถือได้ - จ่ายฟิดยะห์\n• เด็ก - ยังไม่บังคับ\n\nฟิดยะห์ = เลี้ยงอาหารคนยากจน 1 คนต่อวันที่ขาด',
+    },
+    {
+      'no': 3, 'titleEn': 'Things That Break the Fast', 'titleTh': 'สิ่งที่ทำให้เสียการถือศีลอด',
+      'arabic': 'وَكُلُوا وَاشْرَبُوا حَتَّىٰ يَتَبَيَّنَ لَكُمُ الْخَيْطُ الْأَبْيَضُ',
+      'contentEn': 'Major invalidators (require making up the fast):\n• Eating or drinking intentionally\n• Sexual intercourse\n• Intentional vomiting\n• Menstruation or postnatal bleeding\n\nThings that do NOT break the fast:\n• Unintentional eating or drinking (forgetting)\n• Rinsing the mouth or nose\n• Injection (for medical purposes)\n• Using eye drops\n• Kissing spouse (without swallowing)\n• Bad thoughts (without acting on them)',
+      'contentTh': 'สิ่งที่ทำให้ศีลอดเสีย (ต้องชดเชย):\n• กินหรือดื่มโดยตั้งใจ\n• การมีเพศสัมพันธ์\n• อาเจียนโดยตั้งใจ\n• ประจำเดือนหรือเลือดหลังคลอด\n\nสิ่งที่ไม่ทำให้ศีลอดเสีย:\n• กินหรือดื่มโดยลืม (ไม่ตั้งใจ)\n• บ้วนปากหรือสูดน้ำเข้าจมูก\n• ฉีดยา (เพื่อการรักษา)\n• ใช้ยาหยอดตา\n• จูบคู่สมรส (โดยไม่กลืน)\n• ความคิดชั่ว (โดยไม่กระทำ)',
+    },
+    {
+      'no': 4, 'titleEn': 'Etiquette of Fasting', 'titleTh': 'มารยาทในการถือศีลอด',
+      'arabic': 'إِذَا كَانَ يَوْمُ صَوْمِ أَحَدِكُمْ فَلَا يَرْفُثْ وَلَا يَصْخَبْ',
+      'contentEn': 'Sunnah acts during fasting:\n• Eat Suhoor (pre-dawn meal) - great blessing\n• Delay Suhoor until just before Fajr\n• Break fast promptly at Maghrib\n• Break fast with dates and water\n• Increase Quran recitation\n• Give more charity (Sadaqah)\n• Perform extra prayers (Tarawih)\n• Avoid bad speech, arguments and lies\n• Make lots of dua, especially at iftar\n• Seek Lailatul Qadr in last 10 nights',
+      'contentTh': 'ซุนนะห์ในการถือศีลอด:\n• กินสะฮูร (อาหารก่อนรุ่งอรุณ) - มีบะเราะกะห์มาก\n• ช้าสะฮูรจนใกล้ฟัจร์\n• ละศีลอดทันทีเมื่อถึงมัฆริบ\n• ละศีลอดด้วยอินทผลัมและน้ำ\n• เพิ่มการอ่านอัลกุรอาน\n• บริจาคทานมากขึ้น\n• ละหมาดตะรอวีห์\n• หลีกเลี่ยงคำพูดไม่ดี การทะเลาะ และการโกหก\n• ดุอามากๆ โดยเฉพาะตอนละศีลอด\n• แสวงหาคืนลัยลาตุลก็อดร์ใน 10 คืนสุดท้าย',
+    },
+    {
+      'no': 5, 'titleEn': 'Voluntary (Sunnah) Fasting', 'titleTh': 'การถือศีลอดสุนัต',
+      'arabic': 'مَنْ صَامَ يَوْمًا فِي سَبِيلِ اللَّهِ بَعَّدَ اللَّهُ وَجْهَهُ عَنِ النَّارِ سَبْعِينَ خَرِيفًا',
+      'contentEn': 'Recommended voluntary fasts:\n\n• 6 days of Shawwal (after Ramadan)\n  → Like fasting the whole year\n• Monday and Thursday\n  → Prophet fasted these days\n• 3 White Days (13th, 14th, 15th of each month)\n• Day of Arafah (9th Dhul Hijjah)\n  → Expiates sins of 2 years\n• Day of Ashura (10th Muharram)\n  → Expiates sins of 1 year\n• Fasting of Dawud (alternating days)',
+      'contentTh': 'การถือศีลอดสุนัตที่แนะนำ:\n\n• 6 วันในเดือนชะวาล (หลังรอมฎอน)\n  → เหมือนถือศีลอดตลอดทั้งปี\n• วันจันทร์และพฤหัสบดี\n  → ท่านนบีถือศีลอดวันเหล่านี้\n• 3 วันขาว (วันที่ 13, 14, 15 ของทุกเดือน)\n• วันอะรอฟะห์ (9 ซุลฮิจญะห์)\n  → ลบบาป 2 ปี\n• วันอาชูรอ (10 มุฮัรรอม)\n  → ลบบาป 1 ปี\n• การถือศีลอดของนบีดาวูด (สลับวัน)',
+    },
+    {
+      'no': 6, 'titleEn': 'Lailatul Qadr (Night of Power)', 'titleTh': 'ลัยลาตุลก็อดร์ (คืนแห่งพลัง)',
+      'arabic': 'لَيْلَةُ الْقَدْرِ خَيْرٌ مِّنْ أَلْفِ شَهْرٍ',
+      'contentEn': '"The Night of Power is better than a thousand months" (Quran 97:3)\n\nKey facts:\n• Falls in the last 10 odd nights of Ramadan (21, 23, 25, 27, 29)\n• Most likely the 27th night\n• Angels descend and peace prevails\n• Worship on this night = 83 years of worship\n\nHow to seek it:\n• Pray Tarawih and Tahajjud\n• Recite Quran abundantly\n• Make lots of dua\n• Recite: "Allahumma innaka afuwwun tuhibbul afwa faafu anni"\n• Give charity\n• Do Iikaf (seclusion in mosque)',
+      'contentTh': '"คืนแห่งพลังดีกว่าหนึ่งพันเดือน" (อัลกุรอาน 97:3)\n\nข้อเท็จจริงสำคัญ:\n• อยู่ใน 10 คืนสุดท้ายที่เป็นคี่ของรอมฎอน (21, 23, 25, 27, 29)\n• น่าจะเป็นคืนที่ 27 มากที่สุด\n• มะลาอิกะห์ลงมาและมีความสงบสุข\n• การอิบาดะห์คืนนี้ = การอิบาดะห์ 83 ปี\n\nวิธีแสวงหา:\n• ละหมาดตะรอวีห์และตะฮัจญุด\n• อ่านอัลกุรอานมากๆ\n• ดุอามากๆ\n• อ่าน: "อัลลอฮุมมะ อินนะกะ อะฝุววุน ตุฮิบบุล อัฝวะ ฝะอ์ฝุ อันนี"\n• บริจาคทาน\n• อิอ์ติกาฟ (เก็บตัวในมัสยิด)',
+    },
+    {
+      'no': 7, 'titleEn': 'Zakat al-Fitr', 'titleTh': 'ซะกาตุลฟิฏร์',
+      'arabic': 'فَرَضَ رَسُولُ اللَّهِ زَكَاةَ الْفِطْرِ طُهْرَةً لِلصَّائِمِ',
+      'contentEn': 'Zakat al-Fitr is obligatory charity at end of Ramadan.\n\n"The Prophet prescribed Zakat al-Fitr as purification of the fasting person from idle talk and obscenities, and as food for the poor."\n\nRulings:\n• Obligatory on every Muslim who has food beyond needs\n• Amount: 1 Sa (approx. 2.5-3 kg) of staple food or its cash equivalent\n• Must be paid before Eid prayer\n• Given to the poor and needy\n• Can be paid in cash equivalent in most schools\n\nPurpose:\n• Purifies the fasting person\n• Brings joy to the poor on Eid',
+      'contentTh': 'ซะกาตุลฟิฏร์คือการบริจาคบังคับเมื่อสิ้นรอมฎอน\n\n"ท่านนบีบัญญัติซะกาตุลฟิฏร์เพื่อชำระผู้ถือศีลอดจากคำพูดไร้สาระและลามก และเป็นอาหารสำหรับคนยากจน"\n\nหลักการ:\n• บังคับสำหรับทุกมุสลิมที่มีอาหารเกินความต้องการ\n• จำนวน: 1 ศออ์ (ประมาณ 2.5-3 กก.) ของอาหารหลักหรือมูลค่าเทียบเท่า\n• ต้องจ่ายก่อนละหมาดอีด\n• ให้แก่คนยากจนและผู้ขัดสน\n• จ่ายเป็นเงินสดได้ตามทัศนะส่วนใหญ่\n\nจุดประสงค์:\n• ชำระผู้ถือศีลอด\n• นำความสุขมาสู่คนยากจนในวันอีด',
+    },
+  ];
+
+  static final List<Map<String, dynamic>> _specialPrayer = [
+    {
+      'no': 1, 'titleEn': 'Eid al-Fitr Prayer', 'titleTh': 'ละหมาดอีดุลฟิฏร์',
+      'arabic': 'وَقُومُوا لِلَّهِ قَانِتِينَ',
+      'contentEn': 'Eid al-Fitr prayer is performed on the 1st of Shawwal after Ramadan.\n\nRulings:\n• Sunnah Muakkadah (strongly recommended)\n• Performed in congregation\n• Time: After sunrise until before Dhuhr\n• Best performed in open field (musalla)\n• No Adhan or Iqamah\n\nHow to pray:\n1. Intention for Eid prayer\n2. Takbiratul Ihram: "Allahu Akbar"\n3. First rakah: 7 additional takbirs\n4. Recite Al-Fatihah + Surah Al-Ala\n5. Second rakah: 5 additional takbirs\n6. Recite Al-Fatihah + Surah Al-Ghashiyah\n7. Imam delivers 2 khutbahs after prayer\n\nSunnah of Eid:\n• Eat before going for Eid al-Fitr prayer\n• Ghusl, wear best clothes\n• Recite Takbir on the way to prayer\n• Use different routes going and returning',
+      'contentTh': 'ละหมาดอีดุลฟิฏร์ทำในวันที่ 1 เชาวาล หลังรอมฎอน\n\nหลักการ:\n• ซุนนะห์มุอักกะดะห์ (แนะนำอย่างยิ่ง)\n• ทำเป็นญะมาอะห์\n• เวลา: หลังพระอาทิตย์ขึ้นถึงก่อนซุฮร์\n• ดีที่สุดคือทำในที่โล่งแจ้ง\n• ไม่มีอาซานและอิกอมะห์\n\nวิธีละหมาด:\n1. ตั้งนิยะห์ละหมาดอีด\n2. ตักบีเราะตุลอิฮ์รอม: "อัลลอฮุอักบัร"\n3. ร็อกอะห์แรก: ตักบีรเพิ่ม 7 ครั้ง\n4. อ่านอัลฟาติฮะห์ + ซูเราะห์อัลอะลา\n5. ร็อกอะห์ที่สอง: ตักบีรเพิ่ม 5 ครั้ง\n6. อ่านอัลฟาติฮะห์ + ซูเราะห์อัลฆอชิยะห์\n7. อิหม่ามกล่าวคุฏบะห์ 2 ครั้งหลังละหมาด\n\nซุนนะห์วันอีด:\n• กินก่อนไปละหมาดอีดุลฟิฏร์\n• อาบน้ำ แต่งกายสวยงาม\n• อ่านตักบีรระหว่างทาง\n• ใช้เส้นทางต่างกันขาไปและขากลับ',
+    },
+    {
+      'no': 2, 'titleEn': 'Eid al-Adha Prayer', 'titleTh': 'ละหมาดอีดุลอัฎฮา',
+      'arabic': 'إِنَّ صَلَاتِي وَنُسُكِي وَمَحْيَايَ وَمَمَاتِي لِلَّهِ رَبِّ الْعَالَمِينَ',
+      'contentEn': 'Eid al-Adha prayer is performed on 10th Dhul Hijjah.\n\nSame method as Eid al-Fitr prayer:\n• 2 rakahs with additional takbirs\n• First rakah: 7 takbirs\n• Second rakah: 5 takbirs\n\nDifferences from Eid al-Fitr:\n• Do NOT eat before prayer (sunnah to eat after)\n• Qurbani (sacrifice) is done after prayer\n• Days of sacrifice: 10, 11, 12, 13 Dhul Hijjah\n\nQurbani rulings:\n• Sunnah Muakkadah for those who can afford it\n• Animals: camel, cow, buffalo, goat, sheep\n• Must be healthy and of proper age\n• Meat divided into 3 parts:\n  - For self and family\n  - For relatives and friends\n  - For the poor\n\nTakbir of Tashreeq:\n• Recited after every fard prayer\n• From Fajr of 9th Dhul Hijjah\n• Until Asr of 13th Dhul Hijjah',
+      'contentTh': 'ละหมาดอีดุลอัฎฮาทำในวันที่ 10 ซุลฮิจญะห์\n\nวิธีเหมือนละหมาดอีดุลฟิฏร์:\n• 2 ร็อกอะห์ พร้อมตักบีรเพิ่ม\n• ร็อกอะห์แรก: ตักบีร 7 ครั้ง\n• ร็อกอะห์ที่สอง: ตักบีร 5 ครั้ง\n\nต่างจากอีดุลฟิฏร์:\n• ไม่ควรกินก่อนละหมาด (ซุนนะห์กินหลัง)\n• เชือดกุรบาน (อุฎฮียะห์) หลังละหมาด\n• วันเชือด: 10, 11, 12, 13 ซุลฮิจญะห์\n\nหลักการกุรบาน:\n• ซุนนะห์มุอักกะดะห์สำหรับผู้มีความสามารถ\n• สัตว์: อูฐ วัว กระบือ แพะ แกะ\n• ต้องสุขภาพดีและอายุครบ\n• เนื้อแบ่ง 3 ส่วน:\n  - สำหรับตนเองและครอบครัว\n  - สำหรับญาติและเพื่อน\n  - สำหรับคนยากจน\n\nตักบีรตัชรีก:\n• อ่านหลังละหมาดฟัรดูทุกเวลา\n• ตั้งแต่ฟัจร์วันที่ 9 ซุลฮิจญะห์\n• ถึงอัศร์วันที่ 13 ซุลฮิจญะห์',
+    },
+    {
+      'no': 3, 'titleEn': 'Funeral Prayer (Janazah)', 'titleTh': 'ละหมาดญะนาซะห์ (มายัต)',
+      'arabic': 'وَلَا تَقُولُوا لِمَن يُقْتَلُ فِي سَبِيلِ اللَّهِ أَمْوَاتٌ',
+      'contentEn': 'Janazah prayer is Fard Kifayah (communal obligation).\n\nConditions:\n• The deceased must be Muslim\n• Body must be washed and shrouded\n• Prayer must be before burial\n\nMethod:\n1. Stand facing Qibla, body in front\n2. First Takbir: recite Al-Fatihah\n3. Second Takbir: recite Salawat on Prophet\n4. Third Takbir: recite dua for deceased\n   "Allahummaghfir lahu warhamhu wa afihi wa\'fu anhu"\n5. Fourth Takbir: short dua or silent\n6. Give Salam to right and left\n\nNote:\n• No Ruku or Sujud\n• All done standing\n• No Adhan or Iqamah\n• Women may join the prayer\n• Can pray over grave if missed',
+      'contentTh': 'ละหมาดญะนาซะห์เป็นฟัรดูกิฟายะห์ (ภาระรวมของชุมชน)\n\nเงื่อนไข:\n• ผู้เสียชีวิตต้องเป็นมุสลิม\n• ต้องอาบน้ำและห่อผ้าแล้ว\n• ต้องละหมาดก่อนฝังศพ\n\nวิธีละหมาด:\n1. ยืนหันหน้าไปทางกิบลัต ศพอยู่ข้างหน้า\n2. ตักบีรที่ 1: อ่านอัลฟาติฮะห์\n3. ตักบีรที่ 2: อ่านศอลาวาตแด่นบี\n4. ตักบีรที่ 3: ดุอาให้ผู้เสียชีวิต\n   "อัลลอฮุมมัฆฝิร ละฮู วัรฮัมฮุ วะอาฝิฮิ วัอ์ฝุ อันฮุ"\n5. ตักบีรที่ 4: ดุอาสั้นหรือนิ่ง\n6. กล่าวสลามซ้ายขวา\n\nหมายเหตุ:\n• ไม่มีรุกูอ์หรือสุญูด\n• ทั้งหมดทำในท่ายืน\n• ไม่มีอาซานหรืออิกอมะห์\n• สตรีเข้าร่วมได้\n• ละหมาดบนหลุมฝังศพได้หากพลาด',
+    },
+    {
+      'no': 4, 'titleEn': 'Tarawih Prayer', 'titleTh': 'ละหมาดตะรอวีห์',
+      'arabic': 'وَمِنَ اللَّيْلِ فَتَهَجَّدْ بِهِ نَافِلَةً لَّكَ',
+      'contentEn': 'Tarawih is the special night prayer performed in Ramadan.\n\nRulings:\n• Sunnah Muakkadah\n• Performed in congregation at mosque\n• After Isha prayer and before Witr\n• Time: After Isha until Fajr\n\nNumber of rakahs:\n• Most common: 20 rakahs (Hanafi, Maliki, Shafi)\n• Also valid: 8 rakahs (based on some hadith)\n• Witr: 1 or 3 rakahs at end\n\nMethod:\n• Prayed in sets of 2 rakahs\n• Short rest (tarwihah) between sets\n• Complete Quran recitation in Ramadan (Khatam)\n\nVirtues:\n• "Whoever prays Ramadan nights with faith and seeking reward, his past sins are forgiven" (Bukhari)',
+      'contentTh': 'ตะรอวีห์คือการละหมาดกลางคืนพิเศษในรอมฎอน\n\nหลักการ:\n• ซุนนะห์มุอักกะดะห์\n• ทำเป็นญะมาอะห์ในมัสยิด\n• หลังละหมาดอิชาอ์ก่อนวิตร์\n• เวลา: หลังอิชาอ์ถึงฟัจร์\n\nจำนวนร็อกอะห์:\n• นิยมมากที่สุด: 20 ร็อกอะห์ (ฮะนะฟี มาลิกี ชาฝีอี)\n• ถูกต้องเช่นกัน: 8 ร็อกอะห์ (ตามบางหะดีษ)\n• วิตร์: 1 หรือ 3 ร็อกอะห์ท้าย\n\nวิธีละหมาด:\n• ละหมาดทีละ 2 ร็อกอะห์\n• พักสั้นๆ (ตัรวีฮะห์) ระหว่างชุด\n• อ่านอัลกุรอานครบในรอมฎอน (ค็อตม์)\n\nอานิสงส์:\n• "ผู้ใดละหมาดในคืนรอมฎอนด้วยศรัทธาและหวังผลตอบแทน บาปที่ผ่านมาของเขาจะได้รับการอภัย" (บุคอรี)',
+    },
+    {
+      'no': 5, 'titleEn': 'Istisqa Prayer (Rain Prayer)', 'titleTh': 'ละหมาดอิสติสก้า (ขอฝน)',
+      'arabic': 'وَأَنِ اسْتَغْفِرُوا رَبَّكُمْ ثُمَّ تُوبُوا إِلَيْهِ',
+      'contentEn': 'Istisqa prayer is performed to seek rain during drought.\n\nMethod:\n• 2 rakahs like Eid prayer\n• Imam delivers 2 khutbahs\n• In second khutbah: imam turns cloak inside out as sign of change\n• Make abundant dua and istighfar\n• Face Qibla during dua\n\nDua of Istisqa:\n"Allahumma-asqina ghaysan mughithan mari\'an mari\'an nafi\'an ghayra dharr"\n\nConditions for answered prayer:\n• Tawbah (repentance) before the prayer\n• Give charity to the poor\n• Resolve disputes and oppressions\n• Sincerity and humility before Allah\n\nWhen rain comes:\n• Say: "Allahumma sayyiban nafi\'a"\n• Do not curse the rain\n• Seek shelter from harmful rain',
+      'contentTh': 'ละหมาดอิสติสก้าทำเพื่อขอฝนในยามแล้ง\n\nวิธีละหมาด:\n• 2 ร็อกอะห์ เหมือนละหมาดอีด\n• อิหม่ามกล่าวคุฏบะห์ 2 ครั้ง\n• ในคุฏบะห์ที่ 2: อิหม่ามพลิกเสื้อคลุมเป็นสัญลักษณ์การเปลี่ยนแปลง\n• ดุอาและอิสติฆฝารมากๆ\n• หันหน้าไปทางกิบลัตขณะดุอา\n\nดุอาอิสติสก้า:\n"อัลลอฮุมมัสกินา ฆอยษัน มุฆีษัน มะรีอัน มะรีอัน นาฝิอัน ฆอยรอ ดอรร์"\n\nเงื่อนไขสำหรับดุอาที่ถูกรับ:\n• เตาบะห์ (สำนึกผิด) ก่อนละหมาด\n• บริจาคทานให้คนยากจน\n• แก้ไขความขัดแย้งและการอธรรม\n• ความจริงใจและความถ่อมตนต่ออัลลอฮ์\n\nเมื่อฝนตก:\n• กล่าว: "อัลลอฮุมมะ ซ็อยยิบัน นาฝิอา"\n• อย่าด่าฝน\n• หลบฝนที่เป็นอันตราย',
+    },
+    {
+      'no': 6, 'titleEn': 'Eclipse Prayer (Kusuf/Khusuf)', 'titleTh': 'ละหมาดกุสูฟ/คุสูฟ (สุริยุปราคา/จันทรุปราคา)',
+      'arabic': 'إِنَّ الشَّمْسَ وَالْقَمَرَ آيَتَانِ مِنْ آيَاتِ اللَّهِ',
+      'contentEn': '"The sun and moon are two of Allah\'s signs. They do not eclipse for the death of anyone." (Bukhari)\n\nKusuf = Solar eclipse\nKhusuf = Lunar eclipse\n\nMethod (unique, unlike regular prayer):\n1. First rakah:\n   - Recite Al-Fatihah + long surah\n   - Long Ruku\n   - Rise from Ruku\n   - Recite Al-Fatihah + surah again (shorter)\n   - Second long Ruku\n   - Rise, then Sujud (2 times)\n2. Second rakah: same as first\n\nDuration: Continue until eclipse ends\n\nSunnah:\n• Perform in congregation\n• Imam delivers khutbah after prayer\n• Make lots of dua, istighfar, and sadaqah\n• Free slaves (historically)',
+      'contentTh': '"พระอาทิตย์และพระจันทร์เป็นสองสัญลักษณ์จากสัญลักษณ์ของอัลลอฮ์ พวกมันไม่ได้เกิดอุปราคาเพราะการตายของผู้ใด" (บุคอรี)\n\nกุสูฟ = สุริยุปราคา\nคุสูฟ = จันทรุปราคา\n\nวิธีละหมาด (พิเศษ ต่างจากปกติ):\n1. ร็อกอะห์แรก:\n   - อ่านอัลฟาติฮะห์ + ซูเราะห์ยาว\n   - รุกูอ์นาน\n   - ลุกจากรุกูอ์\n   - อ่านอัลฟาติฮะห์ + ซูเราะห์อีกครั้ง (สั้นกว่า)\n   - รุกูอ์นานครั้งที่สอง\n   - ลุกขึ้น แล้วสุญูด 2 ครั้ง\n2. ร็อกอะห์ที่สอง: เหมือนร็อกอะห์แรก\n\nระยะเวลา: ละหมาดจนกว่าอุปราคาจะสิ้นสุด\n\nซุนนะห์:\n• ทำเป็นญะมาอะห์\n• อิหม่ามกล่าวคุฏบะห์หลังละหมาด\n• ดุอา อิสติฆฝาร และบริจาคทานมากๆ',
+    },
+  ];
+}
 class LessonsPage extends StatefulWidget {
   const LessonsPage({super.key});
 
@@ -557,6 +819,14 @@ class _LessonsPageState extends State<LessonsPage> {
      'titleEn': 'Islamic History', 'titleTh': 'ประวัติศาสตร์อิสลาม', 'titleMs': 'Sejarah Islam', 'titleId': 'Sejarah Islam', 'titleAr': 'التاريخ الإسلامي', 'titleUr': 'اسلامی تاریخ', 'titleBn': 'ইসলামের ইতিহাস',
      'subtitleEn': 'Key events in Islamic history', 'subtitleTh': 'เหตุการณ์สำคัญในประวัติอิสลาม', 'subtitleMs': 'Peristiwa penting dalam sejarah Islam', 'subtitleId': 'Peristiwa penting dalam sejarah Islam', 'subtitleAr': 'أحداث رئيسية في التاريخ الإسلامي', 'subtitleUr': 'اسلامی تاریخ کے اہم واقعات', 'subtitleBn': 'ইসলামের ইতিহাসের গুরুত্বপূর্ণ ঘটনা',
      'color': const Color(0xFFE65100), 'lessons': 6},
+    {'id': 'fasting', 'icon': '🌙',
+     'titleEn': 'Fasting (Sawm)', 'titleTh': 'การถือศีลอด (เซาม์)', 'titleMs': 'Puasa (Sawm)', 'titleId': 'Puasa (Shaum)', 'titleAr': 'الصيام', 'titleUr': 'روزہ (صوم)', 'titleBn': 'রোজা (সাওম)',
+     'subtitleEn': 'The complete guide to Islamic fasting', 'subtitleTh': 'คู่มือการถือศีลอดในอิสลาม', 'subtitleMs': 'Panduan lengkap puasa Islam', 'subtitleId': 'Panduan lengkap puasa Islam', 'subtitleAr': 'الدليل الشامل للصيام الإسلامي', 'subtitleUr': 'اسلامی روزے کی مکمل رہنمائی', 'subtitleBn': 'ইসলামিক রোজার সম্পূর্ণ গাইড',
+     'color': const Color(0xFF00838F), 'lessons': 7},
+    {'id': 'special_prayer', 'icon': '🕌',
+     'titleEn': 'Special Prayers', 'titleTh': 'ละหมาดพิเศษ', 'titleMs': 'Solat Khas', 'titleId': 'Sholat Khusus', 'titleAr': 'الصلوات الخاصة', 'titleUr': 'خصوصی نمازیں', 'titleBn': 'বিশেষ নামাজ',
+     'subtitleEn': 'Eid, Funeral, Tarawih and more', 'subtitleTh': 'ละหมาดอีด ญะนาซะห์ ตะรอวีห์ และอื่นๆ', 'subtitleMs': 'Solat Eid, Jenazah, Tarawih dan lain-lain', 'subtitleId': 'Sholat Eid, Jenazah, Tarawih dan lainnya', 'subtitleAr': 'صلاة العيد والجنازة والتراويح وغيرها', 'subtitleUr': 'عید، جنازہ، تراویح اور دیگر نمازیں', 'subtitleBn': 'ঈদ, জানাজা, তারাবি এবং অন্যান্য',
+     'color': const Color(0xFF4527A0), 'lessons': 6},
   ];
 
   void _rebuild() { if (mounted) setState(() {}); }
@@ -633,31 +903,32 @@ class _LessonsPageState extends State<LessonsPage> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         decoration: BoxDecoration(
-          color: _theme.cardColor, borderRadius: BorderRadius.circular(18),
-          border: _theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
-          boxShadow: [BoxShadow(color: _theme.shadowColor, blurRadius: 8, offset: const Offset(0, 2))]),
+          color: _theme.cardColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFF0F0F0)),
+          boxShadow: _theme.isDark ? null : [
+            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))]),
         child: Row(children: [
-          Container(width: 8, height: 100,
+          Container(width: 4, height: 90,
             decoration: BoxDecoration(color: color, borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(18), bottomLeft: Radius.circular(18)))),
+                topLeft: Radius.circular(14), bottomLeft: Radius.circular(14)))),
           const SizedBox(width: 16),
-          Container(width: 56, height: 56,
-            decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
-            child: Center(child: Text(cat['icon'], style: const TextStyle(fontSize: 28)))),
-          const SizedBox(width: 14),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
-            const SizedBox(height: 4),
-            Text(subtitle, style: TextStyle(fontSize: 12, color: _theme.subTextColor, height: 1.4)),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-              child: Text('${cat['lessons']} ${_lang.lang == 'th' ? 'บทเรียน' : 'lessons'}',
-                  style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600))),
-          ])),
+          Expanded(child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _theme.textColor)),
+              const SizedBox(height: 3),
+              Text(subtitle, style: TextStyle(fontSize: 12, color: _theme.subTextColor, height: 1.4)),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                child: Text('${cat['lessons']} ${_lang.lang == 'th' ? 'บทเรียน' : 'lessons'}',
+                    style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600))),
+            ]))),
           Padding(padding: const EdgeInsets.only(right: 12),
-              child: Icon(Icons.chevron_right, color: _theme.subTextColor)),
+              child: Icon(Icons.chevron_right, size: 18, color: _theme.subTextColor)),
         ]),
       ),
     );
@@ -794,8 +1065,17 @@ class LessonContentPage extends StatelessWidget {
                 color: theme.isDark ? const Color(0xFF0D3B1E) : const Color(0xFFE8F5E9),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: color.withOpacity(0.3))),
-              child: Text(arabic, textAlign: TextAlign.center, textDirection: TextDirection.rtl,
-                  style: TextStyle(fontSize: 24, height: 2.0, color: theme.textColor)),
+              child: Column(children: [
+                Text(arabic, textAlign: TextAlign.center, textDirection: TextDirection.rtl,
+                    style: TextStyle(fontSize: 24, height: 2.0, color: theme.textColor)),
+                if (_getLessonTrans(lesson, lang.lang).isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(_getLessonTrans(lesson, lang.lang),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 13, color: theme.subTextColor,
+                          fontStyle: FontStyle.italic, height: 1.6)),
+                ],
+              ]),
             ),
             const SizedBox(height: 20),
           ],
@@ -848,6 +1128,14 @@ class _LessonsTabState extends State<LessonsTab> {
      'titleEn': 'Islamic History', 'titleTh': 'ประวัติศาสตร์อิสลาม', 'titleMs': 'Sejarah Islam', 'titleId': 'Sejarah Islam', 'titleAr': 'التاريخ الإسلامي', 'titleUr': 'اسلامی تاریخ', 'titleBn': 'ইসলামের ইতিহাস',
      'subtitleEn': 'Key events in Islamic history', 'subtitleTh': 'เหตุการณ์สำคัญในประวัติอิสลาม', 'subtitleMs': 'Peristiwa penting dalam sejarah Islam', 'subtitleId': 'Peristiwa penting dalam sejarah Islam', 'subtitleAr': 'أحداث رئيسية في التاريخ الإسلامي', 'subtitleUr': 'اسلامی تاریخ کے اہم واقعات', 'subtitleBn': 'ইসলামের ইতিহাসের গুরুত্বপূর্ণ ঘটনা',
      'color': const Color(0xFFE65100), 'lessons': 6},
+    {'id': 'fasting', 'icon': '🌙',
+     'titleEn': 'Fasting (Sawm)', 'titleTh': 'การถือศีลอด (เซาม์)', 'titleMs': 'Puasa (Sawm)', 'titleId': 'Puasa (Shaum)', 'titleAr': 'الصيام', 'titleUr': 'روزہ (صوم)', 'titleBn': 'রোজা (সাওম)',
+     'subtitleEn': 'The complete guide to Islamic fasting', 'subtitleTh': 'คู่มือการถือศีลอดในอิสลาม', 'subtitleMs': 'Panduan lengkap puasa Islam', 'subtitleId': 'Panduan lengkap puasa Islam', 'subtitleAr': 'الدليل الشامل للصيام الإسلامي', 'subtitleUr': 'اسلامی روزے کی مکمل رہنمائی', 'subtitleBn': 'ইসলামিক রোজার সম্পূর্ণ গাইড',
+     'color': const Color(0xFF00838F), 'lessons': 7},
+    {'id': 'special_prayer', 'icon': '🕌',
+     'titleEn': 'Special Prayers', 'titleTh': 'ละหมาดพิเศษ', 'titleMs': 'Solat Khas', 'titleId': 'Sholat Khusus', 'titleAr': 'الصلوات الخاصة', 'titleUr': 'خصوصی نمازیں', 'titleBn': 'বিশেষ নামাজ',
+     'subtitleEn': 'Eid, Funeral, Tarawih and more', 'subtitleTh': 'ละหมาดอีด ญะนาซะห์ ตะรอวีห์ และอื่นๆ', 'subtitleMs': 'Solat Eid, Jenazah, Tarawih dan lain-lain', 'subtitleId': 'Sholat Eid, Jenazah, Tarawih dan lainnya', 'subtitleAr': 'صلاة العيد والجنازة والتراويح وغيرها', 'subtitleUr': 'عید، جنازہ، تراویح اور دیگر نمازیں', 'subtitleBn': 'ঈদ, জানাজা, তারাবি এবং অন্যান্য',
+     'color': const Color(0xFF4527A0), 'lessons': 6},
   ];
 
   void _rebuild() { if (mounted) setState(() {}); }
@@ -880,33 +1168,34 @@ class _LessonsTabState extends State<LessonsTab> {
           onTap: () => Navigator.push(context, MaterialPageRoute(
               builder: (_) => LessonDetailPage(category: cat, lang: _lang, theme: _theme))),
           child: Container(
-            margin: const EdgeInsets.only(bottom: 14),
+            margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: _theme.cardColor, borderRadius: BorderRadius.circular(18),
-              border: _theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
-              boxShadow: [BoxShadow(color: _theme.shadowColor, blurRadius: 8, offset: const Offset(0, 2))]),
+              color: _theme.cardColor,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFF0F0F0)),
+              boxShadow: _theme.isDark ? null : [
+                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))]),
             child: Row(children: [
-              Container(width: 8, height: 100,
+              Container(width: 4, height: 90,
                 decoration: BoxDecoration(color: color, borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(18), bottomLeft: Radius.circular(18)))),
+                    topLeft: Radius.circular(14), bottomLeft: Radius.circular(14)))),
               const SizedBox(width: 16),
-              Container(width: 56, height: 56,
-                decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
-                child: Center(child: Text(cat['icon'], style: const TextStyle(fontSize: 28)))),
-              const SizedBox(width: 14),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
-                const SizedBox(height: 4),
-                Text(subtitle, style: TextStyle(fontSize: 12, color: _theme.subTextColor, height: 1.4)),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-                  child: Text('${cat['lessons']} ${_lang.lang == 'th' ? 'บทเรียน' : 'lessons'}',
-                      style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600))),
-              ])),
+              Expanded(child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _theme.textColor)),
+                  const SizedBox(height: 3),
+                  Text(subtitle, style: TextStyle(fontSize: 12, color: _theme.subTextColor, height: 1.4)),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                    child: Text('${cat['lessons']} ${_lang.lang == 'th' ? 'บทเรียน' : 'lessons'}',
+                        style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600))),
+                ]))),
               Padding(padding: const EdgeInsets.only(right: 12),
-                  child: Icon(Icons.chevron_right, color: _theme.subTextColor)),
+                  child: Icon(Icons.chevron_right, size: 18, color: _theme.subTextColor)),
             ]),
           ),
         );
