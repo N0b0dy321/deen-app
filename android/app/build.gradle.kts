@@ -15,7 +15,7 @@ if (localPropertiesFile.exists()) {
 val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
 
 android {
-    namespace = "com.example.flutter_application_1"
+    namespace = "com.deenapp.deen"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -26,7 +26,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.flutter_application_1"
+        applicationId = "com.deenapp.deen"
         minSdk = flutter.minSdkVersion  // ต้องเป็น 21 ขึ้นไป
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

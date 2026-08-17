@@ -49,6 +49,7 @@ dependencies:
   path_provider: ^2.1.6
   dio: ^5.10.0
   share_plus: ^13.3.0
+  change_app_package_name: ^1.5.0
 
 flutter_icons:
   android: true
@@ -79,6 +80,7 @@ flutter:
   uses-material-design: true
   assets:
     - image/
+    - image/prayer/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

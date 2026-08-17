@@ -6,6 +6,17 @@ class IslamicCalendarService {
   static const _baseUrl = 'https://api.aladhan.com/v1';
   static const _cachePrefix = 'hijri_calendar_';
 
+  // Safe cast helper
+  static Map<String, dynamic> _safeMap(dynamic d) {
+    if (d is Map<String, dynamic>) return d;
+    if (d is Map) return d.map((k, v) => MapEntry(k.toString(), v));
+    return {};
+  }
+
+  static List<Map<String, dynamic>> _parseCalendar(List<dynamic> data) {
+    return data.map((e) => _safeMap(e)).toList();
+  }
+
   // ดึงปฏิทินฮิจเราะห์ทั้งเดือน
   static Future<List<Map<String, dynamic>>?> getHijriCalendar(int month, int year) async {
     final cacheKey = '$_cachePrefix${year}_$month';
@@ -13,8 +24,13 @@ class IslamicCalendarService {
     final cached = prefs.getString(cacheKey);
 
     if (cached != null) {
-      final data = json.decode(cached) as List;
-      return data.cast<Map<String, dynamic>>();
+      try {
+        final data = json.decode(cached) as List;
+        return _parseCalendar(data);
+      } catch (e) {
+        // Cache corrupt, delete and re-fetch
+        await prefs.remove(cacheKey);
+      }
     }
 
     try {
@@ -25,8 +41,9 @@ class IslamicCalendarService {
       if (res.statusCode == 200) {
         final data = json.decode(res.body);
         if (data['code'] == 200) {
-          final calendar = (data['data'] as List).cast<Map<String, dynamic>>();
-          await prefs.setString(cacheKey, json.encode(calendar));
+          final raw = data['data'] as List;
+          final calendar = _parseCalendar(raw);
+          await prefs.setString(cacheKey, json.encode(raw));
           return calendar;
         }
       }
@@ -36,13 +53,17 @@ class IslamicCalendarService {
     return null;
   }
 
-  // ดึงปฏิทิน 2 เดือนล่วงหน้าและ cache ไว้
+  // ดึงปฏิทิน 2 เดือนล่วงหน้าและ cache ไว้ (parallel)
   static Future<void> prefetchCalendars() async {
     final now = DateTime.now();
-    for (int i = 0; i < 2; i++) {
-      final date = DateTime(now.year, now.month + i);
-      await getHijriCalendar(date.month, date.year);
-    }
+    // Run both months in parallel
+    await Future.wait([
+      for (int i = 0; i < 2; i++)
+        getHijriCalendar(
+          DateTime(now.year, now.month + i).month,
+          DateTime(now.year, now.month + i).year,
+        ),
+    ]);
   }
 
   // แปลงวันที่ Gregorian เป็น Hijri
@@ -51,11 +72,19 @@ class IslamicCalendarService {
     final calendar = await getHijriCalendar(now.month, now.year);
     if (calendar == null) return null;
 
-    final today = calendar.firstWhere(
-      (d) => d['gregorian']['day'] == now.day.toString(),
-      orElse: () => {},
-    );
-    return today.isEmpty ? null : today;
+    try {
+      final today = calendar.firstWhere(
+        (d) {
+          final greg = _safeMap(d['gregorian']);
+          return greg['day']?.toString() == now.day.toString();
+        },
+        orElse: () => {},
+      );
+      return today.isEmpty ? null : today;
+    } catch (e) {
+      print('getTodayHijri error: $e');
+      return null;
+    }
   }
 
   // ชื่อเดือนฮิจเราะห์ภาษาต่างๆ
@@ -87,8 +116,17 @@ class IslamicCalendarService {
   // วันสำคัญอิสลาม
   static String? getIslamicHoliday(List<dynamic> holidays, String lang) {
     if (holidays.isEmpty) return null;
+    // holidays can be List<String> or List<Map>
+    String name = '';
     final holiday = holidays.first;
-    final name = holiday['name'] as String? ?? '';
+    if (holiday is String) {
+      name = holiday;
+    } else if (holiday is Map) {
+      name = holiday['name']?.toString() ?? '';
+    } else {
+      name = holiday.toString();
+    }
+    if (name.isEmpty) return null;
 
     final translations = {
       "New Year's Day": {'th': 'วันขึ้นปีใหม่ฮิจเราะห์', 'ms': "Tahun Baru Islam", 'id': 'Tahun Baru Hijriah', 'ar': 'رأس السنة الهجرية', 'ur': 'اسلامی نیا سال', 'bn': 'ইসলামিক নববর্ষ'},

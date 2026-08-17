@@ -51,12 +51,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadHijriDate() async {
-    // Prefetch 2 เดือนล่วงหน้า
-    IslamicCalendarService.prefetchCalendars();
+    // Load today first (fast), then prefetch in background
     final data = await IslamicCalendarService.getTodayHijri();
     if (mounted && data != null) {
       setState(() => _hijriData = data);
     }
+    // Prefetch next month in background (don't await)
+    IslamicCalendarService.prefetchCalendars();
   }
 
   @override
@@ -133,19 +134,37 @@ class _HomePageState extends State<HomePage> {
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
+                    childAspectRatio: 1.1,
                     children: [
-                      _FeatureCard(label: _lang.alQuran, icon: Icons.menu_book, theme: _theme,
+                      _FeatureCard(
+                          label: _lang.alQuran,
+                          icon: Icons.menu_book,
+                          theme: _theme,
+                          color: const Color(0xFF1B5E20),
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AlQuranPage()))),
-                      _FeatureCard(label: _lang.qiblaFinder, icon: Icons.explore, theme: _theme,
+                      _FeatureCard(
+                          label: _lang.qiblaFinder,
+                          icon: Icons.explore,
+                          theme: _theme,
+                          color: const Color(0xFF0277BD),
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaPage()))),
-                      _FeatureCard(label: _lang.nearbyMosques, icon: Icons.mosque, theme: _theme,
+                      _FeatureCard(
+                          label: _lang.nearbyMosques,
+                          icon: Icons.mosque,
+                          theme: _theme,
+                          color: const Color(0xFF6A1B9A),
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyMosquesPage()))),
                       _FeatureCard(
                           label: _lang.isThai ? 'ร้านอาหารฮาลาล' : 'Halal Food',
                           icon: Icons.restaurant,
                           theme: _theme,
+                          color: const Color(0xFFE65100),
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HalalRestaurantPage()))),
-                      _FeatureCard(label: _lang.duaLessons, icon: Icons.self_improvement, theme: _theme,
+                      _FeatureCard(
+                          label: _lang.duaLessons,
+                          icon: Icons.self_improvement,
+                          theme: _theme,
+                          color: const Color(0xFF00838F),
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DuaLessonsPage()))),
                     ],
                   ),
@@ -175,7 +194,24 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    final greetings = {
+      'th': hour < 12 ? 'อรุณสวัสดิ์' : hour < 17 ? 'สวัสดีตอนบ่าย' : 'สวัสดีตอนเย็น',
+      'en': hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening',
+      'ms': hour < 12 ? 'Selamat Pagi' : hour < 17 ? 'Selamat Tengah Hari' : 'Selamat Petang',
+      'id': hour < 12 ? 'Selamat Pagi' : hour < 17 ? 'Selamat Siang' : 'Selamat Sore',
+      'ar': hour < 12 ? 'صباح الخير' : hour < 17 ? 'مساء الخير' : 'مساء النور',
+      'ur': hour < 12 ? 'صبح بخیر' : hour < 17 ? 'دوپہر بخیر' : 'شام بخیر',
+      'bn': hour < 12 ? 'শুভ সকাল' : hour < 17 ? 'শুভ দুপুর' : 'শুভ সন্ধ্যা',
+    };
+    return greetings[_lang.lang] ?? greetings['en']!;
+  }
+
   Widget _buildHeader() {
+    final now = DateTime.now();
+    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -192,33 +228,48 @@ class _HomePageState extends State<HomePage> {
         ),
         boxShadow: [
           BoxShadow(
-            color: _theme.isDark
-                ? const Color(0xFF2ECC71).withOpacity(0.15)
-                : Colors.black.withOpacity(0.2),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 16, offset: const Offset(0, 4)),
         ],
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Column(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 8),
-              const Text('ASSLAMU ALAIKUM',
-                  style: TextStyle(
-                      color: Color(0xFFFFD700),
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2)),
-              const SizedBox(height: 4),
-              Text(_lang.welcomeToDeen,
-                  style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontSize: 13,
-                      letterSpacing: 2)),
-              const SizedBox(height: 12),
+              // Left: greeting
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('As-salamu Alaykum',
+                    style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 13, letterSpacing: 0.5)),
+                const SizedBox(height: 4),
+                Text(_getGreeting(),
+                    style: const TextStyle(
+                        color: Color(0xFFFFD700),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(_lang.welcomeToDeen,
+                    style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 12)),
+              ])),
+              // Right: clock
+              Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                Text(timeStr,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w300,
+                        letterSpacing: 1)),
+                Text(
+                  '${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.weekday % 7]}, '
+                  '${now.day} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.month-1]}',
+                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11)),
+              ]),
             ],
           ),
         ),
@@ -558,8 +609,12 @@ class _IslamicCalendarCardState extends State<_IslamicCalendarCard> {
                 final d = weekStart.add(Duration(days: i));
                 final isToday = d.day == now.day && d.month == now.month;
                 final isFri = d.weekday == 5;
-                final isSun = d.weekday == 7;
-                final hijriD = dayMap[d.day]?['hijri']?['day']?.toString() ?? '';
+                final isSun = d.weekday == DateTime.sunday;
+                // Only show hijri if same month as calendar data
+                String hijriD = '';
+                if (d.month == now.month && dayMap.containsKey(d.day)) {
+                  hijriD = (dayMap[d.day]?['hijri'] as Map?)?['day']?.toString() ?? '';
+                }
                 const dayLetters = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
                 return Column(children: [
@@ -909,27 +964,36 @@ class _FeatureCard extends StatelessWidget {
   final IconData icon;
   final ThemeService theme;
   final VoidCallback onTap;
-  const _FeatureCard({required this.label, required this.icon, required this.theme, required this.onTap});
+  final Color? color;
+  const _FeatureCard({required this.label, required this.icon, required this.theme, required this.onTap, this.color});
 
   @override
   Widget build(BuildContext context) {
+    final c = color ?? theme.iconColor;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: theme.cardColor,
-          borderRadius: BorderRadius.circular(18),
-          border: theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
-          boxShadow: [BoxShadow(color: theme.shadowColor, blurRadius: theme.isDark ? 4 : 8, offset: const Offset(0, 2))],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: theme.isDark ? ThemeService.darkBorder : c.withOpacity(0.15)),
+          boxShadow: theme.isDark ? null : [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
         ),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Container(
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(color: theme.iconColor.withOpacity(0.12), shape: BoxShape.circle),
-            child: Icon(icon, size: 32, color: theme.iconColor)),
+            decoration: BoxDecoration(
+              color: c.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(14)),
+            child: Icon(icon, size: 28, color: c)),
           const SizedBox(height: 10),
-          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: theme.textColor),
-              textAlign: TextAlign.center),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(label,
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.textColor),
+                textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis)),
         ]),
       ),
     );
@@ -948,24 +1012,40 @@ class _ChatbotBanner extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(18),
-          border: theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
-          boxShadow: [BoxShadow(color: theme.shadowColor, blurRadius: theme.isDark ? 4 : 8, offset: const Offset(0, 2))],
+          gradient: LinearGradient(
+            colors: theme.isDark
+                ? [const Color(0xFF0D3B1E), const Color(0xFF1A4A2A)]
+                : [const Color(0xFF1B5E20), const Color(0xFF2E7D32)],
+            begin: Alignment.topLeft, end: Alignment.bottomRight),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(
+              color: const Color(0xFF1B5E20).withOpacity(0.3),
+              blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: Row(children: [
           Container(
-            width: 50, height: 50,
-            decoration: BoxDecoration(color: theme.iconColor.withOpacity(0.12), shape: BoxShape.circle),
-            child: Icon(Icons.smart_toy, color: theme.iconColor, size: 26)),
-          const SizedBox(width: 16),
+            width: 48, height: 48,
+            decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12)),
+            child: const Icon(Icons.smart_toy, color: Colors.white, size: 26)),
+          const SizedBox(width: 14),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: theme.textColor)),
-            Text(subtitle, style: TextStyle(fontSize: 12, color: theme.subTextColor)),
+            Text(label, style: const TextStyle(
+                fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 2),
+            Text(subtitle, style: TextStyle(
+                fontSize: 12, color: Colors.white.withOpacity(0.75))),
           ])),
-          Icon(Icons.chevron_right, color: theme.iconColor, size: 26),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20)),
+            child: const Text('Chat', style: TextStyle(
+                color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600))),
         ]),
       ),
     );

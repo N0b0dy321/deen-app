@@ -114,29 +114,29 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _shareApp() async {
-    final text = _lang.isThai
-        ? 'ลองใช้แอพ DEEN - แอพอิสลามสำหรับชีวิตประจำวัน 🕌\nโหลดฟรีได้เลย!'
-        : 'Try DEEN - Your Islamic companion app 🕌\nFree to download!';
-    await Share.share(text, subject: 'DEEN App');
+    try {
+      final text = _lang.isThai
+          ? 'ลองใช้แอพ DEEN - แอพอิสลามสำหรับชีวิตประจำวัน 🕌\nโหลดฟรีได้เลย!'
+          : 'Try DEEN - Your Islamic companion app 🕌\nFree to download!';
+      await Share.share(text);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error: $e'), backgroundColor: Colors.red.shade700));
+    }
   }
 
   Future<void> _rateApp() async {
-    // เปลี่ยน package name ตามจริง
     const packageName = 'com.example.flutter_application_1';
-    final uri = Uri.parse('market://details?id=$packageName');
-    final fallback = Uri.parse('https://play.google.com/store/apps/details?id=$packageName');
     try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        await launchUrl(fallback, mode: LaunchMode.externalApplication);
-      }
+      final uri = Uri.parse(
+          'https://play.google.com/store/apps/details?id=$packageName');
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(_lang.isThai ? 'ไม่สามารถเปิด Play Store ได้' : 'Cannot open Play Store'),
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(_lang.isThai
+              ? 'ไม่สามารถเปิด Play Store ได้'
+              : 'Cannot open Play Store'),
           backgroundColor: Colors.red.shade700));
-      }
     }
   }
 

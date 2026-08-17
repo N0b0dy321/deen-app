@@ -6,7 +6,8 @@ const Map<String, Map<String, List<String>>> kLessonTitleTranslations = {
   'ms': {
     'pillars': ['Syahadah (Pengakuan Iman)', 'Solat (Sembahyang)', 'Zakat (Derma)', 'Sawm (Puasa)', 'Haji (Ziarah)'],
     'iman': ['Percaya kepada Allah', 'Percaya kepada Malaikat', 'Percaya kepada Kitab Suci', 'Percaya kepada Nabi', 'Percaya kepada Hari Kiamat', 'Percaya kepada Qada dan Qadar'],
-    'prayer': ['Syarat Solat', 'Cara Berwudhu', 'Niat dan Takbir', 'Bacaan dalam Berdiri', 'Rukuk', 'Sujud', 'Tahiyat dan Salam', 'Zikir Selepas Solat'],
+    'wudhu': ['Cara Berwudhu'],
+    'prayer': ['Syarat Solat', 'Niat dan Takbir', 'Bacaan dalam Berdiri', 'Rukuk', 'Sujud', 'Tahiyat dan Salam', 'Zikir Selepas Solat'],
     'hadith': ['Amal Bergantung pada Niat', 'Islam Dibina atas Lima', 'Halal dan Haram Jelas', 'Tidak Beriman Sempurna', 'Agama adalah Keikhlasan', 'Tinggalkan yang Tidak Perlu', 'Senyum adalah Sedekah', 'Kasih Sayang kepada Semua', 'Mukmin yang Kuat', 'Menghilangkan Mudarat'],
     'adab': ['Salam Islam', 'Adab Makan dan Minum', 'Menghormati Ibu Bapa', 'Kejujuran', 'Kebersihan (Taharah)'],
     'history': ['Nabi Muhammad - Awal Kehidupan', 'Wahyu Pertama', 'Hijrah ke Madinah', 'Peperangan Penting', 'Empat Khalifah', 'Penyebaran Islam'],
@@ -16,7 +17,8 @@ const Map<String, Map<String, List<String>>> kLessonTitleTranslations = {
   'id': {
     'pillars': ['Syahadat (Ikrar Iman)', 'Sholat (Sembahyang)', 'Zakat (Amal)', 'Shaum (Puasa)', 'Haji (Ziarah)'],
     'iman': ['Iman kepada Allah', 'Iman kepada Malaikat', 'Iman kepada Kitab Suci', 'Iman kepada Nabi', 'Iman kepada Hari Kiamat', 'Iman kepada Qada dan Qadar'],
-    'prayer': ['Syarat Sholat', 'Cara Berwudhu', 'Niat dan Takbir', 'Bacaan dalam Berdiri', 'Ruku', 'Sujud', 'Tasyahud dan Salam', 'Dzikir Setelah Sholat'],
+    'wudhu': ['Cara Berwudhu'],
+    'prayer': ['Syarat Sholat', 'Niat dan Takbir', 'Bacaan dalam Berdiri', 'Ruku', 'Sujud', 'Tasyahud dan Salam', 'Dzikir Setelah Sholat'],
     'hadith': ['Amal Tergantung Niat', 'Islam Dibangun atas Lima', 'Halal dan Haram Jelas', 'Tidak Beriman Sempurna', 'Agama adalah Ketulusan', 'Tinggalkan yang Tidak Perlu', 'Senyum adalah Sedekah', 'Kasih Sayang kepada Semua', 'Mukmin yang Kuat', 'Menghilangkan Kemudharatan'],
     'adab': ['Salam Islam', 'Adab Makan dan Minum', 'Menghormati Orang Tua', 'Kejujuran', 'Kebersihan (Thaharah)'],
     'history': ['Nabi Muhammad - Kehidupan Awal', 'Wahyu Pertama', 'Hijrah ke Madinah', 'Perang Penting', 'Empat Khalifah', 'Penyebaran Islam'],
@@ -26,7 +28,8 @@ const Map<String, Map<String, List<String>>> kLessonTitleTranslations = {
   'ar': {
     'pillars': ['الشهادة (الإقرار بالإيمان)', 'الصلاة', 'الزكاة', 'الصوم', 'الحج'],
     'iman': ['الإيمان بالله', 'الإيمان بالملائكة', 'الإيمان بالكتب', 'الإيمان بالأنبياء', 'الإيمان باليوم الآخر', 'الإيمان بالقضاء والقدر'],
-    'prayer': ['شروط الصلاة', 'كيفية الوضوء', 'النية والتكبير', 'القراءة في القيام', 'الركوع', 'السجود', 'التشهد والسلام', 'الأذكار بعد الصلاة'],
+    'wudhu': ['كيفية الوضوء'],
+    'prayer': ['شروط الصلاة', 'النية والتكبير', 'القراءة في القيام', 'الركوع', 'السجود', 'التشهد والسلام', 'الأذكار بعد الصلاة'],
     'hadith': ['الأعمال بالنيات', 'بني الإسلام على خمس', 'الحلال بين والحرام بين', 'لا يؤمن أحدكم', 'الدين النصيحة', 'ترك ما لا يعنيك', 'التبسم صدقة', 'الرحمة بالخلق', 'المؤمن القوي', 'لا ضرر ولا ضرار'],
     'adab': ['السلام الإسلامي', 'آداب الأكل والشرب', 'احترام الوالدين', 'الصدق والأمانة', 'الطهارة'],
     'history': ['النبي محمد - حياته الأولى', 'الوحي الأول', 'الهجرة إلى المدينة', 'المعارك الكبرى', 'الخلفاء الراشدون الأربعة', 'انتشار الإسلام'],
@@ -36,7 +39,8 @@ const Map<String, Map<String, List<String>>> kLessonTitleTranslations = {
   'ur': {
     'pillars': ['شہادت (ایمان کا اقرار)', 'نماز', 'زکوٰۃ', 'روزہ', 'حج'],
     'iman': ['اللہ پر ایمان', 'فرشتوں پر ایمان', 'کتابوں پر ایمان', 'نبیوں پر ایمان', 'قیامت کے دن پر ایمان', 'تقدیر پر ایمان'],
-    'prayer': ['نماز کی شرائط', 'وضو کا طریقہ', 'نیت اور تکبیر', 'قیام میں تلاوت', 'رکوع', 'سجدہ', 'تشہد اور سلام', 'نماز کے بعد اذکار'],
+    'wudhu': ['وضو کا طریقہ'],
+    'prayer': ['نماز کی شرائط', 'نیت اور تکبیر', 'قیام میں تلاوت', 'رکوع', 'سجدہ', 'تشہد اور سلام', 'نماز کے بعد اذکار'],
     'hadith': ['اعمال کا دارومدار نیتوں پر', 'اسلام پانچ چیزوں پر بنا ہے', 'حلال اور حرام واضح ہیں', 'کامل ایمان', 'دین خیرخواہی ہے', 'غیر ضروری چھوڑنا', 'مسکراہٹ صدقہ ہے', 'تمام مخلوق پر رحم', 'مضبوط مومن', 'نقصان نہ پہنچانا'],
     'adab': ['اسلامی سلام', 'کھانے پینے کے آداب', 'والدین کا احترام', 'سچائی اور دیانتداری', 'پاکیزگی (طہارت)'],
     'history': ['نبی محمد - ابتدائی زندگی', 'پہلی وحی', 'مدینہ کی طرف ہجرت', 'اہم غزوات', 'چار خلفائے راشدین', 'اسلام کا پھیلاؤ'],
@@ -46,7 +50,8 @@ const Map<String, Map<String, List<String>>> kLessonTitleTranslations = {
   'bn': {
     'pillars': ['শাহাদাহ (ঈমানের স্বীকৃতি)', 'সালাত (নামাজ)', 'যাকাত', 'সাওম (রোজা)', 'হজ'],
     'iman': ['আল্লাহর প্রতি ঈমান', 'ফেরেশতাদের প্রতি ঈমান', 'কিতাবসমূহের প্রতি ঈমান', 'নবীদের প্রতি ঈমান', 'কিয়ামত দিবসের প্রতি ঈমান', 'তাকদীরের প্রতি ঈমান'],
-    'prayer': ['নামাজের শর্তসমূহ', 'ওযু করার নিয়ম', 'নিয়ত ও তাকবির', 'দাঁড়ানো অবস্থায় তিলাওয়াত', 'রুকু', 'সিজদাহ', 'তাশাহহুদ ও সালাম', 'নামাজের পরের যিকির'],
+    'wudhu': ['ওযু করার নিয়ম'],
+    'prayer': ['নামাজের শর্তসমূহ', 'নিয়ত ও তাকবির', 'দাঁড়ানো অবস্থায় তিলাওয়াত', 'রুকু', 'সিজদাহ', 'তাশাহহুদ ও সালাম', 'নামাজের পরের যিকির'],
     'hadith': ['আমল নিয়তের উপর নির্ভরশীল', 'ইসলাম পাঁচটি স্তম্ভের উপর প্রতিষ্ঠিত', 'হালাল ও হারাম স্পষ্ট', 'পরিপূর্ণ ঈমান', 'দ্বীন হলো কল্যাণকামিতা', 'অপ্রয়োজনীয় ছেড়ে দেওয়া', 'হাসি সদকাহ', 'সকল সৃষ্টির প্রতি দয়া', 'শক্তিশালী মুমিন', 'ক্ষতি না করা'],
     'adab': ['ইসলামী সালাম', 'খাওয়া-দাওয়ার আদব', 'পিতামাতার প্রতি সম্মান', 'সততা ও সত্যবাদিতা', 'পবিত্রতা (তাহারাহ)'],
     'history': ['নবী মুহাম্মদ - প্রারম্ভিক জীবন', 'প্রথম ওহী', 'মদিনায় হিজরত', 'গুরুত্বপূর্ণ যুদ্ধসমূহ', 'চার খলিফা', 'ইসলামের বিস্তার'],
@@ -431,6 +436,7 @@ class LessonData {
     switch (id) {
       case 'pillars': return _pillars;
       case 'iman': return _iman;
+      case 'wudhu': return _wudhu;
       case 'prayer': return _prayer;
       case 'hadith': return _hadith;
       case 'adab': return _adab;
@@ -513,6 +519,15 @@ class LessonData {
     },
   ];
 
+  static final List<Map<String, dynamic>> _wudhu = [
+    {
+      'no': 1, 'titleEn': 'How to Perform Wudu', 'titleTh': 'วิธีทำวุฎูอ์',
+      'arabic': 'يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا قُمْتُمْ إِلَى الصَّلَاةِ فَاغْسِلُوا وُجُوهَكُمْ',
+      'contentEn': 'Steps of Wudu (Ablution):\n\n1. Say Bismillah\n2. Wash both hands 3 times\n3. Rinse mouth 3 times\n4. Rinse nose 3 times\n5. Wash face 3 times\n6. Wash right arm to elbow 3 times, then left\n7. Wipe head once\n8. Wipe ears once\n9. Wash right foot to ankle 3 times, then left\n10. Say Shahada after wudu',
+      'contentTh': 'ขั้นตอนการทำวุฎูอ์:\n\n1. กล่าวบิสมิลลาห์\n2. ล้างมือทั้งสองข้าง 3 ครั้ง\n3. บ้วนปาก 3 ครั้ง\n4. สูดน้ำเข้าจมูก 3 ครั้ง\n5. ล้างหน้า 3 ครั้ง\n6. ล้างแขนขวาถึงข้อศอก 3 ครั้ง แล้วซ้าย\n7. ลูบศีรษะ 1 ครั้ง\n8. ลูบหู 1 ครั้ง\n9. ล้างเท้าขวาถึงข้อเท้า 3 ครั้ง แล้วซ้าย\n10. กล่าวชะฮาดะห์หลังวุฎูอ์',
+    },
+  ];
+
   static final List<Map<String, dynamic>> _prayer = [
     {
       'no': 1, 'titleEn': 'Conditions of Prayer', 'titleTh': 'เงื่อนไขของการละหมาด',
@@ -521,46 +536,40 @@ class LessonData {
       'contentTh': 'ก่อนละหมาด ต้องมีเงื่อนไขเหล่านี้:\n\n1. เป็นมุสลิม\n2. มีสติสัมปชัญญะและบรรลุนิติภาวะ\n3. อยู่ในสภาพสะอาด (วุฎูอ์หรือฆุสล์)\n4. เสื้อผ้าและสถานที่ต้องสะอาด\n5. หันหน้าไปทางกิบลัต (มักกะห์)\n6. ถึงเวลาละหมาดแล้ว\n7. มีเจตนา (นิยะห์) ในใจ',
     },
     {
-      'no': 2, 'titleEn': 'How to Perform Wudu', 'titleTh': 'วิธีทำวุฎูอ์',
-      'arabic': 'يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا قُمْتُمْ إِلَى الصَّلَاةِ فَاغْسِلُوا وُجُوهَكُمْ',
-      'contentEn': 'Steps of Wudu (Ablution):\n\n1. Say Bismillah\n2. Wash both hands 3 times\n3. Rinse mouth 3 times\n4. Rinse nose 3 times\n5. Wash face 3 times\n6. Wash right arm to elbow 3 times, then left\n7. Wipe head once\n8. Wipe ears once\n9. Wash right foot to ankle 3 times, then left\n10. Say Shahada after wudu',
-      'contentTh': 'ขั้นตอนการทำวุฎูอ์:\n\n1. กล่าวบิสมิลลาห์\n2. ล้างมือทั้งสองข้าง 3 ครั้ง\n3. บ้วนปาก 3 ครั้ง\n4. สูดน้ำเข้าจมูก 3 ครั้ง\n5. ล้างหน้า 3 ครั้ง\n6. ล้างแขนขวาถึงข้อศอก 3 ครั้ง แล้วซ้าย\n7. ลูบศีรษะ 1 ครั้ง\n8. ลูบหู 1 ครั้ง\n9. ล้างเท้าขวาถึงข้อเท้า 3 ครั้ง แล้วซ้าย\n10. กล่าวชะฮาดะห์หลังวุฎูอ์',
-    },
-    {
-      'no': 3, 'titleEn': 'Intention and Takbir', 'titleTh': 'การตั้งเจตนาและตักบีร',
+      'no': 2, 'titleEn': 'Intention and Takbir', 'titleTh': 'การตั้งเจตนาและตักบีร',
       'arabic': 'اللَّهُ أَكْبَرُ',
-      'contentEn': 'Starting the prayer:\n\n1. Stand facing the Qibla\n2. Make intention (Niyyah) in your heart\n   Example: "I intend to pray Fajr 2 rakahs for Allah"\n3. Raise both hands to ear level\n4. Say Takbiratul Ihram: "Allahu Akbar"\n5. Place right hand over left on chest',
-      'contentTh': 'การเริ่มต้นละหมาด:\n\n1. ยืนหันหน้าไปทางกิบลัต\n2. ตั้งนิยะห์ในใจ\n   ตัวอย่าง: "ฉันตั้งใจละหมาดฟัจร์ 2 ร็อกอะห์เพื่ออัลลอฮ์"\n3. ยกมือทั้งสองข้างขึ้นถึงใบหู\n4. กล่าวตักบีเราะตุลอิฮ์รอม: "อัลลอฮุอักบัร"\n5. วางมือขวาทับมือซ้ายไว้ที่หน้าอก',
+      'contentEn': 'Starting the prayer:\n\n1. Stand facing the Qibla\n2. Make intention (Niyyah) in your heart\n3. Raise both hands to ear level\n4. Say Takbiratul Ihram: "Allahu Akbar"\n5. Place right hand over left on chest',
+      'contentTh': 'การเริ่มต้นละหมาด:\n\n1. ยืนหันหน้าไปทางกิบลัต\n2. ตั้งนิยะห์ในใจ\n3. ยกมือทั้งสองข้างขึ้นถึงใบหู\n4. กล่าวตักบีเราะตุลอิฮ์รอม: "อัลลอฮุอักบัร"\n5. วางมือขวาทับมือซ้ายไว้ที่หน้าอก',
     },
     {
-      'no': 4, 'titleEn': 'Recitation in Standing', 'titleTh': 'การอ่านในท่ายืน',
+      'no': 3, 'titleEn': 'Recitation in Standing', 'titleTh': 'การอ่านในท่ายืน',
       'arabic': 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-      'contentEn': 'After Takbir, recite:\n\n1. Dua Iftitah (Opening supplication) - Optional\n2. Surah Al-Fatihah (Obligatory in every rakah)\n3. Any additional Surah or verses from Quran\n\nAl-Fatihah is the most important recitation. Without it, the prayer is invalid.',
-      'contentTh': 'หลังตักบีร กล่าว:\n\n1. ดุอาอิฟติตาห์ (ดุอาเริ่มต้น) - เป็นซุนนะห์\n2. ซูเราะห์อัล-ฟาติฮะห์ (บังคับในทุกร็อกอะห์)\n3. ซูเราะห์หรืออายะห์เพิ่มเติมจากอัลกุรอาน\n\nอัล-ฟาติฮะห์คือการอ่านที่สำคัญที่สุด ถ้าไม่อ่าน ละหมาดใช้ไม่ได้',
+      'contentEn': 'After Takbir, recite:\n\n1. Dua Iftitah (Opening supplication) - Optional\n2. Surah Al-Fatihah (Obligatory in every rakah)\n3. Any additional Surah or verses\n\nWithout Al-Fatihah, the prayer is invalid.',
+      'contentTh': 'หลังตักบีร กล่าว:\n\n1. ดุอาอิฟติตาห์ - เป็นซุนนะห์\n2. ซูเราะห์อัล-ฟาติฮะห์ (บังคับในทุกร็อกอะห์)\n3. ซูเราะห์หรืออายะห์เพิ่มเติม\n\nถ้าไม่อ่านอัล-ฟาติฮะห์ ละหมาดใช้ไม่ได้',
     },
     {
-      'no': 5, 'titleEn': 'Ruku (Bowing)', 'titleTh': 'รุกูอ์ (การก้มโค้ง)',
+      'no': 4, 'titleEn': 'Ruku (Bowing)', 'titleTh': 'รุกูอ์ (การก้มโค้ง)',
       'arabic': 'سُبْحَانَ رَبِّيَ الْعَظِيمِ',
-      'contentEn': 'Performing Ruku:\n\n1. Say "Allahu Akbar" while bowing\n2. Bow with back straight, hands on knees\n3. Head level with back\n4. Recite: "Subhana Rabbiyal Adhim" (3 times minimum)\n5. Rise saying: "Sami allahu liman hamidah"\n6. Say: "Rabbana lakal hamd"',
-      'contentTh': 'การทำรุกูอ์:\n\n1. กล่าว "อัลลอฮุอักบัร" ขณะก้ม\n2. ก้มหลังให้ตรง มือวางบนเข่า\n3. ศีรษะอยู่ในระดับเดียวกับหลัง\n4. อ่าน: "ซุบฮานะ ร็อบบิยัล อะซีม" (อย่างน้อย 3 ครั้ง)\n5. ลุกขึ้นกล่าว: "ซะมิอัลลอฮุ ลิมัน ฮะมิดะห์"\n6. กล่าว: "ร็อบบานา ละกัล ฮัมด์"',
+      'contentEn': 'Performing Ruku:\n\n1. Say "Allahu Akbar" while bowing\n2. Bow with back straight, hands on knees\n3. Recite: "Subhana Rabbiyal Adhim" (3 times)\n4. Rise saying: "Sami allahu liman hamidah"\n5. Say: "Rabbana lakal hamd"',
+      'contentTh': 'การทำรุกูอ์:\n\n1. กล่าว "อัลลอฮุอักบัร" ขณะก้ม\n2. ก้มหลังให้ตรง มือวางบนเข่า\n3. อ่าน: "ซุบฮานะ ร็อบบิยัล อะซีม" (3 ครั้ง)\n4. ลุกขึ้นกล่าว: "ซะมิอัลลอฮุ ลิมัน ฮะมิดะห์"\n5. กล่าว: "ร็อบบานา ละกัล ฮัมด์"',
     },
     {
-      'no': 6, 'titleEn': 'Sujud (Prostration)', 'titleTh': 'สุญูด (การกราบ)',
+      'no': 5, 'titleEn': 'Sujud (Prostration)', 'titleTh': 'สุญูด (การกราบ)',
       'arabic': 'سُبْحَانَ رَبِّيَ الْأَعْلَى',
-      'contentEn': 'Performing Sujud:\n\n1. Say "Allahu Akbar" going down\n2. 7 body parts touch the ground:\n   - Forehead and nose\n   - Both palms\n   - Both knees\n   - Tips of both feet\n3. Recite: "Subhana Rabbiyal Ala" (3 times minimum)\n4. Rise saying "Allahu Akbar"\n5. Sit briefly between two sajdahs\n6. Perform second sajdah',
-      'contentTh': 'การทำสุญูด:\n\n1. กล่าว "อัลลอฮุอักบัร" ขณะลงกราบ\n2. อวัยวะ 7 ส่วนต้องแตะพื้น:\n   - หน้าผากและจมูก\n   - ฝ่ามือทั้งสองข้าง\n   - เข่าทั้งสองข้าง\n   - ปลายเท้าทั้งสองข้าง\n3. อ่าน: "ซุบฮานะ ร็อบบิยัล อะอ์ลา" (อย่างน้อย 3 ครั้ง)\n4. ลุกขึ้นกล่าว "อัลลอฮุอักบัร"\n5. นั่งพักสั้นๆ แล้วทำสุญูดครั้งที่สอง',
+      'contentEn': 'Performing Sujud:\n\n1. Say "Allahu Akbar" going down\n2. 7 body parts touch the ground:\n   - Forehead and nose\n   - Both palms\n   - Both knees\n   - Tips of both feet\n3. Recite: "Subhana Rabbiyal Ala" (3 times)\n4. Rise saying "Allahu Akbar"\n5. Sit briefly then perform second sajdah',
+      'contentTh': 'การทำสุญูด:\n\n1. กล่าว "อัลลอฮุอักบัร" ขณะลงกราบ\n2. อวัยวะ 7 ส่วนต้องแตะพื้น:\n   - หน้าผากและจมูก\n   - ฝ่ามือทั้งสองข้าง\n   - เข่าทั้งสองข้าง\n   - ปลายเท้าทั้งสองข้าง\n3. อ่าน: "ซุบฮานะ ร็อบบิยัล อะอ์ลา" (3 ครั้ง)\n4. ลุกขึ้นกล่าว "อัลลอฮุอักบัร"\n5. นั่งพักสั้นๆ แล้วทำสุญูดครั้งที่สอง',
     },
     {
-      'no': 7, 'titleEn': 'Tashahhud and Salutation', 'titleTh': 'ตะชะฮ์ฮุดและสลาม',
+      'no': 6, 'titleEn': 'Tashahhud and Salutation', 'titleTh': 'ตะชะฮ์ฮุดและสลาม',
       'arabic': 'التَّحِيَّاتُ لِلَّهِ وَالصَّلَوَاتُ وَالطَّيِّبَاتُ',
-      'contentEn': 'Final sitting:\n\n1. After the last rakah, sit in Tashahhud position\n2. Recite At-Tahiyyat\n3. Recite Salawat Ibrahimiyyah\n4. Make Dua before salam\n5. Give Salam:\n   - Turn right: "Assalamu Alaikum Wa Rahmatullah"\n   - Turn left: "Assalamu Alaikum Wa Rahmatullah"\n\nThe prayer is now complete!',
-      'contentTh': 'การนั่งสุดท้าย:\n\n1. หลังร็อกอะห์สุดท้าย นั่งในท่าตะชะฮ์ฮุด\n2. อ่านอัต-ตะฮิยยาต\n3. อ่านศอลาวาตอิบรอฮีมียะห์\n4. ดุอาก่อนสลาม\n5. กล่าวสลาม:\n   - หันขวา: "อัสสะลามุอะลัยกุม วะเราะห์มะตุลลอฮ์"\n   - หันซ้าย: "อัสสะลามุอะลัยกุม วะเราะห์มะตุลลอฮ์"\n\nละหมาดเสร็จสมบูรณ์แล้ว!',
+      'contentEn': 'Final sitting:\n\n1. Sit in Tashahhud position\n2. Recite At-Tahiyyat\n3. Recite Salawat Ibrahimiyyah\n4. Make Dua before salam\n5. Give Salam:\n   - Turn right: "Assalamu Alaikum Wa Rahmatullah"\n   - Turn left: "Assalamu Alaikum Wa Rahmatullah"\n\nPrayer is complete!',
+      'contentTh': 'การนั่งสุดท้าย:\n\n1. นั่งในท่าตะชะฮ์ฮุด\n2. อ่านอัต-ตะฮิยยาต\n3. อ่านศอลาวาตอิบรอฮีมียะห์\n4. ดุอาก่อนสลาม\n5. กล่าวสลาม:\n   - หันขวา: "อัสสะลามุอะลัยกุม วะเราะห์มะตุลลอฮ์"\n   - หันซ้าย: "อัสสะลามุอะลัยกุม วะเราะห์มะตุลลอฮ์"\n\nละหมาดเสร็จสมบูรณ์!',
     },
     {
-      'no': 8, 'titleEn': 'Dhikr After Prayer', 'titleTh': 'ซิกร์หลังละหมาด',
+      'no': 7, 'titleEn': 'Dhikr After Prayer', 'titleTh': 'ซิกร์หลังละหมาด',
       'arabic': 'فَإِذَا قَضَيْتُمُ الصَّلَاةَ فَاذْكُرُوا اللَّهَ',
-      'contentEn': 'Recommended dhikr after prayer:\n\n1. Say "Astaghfirullah" 3 times\n2. Say "Allahumma antas-salam..."\n3. Recite Ayatul Kursi\n4. "Subhanallah" 33 times\n5. "Alhamdulillah" 33 times\n6. "Allahu Akbar" 33 times\n7. "La ilaha illallah wahdahu..." once\n\nThese dhikr bring great reward and protection.',
-      'contentTh': 'ซิกร์ที่แนะนำหลังละหมาด:\n\n1. กล่าว "อัสตัฆฟิรุลลอฮ์" 3 ครั้ง\n2. กล่าว "อัลลอฮุมมะ อันตัสสะลาม..."\n3. อ่านอายะตุลกุรซี\n4. "ซุบฮานัลลอฮ์" 33 ครั้ง\n5. "อัลฮัมดุลิลลาห์" 33 ครั้ง\n6. "อัลลอฮุอักบัร" 33 ครั้ง\n7. "ลา อิลาฮะ อิลลัลลอฮ์ วะห์ดะฮู..." 1 ครั้ง',
+      'contentEn': 'Recommended dhikr after prayer:\n\n1. Say "Astaghfirullah" 3 times\n2. Recite Ayatul Kursi\n3. "Subhanallah" 33 times\n4. "Alhamdulillah" 33 times\n5. "Allahu Akbar" 33 times\n6. "La ilaha illallah wahdahu..." once',
+      'contentTh': 'ซิกร์ที่แนะนำหลังละหมาด:\n\n1. กล่าว "อัสตัฆฟิรุลลอฮ์" 3 ครั้ง\n2. อ่านอายะตุลกุรซี\n3. "ซุบฮานัลลอฮ์" 33 ครั้ง\n4. "อัลฮัมดุลิลลาห์" 33 ครั้ง\n5. "อัลลอฮุอักบัร" 33 ครั้ง\n6. "ลา อิลาฮะ อิลลัลลอฮ์ วะห์ดะฮู..." 1 ครั้ง',
     },
   ];
 
@@ -803,10 +812,14 @@ class _LessonsPageState extends State<LessonsPage> {
      'titleEn': '6 Pillars of Iman', 'titleTh': '6 หลักอีหม่าน', 'titleMs': '6 Rukun Iman', 'titleId': '6 Rukun Iman', 'titleAr': 'أركان الإيمان الستة', 'titleUr': 'ایمان کے 6 ارکان', 'titleBn': 'ঈমানের ৬ স্তম্ভ',
      'subtitleEn': 'Articles of Islamic faith', 'subtitleTh': 'หลักความเชื่อในอิสลาม', 'subtitleMs': 'Kepercayaan asas Islam', 'subtitleId': 'Kepercayaan dasar Islam', 'subtitleAr': 'عقائد الإيمان', 'subtitleUr': 'ایمان کے عقائد', 'subtitleBn': 'ইসলামী বিশ্বাসের মূলনীতি',
      'color': const Color(0xFF1565C0), 'lessons': 6},
+    {'id': 'wudhu', 'icon': '💧',
+     'titleEn': 'How to Perform Wudhu', 'titleTh': 'วิธีทำวุฎูอ์', 'titleMs': 'Cara Berwudhu', 'titleId': 'Cara Berwudhu', 'titleAr': 'كيفية الوضوء', 'titleUr': 'وضو کا طریقہ', 'titleBn': 'ওযু করার নিয়ম',
+     'subtitleEn': 'Step by step wudhu guide', 'subtitleTh': 'คู่มือวุฎูอ์ทีละขั้นตอน', 'subtitleMs': 'Panduan wudhu langkah demi langkah', 'subtitleId': 'Panduan wudhu langkah demi langkah', 'subtitleAr': 'دليل الوضوء خطوة بخطوة', 'subtitleUr': 'وضو کی مرحلہ وار رہنمائی', 'subtitleBn': 'ধাপে ধাপে ওযুর গাইড',
+     'color': const Color(0xFF0277BD), 'lessons': 1},
     {'id': 'prayer', 'icon': '🙏',
      'titleEn': 'How to Pray', 'titleTh': 'วิธีละหมาด', 'titleMs': 'Cara Solat', 'titleId': 'Cara Sholat', 'titleAr': 'كيفية الصلاة', 'titleUr': 'نماز کا طریقہ', 'titleBn': 'নামাজের পদ্ধতি',
      'subtitleEn': 'Step by step prayer guide', 'subtitleTh': 'คู่มือละหมาดทีละขั้นตอน', 'subtitleMs': 'Panduan solat langkah demi langkah', 'subtitleId': 'Panduan sholat langkah demi langkah', 'subtitleAr': 'دليل الصلاة خطوة بخطوة', 'subtitleUr': 'نماز کی مرحلہ وار رہنمائی', 'subtitleBn': 'ধাপে ধাপে নামাজের গাইড',
-     'color': const Color(0xFF6A1B9A), 'lessons': 8},
+     'color': const Color(0xFF6A1B9A), 'lessons': 7},
     {'id': 'hadith', 'icon': '📜',
      'titleEn': '40 Hadith', 'titleTh': '40 หะดีษ', 'titleMs': '40 Hadith', 'titleId': '40 Hadis', 'titleAr': '٤٠ حديثاً', 'titleUr': '40 احادیث', 'titleBn': '৪০ হাদিস',
      'subtitleEn': 'Key teachings of Prophet Muhammad', 'subtitleTh': 'คำสอนสำคัญของท่านนบี', 'subtitleMs': 'Ajaran utama Nabi Muhammad', 'subtitleId': 'Ajaran utama Nabi Muhammad', 'subtitleAr': 'تعاليم النبي محمد الأساسية', 'subtitleUr': 'نبی محمد کی اہم تعلیمات', 'subtitleBn': 'নবী মুহাম্মদের মূল শিক্ষা',
@@ -1039,6 +1052,27 @@ class LessonContentPage extends StatelessWidget {
     final content = _getLessonContent(lesson, catId, lang.lang, lessonNo);
     final arabic = lesson['arabic'] ?? '';
 
+    // Wudhu image
+    const wudhuImages = {
+      1: ['image/prayer/prayer_2_takbir.png'],
+    };
+    const prayerImages = {
+      2: ['image/prayer/prayer_2_takbir.png'],
+      3: ['image/prayer/prayer_3_qiraah.png'],
+      4: ['image/prayer/prayer_4_ruku.png'],
+      5: ['image/prayer/prayer_6_sujud.png',
+          'image/prayer/prayer_7_juloos.png'],
+      6: ['image/prayer/prayer_9_tashahhud1.png',
+          'image/prayer/prayer_11_salam1.png',
+          'image/prayer/prayer_12_salam2.png'],
+      7: ['image/prayer/prayer_12_salam2.png'],
+    };
+    final List<String>? prayerImageList = catId == 'prayer'
+        ? prayerImages[lessonNo]
+        : catId == 'wudhu'
+            ? wudhuImages[lessonNo]
+            : null;
+
     return Scaffold(
       backgroundColor: theme.bgColor,
       appBar: AppBar(
@@ -1058,6 +1092,48 @@ class LessonContentPage extends StatelessWidget {
           const SizedBox(height: 16),
           Text(title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: theme.textColor)),
           const SizedBox(height: 20),
+
+          // Prayer image(s)
+          if (prayerImageList != null && prayerImageList.isNotEmpty) ...[
+            if (prayerImageList.length == 1)
+              Container(
+                height: 200,
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: theme.isDark ? const Color(0xFF0D2E1A) : const Color(0xFFF1F8E9),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: color.withOpacity(0.15))),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(prayerImageList[0], fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Center(
+                          child: Icon(Icons.image_not_supported_outlined,
+                              color: theme.subTextColor, size: 40)))))
+            else ...[
+              Row(children: [
+                for (int i = 0; i < prayerImageList.length; i++) ...[
+                  Expanded(
+                    child: Container(
+                      height: 180,
+                      margin: EdgeInsets.only(
+                        right: i < prayerImageList.length - 1 ? 8 : 0),
+                      decoration: BoxDecoration(
+                        color: theme.isDark ? const Color(0xFF0D2E1A) : const Color(0xFFF1F8E9),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: color.withOpacity(0.15))),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Image.asset(prayerImageList[i], fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => Center(
+                                child: Icon(Icons.image_not_supported_outlined,
+                                    color: theme.subTextColor, size: 32))))),
+                  ),
+                ],
+              ]),
+              const SizedBox(height: 20),
+            ],
+          ],
           if (arabic.isNotEmpty) ...[
             Container(
               width: double.infinity, padding: const EdgeInsets.all(20),
@@ -1112,10 +1188,14 @@ class _LessonsTabState extends State<LessonsTab> {
      'titleEn': '6 Pillars of Iman', 'titleTh': '6 หลักอีหม่าน', 'titleMs': '6 Rukun Iman', 'titleId': '6 Rukun Iman', 'titleAr': 'أركان الإيمان الستة', 'titleUr': 'ایمان کے 6 ارکان', 'titleBn': 'ঈমানের ৬ স্তম্ভ',
      'subtitleEn': 'Articles of Islamic faith', 'subtitleTh': 'หลักความเชื่อในอิสลาม', 'subtitleMs': 'Kepercayaan asas Islam', 'subtitleId': 'Kepercayaan dasar Islam', 'subtitleAr': 'عقائد الإيمان', 'subtitleUr': 'ایمان کے عقائد', 'subtitleBn': 'ইসলামী বিশ্বাসের মূলনীতি',
      'color': const Color(0xFF1565C0), 'lessons': 6},
+    {'id': 'wudhu', 'icon': '💧',
+     'titleEn': 'How to Perform Wudhu', 'titleTh': 'วิธีทำวุฎูอ์', 'titleMs': 'Cara Berwudhu', 'titleId': 'Cara Berwudhu', 'titleAr': 'كيفية الوضوء', 'titleUr': 'وضو کا طریقہ', 'titleBn': 'ওযু করার নিয়ম',
+     'subtitleEn': 'Step by step wudhu guide', 'subtitleTh': 'คู่มือวุฎูอ์ทีละขั้นตอน', 'subtitleMs': 'Panduan wudhu langkah demi langkah', 'subtitleId': 'Panduan wudhu langkah demi langkah', 'subtitleAr': 'دليل الوضوء خطوة بخطوة', 'subtitleUr': 'وضو کی مرحلہ وار رہنمائی', 'subtitleBn': 'ধাপে ধাপে ওযুর গাইড',
+     'color': const Color(0xFF0277BD), 'lessons': 1},
     {'id': 'prayer', 'icon': '🙏',
      'titleEn': 'How to Pray', 'titleTh': 'วิธีละหมาด', 'titleMs': 'Cara Solat', 'titleId': 'Cara Sholat', 'titleAr': 'كيفية الصلاة', 'titleUr': 'نماز کا طریقہ', 'titleBn': 'নামাজের পদ্ধতি',
      'subtitleEn': 'Step by step prayer guide', 'subtitleTh': 'คู่มือละหมาดทีละขั้นตอน', 'subtitleMs': 'Panduan solat langkah demi langkah', 'subtitleId': 'Panduan sholat langkah demi langkah', 'subtitleAr': 'دليل الصلاة خطوة بخطوة', 'subtitleUr': 'نماز کی مرحلہ وار رہنمائی', 'subtitleBn': 'ধাপে ধাপে নামাজের গাইড',
-     'color': const Color(0xFF6A1B9A), 'lessons': 8},
+     'color': const Color(0xFF6A1B9A), 'lessons': 7},
     {'id': 'hadith', 'icon': '📜',
      'titleEn': '40 Hadith', 'titleTh': '40 หะดีษ', 'titleMs': '40 Hadith', 'titleId': '40 Hadis', 'titleAr': '٤٠ حديثاً', 'titleUr': '40 احادیث', 'titleBn': '৪০ হাদিস',
      'subtitleEn': 'Key teachings of Prophet Muhammad', 'subtitleTh': 'คำสอนสำคัญของท่านนบี', 'subtitleMs': 'Ajaran utama Nabi Muhammad', 'subtitleId': 'Ajaran utama Nabi Muhammad', 'subtitleAr': 'تعاليم النبي محمد الأساسية', 'subtitleUr': 'نبی محمد کی اہم تعلیمات', 'subtitleBn': 'নবী মুহাম্মদের মূল শিক্ষা',
