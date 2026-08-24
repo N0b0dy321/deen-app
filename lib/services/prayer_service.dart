@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'notification_service.dart';
 import 'language_service.dart';
+import 'location_service.dart';
+import 'package:geocoding/geocoding.dart';
 
 class PrayerService {
   static const String _cachePrefix = 'prayer_';
@@ -17,15 +19,22 @@ class PrayerService {
     if (cached != null) {
       final data = json.decode(cached) as Map<String, dynamic>;
       data['nextPrayer'] = calculateNextPrayer(data['timings']);
+      data['locationName'] ??= await _resolveLocationName();
 
       // Schedule notifications จาก cache ด้วย
-      final isThai = LanguageService().isThai;
-      final timezone = prefs.getString('timezone') ?? 'Asia/Bangkok';
-      await NotificationService.schedulePrayerNotifications(
-        timings: Map<String, dynamic>.from(data['timings']),
-        timezone: timezone,
-        isThai: isThai,
-      );
+      // ห่อด้วย try-catch: ถ้าตั้งแจ้งเตือนไม่สำเร็จ (เช่น เสียงที่เลือกไว้หาไฟล์ไม่เจอ)
+      // ไม่ควรทำให้การโหลดเวลาละหมาด/หน้าจอค้างไปด้วย
+      try {
+        final isThai = LanguageService().isThai;
+        final timezone = prefs.getString('timezone') ?? 'Asia/Bangkok';
+        await NotificationService.schedulePrayerNotifications(
+          timings: Map<String, dynamic>.from(data['timings']),
+          timezone: timezone,
+          isThai: isThai,
+        );
+      } catch (e) {
+        print('NOTIFICATION SCHEDULE ERROR (cache): $e');
+      }
 
       return data;
     }
@@ -39,14 +48,29 @@ class PrayerService {
       final timezone = prefs.getString('timezone') ?? 'Asia/Bangkok';
       final method = prefs.getString('method') ?? '16';
 
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) return _loadAnyCache(prefs);
-      }
+      // ── หาพิกัดที่จะใช้คำนวณเวลาละหมาด ──────────────────────
+      // ลำดับความสำคัญ:
+      // 1. ตำแหน่งที่ user ค้นหา/เลือกเองใน Settings (LocationService) ถ้ามี
+      // 2. ตำแหน่ง GPS ปัจจุบันของเครื่อง (พฤติกรรมเดิม)
+      double latitude;
+      double longitude;
+      final manualLocation = await LocationService.getSavedLocation();
 
-      final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+      if (manualLocation != null) {
+        latitude = manualLocation['lat'] as double;
+        longitude = manualLocation['lng'] as double;
+      } else {
+        LocationPermission permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied) {
+          permission = await Geolocator.requestPermission();
+          if (permission == LocationPermission.denied) return _loadAnyCache(prefs);
+        }
+
+        final position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high);
+        latitude = position.latitude;
+        longitude = position.longitude;
+      }
 
       final now = DateTime.now();
       Map<String, dynamic>? todayData;
@@ -62,12 +86,17 @@ class PrayerService {
           continue;
         }
 
+        // เมื่อใช้ตำแหน่งที่เลือกเอง ไม่ส่ง timezonestring ไป —
+        // ให้ Aladhan API คำนวณ timezone ที่ถูกต้องจากพิกัดเอง
+        // (กันปัญหาเลือกเมืองอื่นแล้วเวลาไม่ขยับเพราะยังใช้ timezone เดิมค้างอยู่)
+        final tzParam = manualLocation != null ? '' : '&timezonestring=$timezone';
+
         final url = Uri.parse(
           'https://api.aladhan.com/v1/timings/${date.day}-${date.month}-${date.year}'
-          '?latitude=${position.latitude}'
-          '&longitude=${position.longitude}'
+          '?latitude=$latitude'
+          '&longitude=$longitude'
           '&method=$method'
-          '&timezonestring=$timezone',
+          '$tzParam',
         );
 
         final response =
@@ -90,14 +119,23 @@ class PrayerService {
 
       if (todayData != null) {
         todayData['nextPrayer'] = calculateNextPrayer(todayData['timings']);
+        todayData['locationName'] = manualLocation != null
+            ? manualLocation['name'] as String
+            : await _resolveLocationName();
 
         // ── Schedule Notifications ──
-        final isThai = LanguageService().isThai;
-        await NotificationService.schedulePrayerNotifications(
-          timings: Map<String, dynamic>.from(todayData['timings']),
-          timezone: todayData['timezone'] ?? 'Asia/Bangkok',
-          isThai: isThai,
-        );
+        // ห่อด้วย try-catch: ถ้าตั้งแจ้งเตือนไม่สำเร็จ (เช่น เสียงที่เลือกไว้หาไฟล์ไม่เจอ)
+        // ไม่ควรทำให้การโหลดเวลาละหมาด/หน้าจอค้างไปด้วย
+        try {
+          final isThai = LanguageService().isThai;
+          await NotificationService.schedulePrayerNotifications(
+            timings: Map<String, dynamic>.from(todayData['timings']),
+            timezone: todayData['timezone'] ?? 'Asia/Bangkok',
+            isThai: isThai,
+          );
+        } catch (e) {
+          print('NOTIFICATION SCHEDULE ERROR (fetch): $e');
+        }
 
         return todayData;
       }
@@ -107,6 +145,32 @@ class PrayerService {
       print('PRAYER ERROR: $e');
       return _loadAnyCache(prefs);
     }
+  }
+
+  /// หาชื่อตำแหน่งที่แสดงผลได้ในหน้า Home/Prayer Times
+  /// - ถ้า user เลือกเมืองเอง (LocationService) ใช้ชื่อนั้นตรงๆ
+  /// - ถ้าใช้ GPS อัตโนมัติ ลอง reverse-geocode พิกัดปัจจุบันเป็นชื่อเมือง
+  ///   ถ้าทำไม่ได้ (เช่น ไม่มีเน็ต) fallback เป็นข้อความทั่วไป
+  static Future<String> _resolveLocationName() async {
+    final manual = await LocationService.getSavedLocation();
+    if (manual != null) return manual['name'] as String;
+
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.low,
+      );
+      final placemarks = await placemarkFromCoordinates(
+          position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        final p = placemarks.first;
+        final parts = [p.locality, p.administrativeArea, p.country]
+            .where((s) => s != null && s.isNotEmpty)
+            .toList();
+        if (parts.isNotEmpty) return parts.join(', ');
+      }
+    } catch (_) {}
+
+    return 'ตำแหน่งปัจจุบัน';
   }
 
   static Map<String, dynamic> calculateNextPrayer(
@@ -151,6 +215,7 @@ class PrayerService {
     if (cached != null) {
       final data = json.decode(cached) as Map<String, dynamic>;
       data['nextPrayer'] = calculateNextPrayer(data['timings']);
+      data['locationName'] ??= 'ตำแหน่งปัจจุบัน'; // เผื่อ cache เก่าก่อนมีฟีเจอร์นี้
       data['isOffline'] = true;
       return data;
     }
@@ -160,6 +225,7 @@ class PrayerService {
       if (old != null) {
         final data = json.decode(old) as Map<String, dynamic>;
         data['nextPrayer'] = calculateNextPrayer(data['timings']);
+        data['locationName'] ??= 'ตำแหน่งปัจจุบัน';
         data['isOffline'] = true;
         return data;
       }

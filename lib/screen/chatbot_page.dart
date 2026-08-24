@@ -29,7 +29,7 @@ Your role is to answer questions about Islam including:
 - Halal/Haram guidelines
 - Daily Islamic practices and Dua
 Always respond respectfully and base answers on Quran and authentic Hadith.
-Respond in the same language the user uses (Thai or English).
+Respond in the same language the user uses (All Language).
 ''';
 
   @override

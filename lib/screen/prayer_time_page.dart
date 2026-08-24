@@ -22,7 +22,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     {'key': 'Dhuhr', 'label': 'Dhuhr', 'labelTh': 'ซุฮร์', 'icon': Icons.wb_sunny, 'arabic': 'الظهر'},
     {'key': 'Asr', 'label': 'Asr', 'labelTh': 'อัศร์', 'icon': Icons.sunny_snowing, 'arabic': 'العصر'},
     {'key': 'Maghrib', 'label': 'Maghrib', 'labelTh': 'มัฆริบ', 'icon': Icons.nights_stay_outlined, 'arabic': 'المغرب'},
-    {'key': 'Isha', 'label': 'Isha', 'labelTh': 'อิชาอ์', 'icon': Icons.nightlight, 'arabic': 'العشาء'},
+    {'key': 'Isha', 'label': 'Isha', 'labelTh': 'อิชาอ์', 'icon': Icons.nightlight, 'arabic': 'العشاء'},
   ];
 
   @override
@@ -80,8 +80,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22)),
               GestureDetector(
                 onTap: () async {
-                  final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
-                  if (result == true) _loadPrayerTimes();
+                  await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
+                  // โหลดใหม่เสมอตอนกลับมาจาก Settings (ไม่ใช่แค่ตอนกด Save)
+                  // เพราะการเลือกตำแหน่งใน location sheet จะ apply ทันทีอยู่แล้ว
+                  _loadPrayerTimes();
                 },
                 child: const Icon(Icons.settings, color: Colors.white70, size: 26)),
             ]),
@@ -93,6 +95,21 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             const SizedBox(height: 4),
             if (_prayerData != null)
               Text(_prayerData!['date'], style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            // ── ชื่อตำแหน่งที่ใช้คำนวณเวลาละหมาดอยู่ตอนนี้ ──
+            if (_prayerData?['locationName'] != null) ...[
+              const SizedBox(height: 6),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const Icon(Icons.location_on, color: Colors.white70, size: 13),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    _prayerData!['locationName'] as String,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ]),
+            ],
             const SizedBox(height: 16),
           ]),
         ),

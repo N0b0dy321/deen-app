@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/quran_database.dart';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
@@ -59,14 +60,6 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
     super.initState();
     _theme.addListener(() => setState(() {}));
 
-    // Sync ภาษากับ LanguageService
-    final appLang = _lang.lang;
-    if (_languages.containsKey(appLang)) {
-      _selectedLang = appLang;
-    } else {
-      _selectedLang = 'en';
-    }
-
     // ฟัง player state - auto play next verse
     _player.processingStateStream.listen((state) {
       if (state == ProcessingState.completed) {
@@ -80,6 +73,24 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
         }
       }
     });
+
+    _initLangThenLoad();
+  }
+
+  // ── เลือกภาษาคำแปลเริ่มต้น ──────────────────────────
+  // ลำดับความสำคัญ:
+  // 1. ค่าที่ user ตั้งไว้ล่วงหน้าใน Settings > อัลกุรอาน > ภาษาคำแปล (key: quran_translation_lang)
+  // 2. ถ้าไม่เคยตั้งไว้ ใช้ภาษาของแอปโดยรวม (พฤติกรรมเดิม)
+  Future<void> _initLangThenLoad() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedTranslationLang = prefs.getString('quran_translation_lang');
+    final resolvedLang = savedTranslationLang ?? _lang.lang;
+
+    if (mounted) {
+      setState(() {
+        _selectedLang = _languages.containsKey(resolvedLang) ? resolvedLang : 'en';
+      });
+    }
 
     loadVerses();
   }
@@ -190,10 +201,13 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
     }
   }
 
-  void _changeLang(String lang) {
+  void _changeLang(String lang) async {
     if (lang == _selectedLang) return;
     _stopAudio();
     setState(() => _selectedLang = lang);
+    // จำค่านี้ไว้เป็นค่าเริ่มต้นครั้งต่อไปด้วย (sync กับ Settings > อัลกุรอาน)
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('quran_translation_lang', lang);
     loadVerses();
   }
 

@@ -57,7 +57,14 @@ class NotificationService {
   }
 
   // ── Build details with azan sound ────────────────
-  static NotificationDetails _buildDetails(String body, {String sound = 'azan_makkah'}) {
+  // เสียงทั้งหมด (Makkah, Madinah, Al-Aqsa) เป็น raw resource ที่ bundle มากับแอป
+  // ไฟล์อยู่ที่ android/app/src/main/res/raw/<sound>.mp3
+  static Future<NotificationDetails> _buildDetails(
+    String body, {
+    String sound = 'azan_makkah',
+  }) async {
+    final soundObj = RawResourceAndroidNotificationSound(sound);
+
     return NotificationDetails(
       android: AndroidNotificationDetails(
         '${_channelId}_$sound', // channel แยกตามเสียง
@@ -66,15 +73,15 @@ class NotificationService {
         importance: Importance.max,
         priority: Priority.high,
         icon: '@mipmap/ic_launcher',
-        color: Color(0xFF1B5E20),
-        sound: RawResourceAndroidNotificationSound(sound), // เสียงจาก raw folder
+        color: const Color(0xFF1B5E20),
+        sound: soundObj,
         playSound: true,
         enableVibration: true,
         ongoing: false,
         autoCancel: true,
         styleInformation: BigTextStyleInformation(body),
         fullScreenIntent: true,
-        actions: [
+        actions: const [
           AndroidNotificationAction(
             'stop_azan',
             '🔇 Stop',
@@ -116,6 +123,15 @@ class NotificationService {
     // ดึงเสียงที่เลือก
     final selectedAzan = await AzanService.getSelectedAzanId();
 
+    // ── ลบ channel เก่าทิ้งก่อนเสมอ ──────────────────────────
+    // Android จะ "ล็อก" เสียงของ notification channel ไว้ถาวรตั้งแต่ครั้งแรกที่สร้าง
+    // (แก้เสียงทีหลังไม่ได้ ต้องลบแล้วสร้างใหม่เท่านั้น) เพราะ channel id ผูกกับชื่อเสียง
+    // (${_channelId}_$sound) ถ้าเคยสร้าง channel นี้มาก่อนด้วยเสียงที่ error/fallback
+    // ก็ต้องลบทิ้งเพื่อให้สร้างใหม่ด้วยเสียงที่ถูกต้อง
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.deleteNotificationChannel('${_channelId}_$selectedAzan');
+
     final now = tz.TZDateTime.now(tz.local);
     print('=== NOW: $now ===');
 
@@ -148,9 +164,11 @@ class NotificationService {
       final title = isThai ? '🕌 $nameTh - $nameAr' : '🕌 $name - $nameAr';
       final body = isThai ? 'ถึงเวลา$nameTh แล้ว' : 'It\'s time for $name prayer';
 
+      final details = await _buildDetails(body, sound: selectedAzan);
+
       await _plugin.zonedSchedule(
         id, title, body, scheduled,
-        _buildDetails(body, sound: selectedAzan),
+        details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
@@ -167,12 +185,19 @@ class NotificationService {
 
   static Future<void> showTest() async {
     final selectedAzan = await AzanService.getSelectedAzanId();
+
+    // ลบ channel เก่าทิ้งก่อน กันเสียงค้างจากรอบก่อนหน้า (ดูคำอธิบายใน schedulePrayerNotifications)
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.deleteNotificationChannel('${_channelId}_$selectedAzan');
+
     const body = 'การแจ้งเตือนทำงานปกติ ✅';
+    final details = await _buildDetails(body, sound: selectedAzan);
     await _plugin.show(
       99,
       '🕌 DEEN - Test',
       body,
-      _buildDetails(body, sound: selectedAzan),
+      details,
     );
   }
 
@@ -180,14 +205,25 @@ class NotificationService {
     final now = tz.TZDateTime.now(tz.local);
     final scheduled = now.add(const Duration(minutes: 1));
     final selectedAzan = await AzanService.getSelectedAzanId();
+
+    // ลบ channel เก่าทิ้งก่อน กันเสียงค้างจากรอบก่อนหน้า
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.deleteNotificationChannel('${_channelId}_$selectedAzan');
+
     print('=== SCHEDULING TEST FOR: $scheduled ===');
+
+    final details = await _buildDetails(
+      'การแจ้งเตือนแบบ schedule ทำงานปกติ ✅',
+      sound: selectedAzan,
+    );
 
     await _plugin.zonedSchedule(
       98,
       '🕌 DEEN - Scheduled Test',
       'การแจ้งเตือนแบบ schedule ทำงานปกติ ✅',
       scheduled,
-      _buildDetails('การแจ้งเตือนแบบ schedule ทำงานปกติ ✅', sound: selectedAzan),
+      details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,

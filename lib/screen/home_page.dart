@@ -80,7 +80,11 @@ class _HomePageState extends State<HomePage> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => _MoreBottomSheet(theme: _theme, lang: _lang),
+      builder: (_) => _MoreBottomSheet(
+        theme: _theme,
+        lang: _lang,
+        onSettingsReturn: _loadPrayerTimes,
+      ),
     );
   }
 
@@ -116,6 +120,22 @@ class _HomePageState extends State<HomePage> {
                       isDark: _theme.isDark,
                     ),
                   ),
+
+                  // ── ชื่อตำแหน่งที่ใช้คำนวณเวลาละหมาดอยู่ตอนนี้ ──
+                  if (_prayerData?['locationName'] != null) ...[
+                    const SizedBox(height: 8),
+                    Row(children: [
+                      Icon(Icons.location_on, size: 14, color: _theme.subTextColor),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          _prayerData!['locationName'] as String,
+                          style: TextStyle(fontSize: 12, color: _theme.subTextColor),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ]),
+                  ],
 
                   const SizedBox(height: 16),
 
@@ -282,8 +302,13 @@ class _HomePageState extends State<HomePage> {
 class _MoreBottomSheet extends StatelessWidget {
   final ThemeService theme;
   final LanguageService lang;
+  final VoidCallback onSettingsReturn;
 
-  const _MoreBottomSheet({required this.theme, required this.lang});
+  const _MoreBottomSheet({
+    required this.theme,
+    required this.lang,
+    required this.onSettingsReturn,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -293,9 +318,13 @@ class _MoreBottomSheet extends StatelessWidget {
         color: const Color(0xFF1B5E20),
         label: lang.isThai ? 'ตั้งค่า' : 'Settings',
         subtitle: lang.isThai ? 'ธีม, ภาษา, เวลาละหมาด' : 'Theme, language, prayer time',
-        onTap: () {
+        onTap: () async {
           Navigator.pop(context);
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
+          await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
+          // โหลดเวลาละหมาดใหม่เสมอตอนกลับมาจาก Settings
+          // (ไม่เช็คว่ากด Save หรือกด back เฉยๆ เพราะการเปลี่ยนตำแหน่งใน sheet
+          //  ค้นหาเมืองจะ apply ทันทีอยู่แล้ว โหลดจาก cache ก็เร็ว ไม่มีผลเสีย)
+          onSettingsReturn();
         },
       ),
       _MoreItem(
@@ -303,9 +332,10 @@ class _MoreBottomSheet extends StatelessWidget {
         color: Colors.orange,
         label: lang.isThai ? 'การแจ้งเตือน' : 'Notifications',
         subtitle: lang.isThai ? 'ตั้งค่าการแจ้งเตือน' : 'Manage notifications',
-        onTap: () {
+        onTap: () async {
           Navigator.pop(context);
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
+          await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
+          onSettingsReturn();
         },
       ),
       _MoreItem(
