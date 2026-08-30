@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -30,10 +31,43 @@ class LanguageService extends ChangeNotifier {
   ];
 
   // ── Init ─────────────────────────────────────────
+  // ลำดับความสำคัญของภาษาเริ่มต้น:
+  // 1. ค่าที่ user เคยเลือกเองมาก่อน (บันทึกไว้ใน SharedPreferences key 'app_lang')
+  // 2. ถ้ายังไม่เคยเลือกเลย (เปิดแอปครั้งแรก) → ตรวจจับภาษาของเครื่อง (system locale)
+  //    แล้วใช้ถ้าอยู่ในลิสต์ที่รองรับ ไม่งั้น fallback เป็นอังกฤษ
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    _lang = prefs.getString('app_lang') ?? 'en';
+    final saved = prefs.getString('app_lang');
+
+    if (saved != null) {
+      _lang = saved;
+    } else {
+      _lang = _detectDeviceLanguage();
+      // บันทึกไว้เลยตั้งแต่รอบแรก กันกรณีระบบเปลี่ยนภาษาเครื่องทีหลัง
+      // แล้วแอปจะยังคงใช้ภาษาที่ตรวจจับไว้ตอนแรกอย่างสม่ำเสมอ
+      await prefs.setString('app_lang', _lang);
+    }
+
     notifyListeners();
+  }
+
+  /// อ่านภาษาของระบบปฏิบัติการ (เช่น จาก Settings > Language ของเครื่อง)
+  /// คืนรหัสภาษาที่แอปรองรับ ถ้าเครื่องตั้งเป็นภาษาที่ไม่รองรับ จะ fallback เป็น 'en'
+  String _detectDeviceLanguage() {
+    final deviceLocale = ui.PlatformDispatcher.instance.locale;
+    final deviceCode = deviceLocale.languageCode.toLowerCase();
+
+    final supportedCodes = availableLanguages.map((l) => l['code']).toSet();
+    if (supportedCodes.contains(deviceCode)) {
+      return deviceCode;
+    }
+
+    // เผื่อกรณีพิเศษที่ languageCode ไม่ตรงเป๊ะแต่หมายถึงภาษาเดียวกัน
+    // เช่นบางเครื่อง Indonesian อาจรายงานเป็น 'in' (รหัสเก่าของ ISO 639-1)
+    if (deviceCode == 'in') return 'id';
+    // Malay บางระบบเก่าอาจรายงานเป็น 'ms' อยู่แล้ว ไม่ต้องแปลงเพิ่ม
+
+    return 'en';
   }
 
   Future<void> setLang(String lang) async {

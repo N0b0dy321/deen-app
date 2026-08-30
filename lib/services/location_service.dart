@@ -10,9 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class LocationService {
   // ── Google Places API key ──────────────────────────────────
   // ต้องเป็น key เดียวกับ MAPS_API_KEY ที่ใช้ใน AndroidManifest.xml
-  // (Flutter อ่านค่าจาก AndroidManifest.xml เข้ามาใน Dart โดยตรงไม่ได้
-  //  ต้องคัดลอกมาใส่ตรงนี้อีกรอบ) และต้องเปิดใช้งาน "Places API"
-  // (ตัวเก่า ไม่ใช่ "Places API (New)") บน Google Cloud Console ของ key นี้ด้วย
   static const String _googlePlacesApiKey = 'AIzaSyCaUkqQ4svNBF-1lwNOLNlbre18Ab8wh1U';
 
   static const _latKey = 'manual_location_lat';
@@ -92,15 +89,11 @@ class LocationService {
 
   // ── Google Places Autocomplete (New) — suggest แบบ real-time เหมือน Muslim Pro ──
   // ใช้ Places API (New) เพราะ Cloud Console ของโปรเจกต์นี้เปิด API ตัวนี้ไว้
-  // (ต่างจาก Places API ตัวเก่า: endpoint, วิธีส่ง key, และรูปแบบ response ไม่เหมือนกัน)
 
   /// เรียก Places Autocomplete (New) คืนรายการ suggestion {description, placeId}
   /// จำกัดเฉพาะระดับเมือง (includedPrimaryTypes: locality) เพราะแอปนี้ใช้เลือกเมืองสำหรับเวลาละหมาด
   static Future<List<Map<String, String>>> autocompleteCity(String query) async {
     if (query.trim().isEmpty) return [];
-    if (_googlePlacesApiKey == 'YOUR_GOOGLE_API_KEY_HERE') {
-      throw Exception('ยังไม่ได้ใส่ Google Places API key ใน location_service.dart');
-    }
 
     final url = Uri.parse('https://places.googleapis.com/v1/places:autocomplete');
 
@@ -170,6 +163,61 @@ class LocationService {
       'lng': (location['longitude'] as num).toDouble(),
       'name': fallbackName,
     };
+  }
+
+  /// แปลงพิกัดเป็นชื่อเมือง "ตามภาษาที่ระบุ" โดยตรง (ใช้ Google Geocoding API
+  /// เพราะรองรับ parameter `language` — ต่างจาก placemarkFromCoordinates ของ
+  /// package geocoding ที่ยึดตามภาษาระบบปฏิบัติการเท่านั้น เปลี่ยนภาษาในแอป
+  /// แล้วไม่ขยับตาม)
+  /// คืน null ถ้าเรียกไม่สำเร็จ (เช่น ยังไม่ได้เปิด Geocoding API) ให้ผู้เรียก
+  /// ไปใช้ fallback อื่นแทน
+  static Future<String?> reverseGeocodeLocalized(
+    double lat,
+    double lng,
+    String languageCode,
+  ) async {
+    try {
+      final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/geocode/json'
+        '?latlng=$lat,$lng'
+        '&language=$languageCode'
+        '&key=$_googlePlacesApiKey',
+      );
+
+      final response = await http.get(url).timeout(const Duration(seconds: 8));
+      final data = json.decode(response.body);
+
+      if (data['status'] != 'OK') {
+        // แสดง error จริงใน log กันเดาไม่ถูกว่าทำไม fallback ไปเรื่อยๆ
+        print('=== Geocoding API status: ${data['status']} — ${data['error_message'] ?? ''} ===');
+        return null;
+      }
+
+      final results = data['results'] as List<dynamic>;
+      if (results.isEmpty) return null;
+
+      // หา component ระดับเมือง (locality) และประเทศ มาประกอบเป็นชื่อสั้นๆ
+      final components = results[0]['address_components'] as List<dynamic>;
+      String? locality;
+      String? country;
+      for (final c in components) {
+        final types = (c['types'] as List<dynamic>).cast<String>();
+        if (types.contains('locality')) locality = c['long_name'] as String;
+        if (types.contains('administrative_area_level_1') && locality == null) {
+          locality = c['long_name'] as String;
+        }
+        if (types.contains('country')) country = c['long_name'] as String;
+      }
+
+      final parts = [locality, country].where((s) => s != null && s.isNotEmpty).toList();
+      if (parts.isNotEmpty) return parts.join(', ');
+
+      // ไม่เจอ component ที่ต้องการ ใช้ formatted_address เต็มแทน
+      return results[0]['formatted_address'] as String?;
+    } catch (e) {
+      print('=== Geocoding API exception: $e ===');
+      return null;
+    }
   }
 
   /// ตรวจจับตำแหน่งปัจจุบันจาก GPS แล้วแปลงเป็นชื่อเมือง (ใช้ปุ่ม "ตำแหน่งปัจจุบัน")

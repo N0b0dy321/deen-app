@@ -172,6 +172,7 @@ class _SettingsPageState extends State<SettingsPage> {
   double _quranFontSize = 24.0;
   String _azanName = '';
   String? _locationName;
+  String _chatbotSubtitle = '';
 
   void _rebuild() { if (mounted) setState(() {}); }
 
@@ -194,11 +195,15 @@ class _SettingsPageState extends State<SettingsPage> {
     final prefs = await SharedPreferences.getInstance();
     final azanId = await AzanService.getSelectedAzanId();
     final savedLocation = await LocationService.getSavedLocation();
+    final userKey = prefs.getString('user_gemini_api_key');
     if (!mounted) return;
     setState(() {
       _quranFontSize = prefs.getDouble('quran_font_size') ?? 24.0;
       _azanName = AzanService.getAzanById(azanId)[_lang.isThai ? 'nameTh' : 'name'] ?? '';
       _locationName = savedLocation?['name'] as String?;
+      _chatbotSubtitle = (userKey != null && userKey.trim().isNotEmpty)
+          ? (_lang.isThai ? 'ใช้ API key ของคุณเอง' : 'Using your own API key')
+          : (_lang.isThai ? 'ใช้ค่าเริ่มต้นของแอป' : 'Using app default');
     });
   }
 
@@ -323,6 +328,16 @@ class _SettingsPageState extends State<SettingsPage> {
             onTap: () => _openSubPage(const _PrayerNotificationSettingsPage()),
           ),
           _buildNavRow(
+            icon: Icons.smart_toy_outlined,
+            iconColor: Colors.deepPurple,
+            label: _lang.isThai ? 'แชทบอต' : 'Chatbot',
+            subtitle: _chatbotSubtitle,
+            value: '',
+            textColor: textColor,
+            subColor: subColor,
+            onTap: () => _openSubPage(const _ChatbotSettingsPage()),
+          ),
+          _buildNavRow(
             icon: Icons.info_outline,
             iconColor: Colors.blue,
             label: _lang.isThai ? 'เกี่ยวกับ' : 'About',
@@ -408,6 +423,9 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                       onTap: () async {
                         // apply ทันที ไม่ต้องรอกด Save
                         await _lang.setLang(lang['code']!);
+                        // ล้าง cache เวลาละหมาด เพื่อให้ดึงชื่อตำแหน่ง (locationName)
+                        // ใหม่ตามภาษาที่เพิ่งเปลี่ยน แทนที่จะค้างเป็นภาษาเดิม
+                        await PrayerService.clearCache();
                         if (context.mounted) Navigator.pop(context);
                       },
                     );
@@ -1188,6 +1206,238 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
           ),
         ]),
       ]),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── แชทบอต (Chatbot) — ตั้งค่า Gemini API key ของตัวเอง (ไม่บังคับ) ──
+// ══════════════════════════════════════════════════════════════
+
+class _ChatbotSettingsPage extends StatefulWidget {
+  const _ChatbotSettingsPage();
+
+  @override
+  State<_ChatbotSettingsPage> createState() => _ChatbotSettingsPageState();
+}
+
+class _ChatbotSettingsPageState extends State<_ChatbotSettingsPage> {
+  final _theme = ThemeService();
+  final _lang = LanguageService();
+  final _controller = TextEditingController();
+
+  static const _prefKey = 'user_gemini_api_key';
+  bool _obscure = true;
+  bool _hasOwnKey = false;
+
+  void _rebuild() { if (mounted) setState(() {}); }
+
+  @override
+  void initState() {
+    super.initState();
+    _theme.addListener(_rebuild);
+    _lang.addListener(_rebuild);
+    _loadKey();
+  }
+
+  @override
+  void dispose() {
+    _theme.removeListener(_rebuild);
+    _lang.removeListener(_rebuild);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString(_prefKey) ?? '';
+    if (mounted) {
+      setState(() {
+        _controller.text = saved;
+        _hasOwnKey = saved.trim().isNotEmpty;
+      });
+    }
+  }
+
+  Future<void> _saveKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    final value = _controller.text.trim();
+    if (value.isEmpty) {
+      await prefs.remove(_prefKey);
+    } else {
+      await prefs.setString(_prefKey, value);
+    }
+    if (mounted) {
+      setState(() => _hasOwnKey = value.isNotEmpty);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(value.isEmpty
+            ? (_lang.isThai ? 'ล้างค่าแล้ว กลับไปใช้ค่าเริ่มต้นของแอป' : 'Cleared — back to app default')
+            : (_lang.isThai ? 'บันทึก API key แล้ว' : 'API key saved')),
+        backgroundColor: const Color(0xFF1B5E20),
+      ));
+    }
+  }
+
+  Future<void> _openAiStudio() async {
+    final uri = Uri.parse('https://aistudio.google.com/apikey');
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(_lang.isThai ? 'เปิดลิงก์ไม่สำเร็จ' : 'Could not open link'),
+          backgroundColor: Colors.red.shade700,
+        ));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = _theme.isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);
+    final cardBg = _theme.isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final textColor = _theme.textColor;
+    final subColor = _theme.subTextColor;
+    final green = _theme.iconColor;
+
+    return Scaffold(
+      backgroundColor: bg,
+      appBar: AppBar(
+        backgroundColor: bg,
+        elevation: 0,
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Icon(Icons.arrow_back_ios, color: green, size: 20)),
+        title: Text(_lang.isThai ? 'แชทบอต' : 'Chatbot',
+            style: TextStyle(color: textColor, fontSize: 17, fontWeight: FontWeight.w600)),
+        centerTitle: true,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        children: [
+          // ── สถานะปัจจุบัน ──
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: _theme.isDark ? [] : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)],
+            ),
+            child: Row(children: [
+              Icon(
+                _hasOwnKey ? Icons.check_circle : Icons.info_outline,
+                color: _hasOwnKey ? green : subColor,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  _hasOwnKey
+                      ? (_lang.isThai
+                          ? 'ตอนนี้แชทบอตใช้ API key ของคุณเอง'
+                          : 'Chatbot is using your own API key')
+                      : (_lang.isThai
+                          ? 'ตอนนี้แชทบอตใช้ค่าเริ่มต้นของแอป (มี usage จำกัดร่วมกับผู้ใช้คนอื่น)'
+                          : "Chatbot is using the app's default key (shared usage limit)"),
+                  style: TextStyle(fontSize: 13, color: textColor),
+                ),
+              ),
+            ]),
+          ),
+
+          const SizedBox(height: 20),
+
+          Text(
+            _lang.isThai ? 'ใช้ Gemini API key ของคุณเอง (ไม่บังคับ)' : 'Use your own Gemini API key (optional)',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: textColor),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _lang.isThai
+                ? 'ถ้าใช้ของตัวเอง จะไม่ติด usage limit ที่แชร์กับผู้ใช้คนอื่น '
+                    'สร้าง API key ฟรีได้ที่ Google AI Studio'
+                : "Using your own key avoids the shared usage limit. "
+                    'Get a free key from Google AI Studio.',
+            style: TextStyle(fontSize: 13, color: subColor, height: 1.5),
+          ),
+          const SizedBox(height: 12),
+
+          OutlinedButton.icon(
+            onPressed: _openAiStudio,
+            icon: Icon(Icons.open_in_new, color: green, size: 16),
+            label: Text(_lang.isThai ? 'เปิด Google AI Studio' : 'Open Google AI Studio',
+                style: TextStyle(color: green)),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: green.withOpacity(0.4)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          TextField(
+            controller: _controller,
+            obscureText: _obscure,
+            style: TextStyle(color: textColor, fontSize: 13),
+            decoration: InputDecoration(
+              hintText: 'AIza...',
+              hintStyle: TextStyle(color: subColor),
+              filled: true,
+              fillColor: cardBg,
+              suffixIcon: IconButton(
+                icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                    color: subColor, size: 20),
+                onPressed: () => setState(() => _obscure = !_obscure),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          Row(children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _saveKey,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: green,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(_lang.isThai ? 'บันทึก' : 'Save',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+              ),
+            ),
+            if (_hasOwnKey) ...[
+              const SizedBox(width: 10),
+              OutlinedButton(
+                onPressed: () {
+                  _controller.clear();
+                  _saveKey();
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+                  side: BorderSide(color: Colors.red.shade300),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(_lang.isThai ? 'ล้างค่า' : 'Clear',
+                    style: TextStyle(color: Colors.red.shade400)),
+              ),
+            ],
+          ]),
+
+          const SizedBox(height: 20),
+          Text(
+            _lang.isThai
+                ? 'หมายเหตุ: key จะถูกเก็บไว้ในเครื่องนี้เท่านั้น ไม่ถูกส่งไปที่ไหนนอกจากตอนเรียก Gemini API โดยตรง'
+                : 'Note: your key is stored only on this device and sent only when calling the Gemini API directly.',
+            style: TextStyle(fontSize: 11, color: subColor, height: 1.5),
+          ),
+        ],
+      ),
     );
   }
 }

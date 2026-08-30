@@ -947,14 +947,17 @@ class _NextPrayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity, height: 120,
+    return AspectRatio(
+      // สัดส่วนเดียวกับไฟล์ prayer_widget_bg.png จริง (1920x691)
+      // กันไม่ให้ BoxFit.cover ครอปภาพผิดสัดส่วนไปจากที่ออกแบบไว้ใน Figma
+      aspectRatio: 1920 / 691,
+      child: Container(
+      width: double.infinity,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF0D3B1E), const Color(0xFF1A6B35)]
-              : [const Color(0xFF1B5E20), const Color(0xFF43A047)],
-          begin: Alignment.centerLeft, end: Alignment.centerRight,
+        // ใช้ภาพพื้นหลังที่ออกแบบเอง (มัสยิด+พระจันทร์เสี้ยว) แทน gradient เดิม
+        image: const DecorationImage(
+          image: AssetImage('image/prayer/prayer_widget_bg.png'),
+          fit: BoxFit.cover,
         ),
         borderRadius: BorderRadius.circular(18),
         border: isDark ? Border.all(color: const Color(0xFF2ECC71).withOpacity(0.3)) : null,
@@ -963,12 +966,9 @@ class _NextPrayerCard extends StatelessWidget {
           blurRadius: 12, offset: const Offset(0, 4))],
       ),
       child: Row(children: [
-        const SizedBox(width: 20),
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), shape: BoxShape.circle),
-          child: const Icon(Icons.nightlight_round, color: Color(0xFFFFA726), size: 32)),
-        const SizedBox(width: 16),
+        // เว้นระยะห่างจากขอบซ้ายเพิ่ม เพราะฝั่งซ้ายของภาพพื้นหลังมีมัสยิด/พระจันทร์
+        // อยู่แล้ว ถ้าข้อความอยู่ชิดซ้ายเกินไปจะไปทับกับภาพ
+        const SizedBox(width: 130),
         Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(prayerName, style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
           Row(children: [
@@ -984,6 +984,7 @@ class _NextPrayerCard extends StatelessWidget {
         const Padding(padding: EdgeInsets.only(right: 16),
             child: Icon(Icons.chevron_right, color: Colors.white54, size: 24)),
       ]),
+      ),
     );
   }
 }

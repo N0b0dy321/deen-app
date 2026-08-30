@@ -7,6 +7,50 @@ import '../services/quran_database.dart';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
 
+// ── แปลงเลขอารบิก 0-9 (Western) เป็นเลขอินเดีย-อารบิก (Arabic-Indic) ──
+// ใช้กับเลขอายะห์ในสัญลักษณ์ปิดท้ายอายะห์ ให้ตรงกับรูปแบบมุศฮัฟจริง
+const List<String> _arabicIndicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+
+String _toArabicIndic(int number) {
+  return number.toString().split('').map((d) => _arabicIndicDigits[int.parse(d)]).join();
+}
+
+// ── สัญลักษณ์ปิดท้ายอายะห์ (۝) แบบดั้งเดิม ──────────────────
+// วาดเป็นวงกลมประดับเอง (ไม่พึ่งฟอนต์อาหรับพิเศษที่อาจไม่มีในเครื่อง user)
+// ใส่เลขอายะห์แบบอารบิก-อินเดียไว้ตรงกลาง ล้อมด้วยเส้นขอบสีทอง
+class _AyahEndMarker extends StatelessWidget {
+  final int verseNumber;
+  final Color accentColor;
+
+  const _AyahEndMarker({required this.verseNumber, required this.accentColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Container(
+        width: 26,
+        height: 26,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: accentColor, width: 1.4),
+        ),
+        child: Text(
+          _toArabicIndic(verseNumber),
+          textDirection: TextDirection.rtl,
+          style: TextStyle(
+            color: accentColor,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            height: 1,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class SurahDetailPage extends StatefulWidget {
   final int surahId;
   final String surahName;
@@ -409,10 +453,27 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                             ]),
 
                             const SizedBox(height: 12),
-                            Text(verse['text_uthmani'] ?? '',
+                            // ข้อความอาหรับ + สัญลักษณ์ปิดท้ายอายะห์แบบดั้งเดิม (วงกลมเลขอายะห์)
+                            // ต่อท้ายด้วย WidgetSpan เพื่อให้อยู่ในบรรทัดเดียวกับข้อความ
+                            // และอยู่ตำแหน่งท้ายอายะห์ตามทิศทาง RTL (ฝั่งซ้ายของบรรทัด)
+                            Text.rich(
+                              TextSpan(children: [
+                                TextSpan(
+                                  text: verse['text_uthmani'] ?? '',
+                                  style: TextStyle(fontSize: 24, height: 2.0, color: _theme.textColor),
+                                ),
+                                const WidgetSpan(child: SizedBox(width: 6)),
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: _AyahEndMarker(
+                                    verseNumber: verseNumber,
+                                    accentColor: _theme.iconColor,
+                                  ),
+                                ),
+                              ]),
                               textAlign: TextAlign.right,
                               textDirection: TextDirection.rtl,
-                              style: TextStyle(fontSize: 24, height: 2.0, color: _theme.textColor)),
+                            ),
 
                             if (translation.isNotEmpty) ...[
                               Divider(height: 20,
