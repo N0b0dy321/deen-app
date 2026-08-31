@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'screen/splash_screen.dart';
 import 'services/theme_service.dart';
 import 'services/language_service.dart';
@@ -56,13 +57,29 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Deen',
-      debugShowCheckedModeBanner: false,
-      theme: _theme.lightTheme,
-      darkTheme: _theme.darkTheme,
-      themeMode: _theme.isDark ? ThemeMode.dark : ThemeMode.light,
-      home: const SplashScreen(),
+    // ── ScreenUtilInit: จุดตั้งค่า "ขนาดจอต้นแบบ" ที่ทุกหน้าในแอปอ้างอิงตาม ──
+    // designSize: ขนาดจอที่ตอนออกแบบ UI ไว้ (มาตรฐานทั่วไป ~iPhone 13/14)
+    // ต่อไปนี้ทุกหน้าจะใช้ .w / .h / .sp / .r แทนตัวเลข px ตายตัว
+    // แล้วระบบจะคำนวณสัดส่วนให้พอดีกับหน้าจอจริงของแต่ละเครื่องอัตโนมัติ
+    return ScreenUtilInit(
+      designSize: const Size(375, 812),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      // สำคัญ: กัน LateInitializationError ตอนนำทางจากหน้า Splash ไปหน้าอื่น
+      // ด้วย custom PageRouteBuilder — บังคับให้ ScreenUtil ดึงค่า MediaQuery
+      // ผ่าน InheritedWidget ที่ sync กับ widget tree จริง แทนการ cache แบบ static
+      // ที่อาจ race กับการนำทางเร็วๆ ได้
+      useInheritedMediaQuery: true,
+      builder: (context, child) {
+        return MaterialApp(
+          title: 'Deen',
+          debugShowCheckedModeBanner: false,
+          theme: _theme.lightTheme,
+          darkTheme: _theme.darkTheme,
+          themeMode: _theme.isDark ? ThemeMode.dark : ThemeMode.light,
+          home: const SplashScreen(),
+        );
+      },
     );
   }
 }

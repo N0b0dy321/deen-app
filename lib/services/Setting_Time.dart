@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -66,25 +67,25 @@ class _PulsingCircleState extends State<_PulsingCircle>
 
 Widget _sectionHeader(String title, Color subColor) {
   return Padding(
-    padding: const EdgeInsets.fromLTRB(16, 24, 16, 6),
+    padding: EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 6.h),
     child: Text(title.toUpperCase(),
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+        style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600,
             color: subColor, letterSpacing: 0.8)),
   );
 }
 
 Widget _buildGroup(Color bg, Color divColor, bool isDark, List<Widget> children) {
   return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 16),
+    margin: EdgeInsets.symmetric(horizontal: 16.w),
     decoration: BoxDecoration(
       color: bg,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       boxShadow: isDark ? [] : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)],
     ),
     child: Column(children: [
       for (int i = 0; i < children.length; i++) ...[
         children[i],
-        if (i < children.length - 1) Divider(height: 1, indent: 66, color: divColor),
+        if (i < children.length - 1) Divider(height: 1.h, indent: 66, color: divColor),
       ]
     ]),
   );
@@ -92,9 +93,9 @@ Widget _buildGroup(Color bg, Color divColor, bool isDark, List<Widget> children)
 
 Widget _iconBox(IconData icon, Color color) {
   return Container(
-    width: 42, height: 42,
-    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)),
-    child: Icon(icon, color: Colors.white, size: 22),
+    width: 42.w, height: 42.h,
+    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12.r)),
+    child: Icon(icon, color: Colors.white, size: 22.sp),
   );
 }
 
@@ -104,11 +105,11 @@ Widget _buildSwitchRow({
   required ValueChanged<bool> onChanged,
 }) {
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
     child: Row(children: [
       _iconBox(icon, iconColor),
-      const SizedBox(width: 12),
-      Expanded(child: Text(label, style: TextStyle(fontSize: 15, color: textColor))),
+      SizedBox(width: 12.w),
+      Expanded(child: Text(label, style: TextStyle(fontSize: 15.sp, color: textColor))),
       Switch(value: value, onChanged: onChanged,
           activeColor: Colors.white, activeTrackColor: activeTrackColor),
     ]),
@@ -124,30 +125,30 @@ Widget _buildNavRow({
   return InkWell(
     onTap: onTap,
     child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
       child: Row(children: [
         _iconBox(icon, iconColor),
-        const SizedBox(width: 14),
+        SizedBox(width: 14.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: textColor)),
+              Text(label, style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w500, color: textColor)),
               if (subtitle != null && subtitle.isNotEmpty) ...[
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(subtitle,
-                    style: TextStyle(fontSize: 12, color: subColor),
+                    style: TextStyle(fontSize: 12.sp, color: subColor),
                     maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ],
           ),
         ),
         if (value.isNotEmpty)
-          Flexible(child: Text(value, style: TextStyle(fontSize: 14, color: subColor),
+          Flexible(child: Text(value, style: TextStyle(fontSize: 14.sp, color: subColor),
               overflow: TextOverflow.ellipsis, textAlign: TextAlign.end)),
-        const SizedBox(width: 4),
-        Icon(Icons.chevron_right, color: subColor, size: 18),
+        SizedBox(width: 4.w),
+        Icon(Icons.chevron_right, color: subColor, size: 18.sp),
       ]),
     ),
   );
@@ -216,8 +217,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildHeaderCard() {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+      margin: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 20.h),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 22.h),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -226,32 +227,32 @@ class _SettingsPageState extends State<SettingsPage> {
               ? [const Color(0xFF0D3B1E), const Color(0xFF1A5C32)]
               : [const Color(0xFF1B5E20), const Color(0xFF2E7D32)],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4)),
         ],
       ),
       child: Row(children: [
         Container(
-          width: 56, height: 56,
+          width: 56.w, height: 56.h,
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(16)),
-          child: const Icon(Icons.mosque, color: Color(0xFFFFD700), size: 30),
+            borderRadius: BorderRadius.circular(16.r)),
+          child: Icon(Icons.mosque, color: Color(0xFFFFD700), size: 30.sp),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('DEEN',
-                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 3),
+              Text('DEEN',
+                  style: TextStyle(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.bold)),
+              SizedBox(height: 3.h),
               Text(
                 _lang.isThai
                     ? 'ปรับแต่งแอปให้เข้ากับตัวคุณ'
                     : 'Personalize your Deen experience',
-                style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12.5),
+                style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12.5.sp),
               ),
             ],
           ),
@@ -289,9 +290,9 @@ class _SettingsPageState extends State<SettingsPage> {
         elevation: 0,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back_ios, color: green, size: 20)),
+          child: Icon(Icons.arrow_back_ios, color: green, size: 20.sp)),
         title: Text(_lang.isThai ? 'ตั้งค่า' : 'Settings',
-            style: TextStyle(color: textColor, fontSize: 17, fontWeight: FontWeight.w600)),
+            style: TextStyle(color: textColor, fontSize: 17.sp, fontWeight: FontWeight.w600)),
         centerTitle: true,
       ),
       body: ListView(children: [
@@ -348,7 +349,7 @@ class _SettingsPageState extends State<SettingsPage> {
             onTap: () => _openSubPage(const _AboutSettingsPage()),
           ),
         ]),
-        const SizedBox(height: 32),
+        SizedBox(height: 32.h),
       ]),
     );
   }
@@ -390,8 +391,8 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
       context: context,
       backgroundColor: _theme.cardColor,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.6,
         maxChildSize: 0.9,
@@ -399,16 +400,16 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
         expand: false,
         builder: (_, controller) => Column(
           children: [
-            const SizedBox(height: 12),
-            Container(width: 40, height: 4,
-                decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
+            Container(width: 40.w, height: 4.h,
+                decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r))),
+            SizedBox(height: 12.h),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Text('Language / ภาษา',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: _theme.textColor)),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Expanded(
               child: ListView(
                 controller: controller,
@@ -416,16 +417,13 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                   ...LanguageService.availableLanguages.map((lang) {
                     final isSelected = _lang.lang == lang['code'];
                     return ListTile(
-                      leading: Text(lang['flag']!, style: const TextStyle(fontSize: 24)),
+                      leading: Text(lang['flag']!, style: TextStyle(fontSize: 24.sp)),
                       title: Text(lang['native']!, style: TextStyle(color: _theme.textColor, fontWeight: FontWeight.w500)),
-                      subtitle: Text(lang['name']!, style: TextStyle(color: _theme.subTextColor, fontSize: 12)),
+                      subtitle: Text(lang['name']!, style: TextStyle(color: _theme.subTextColor, fontSize: 12.sp)),
                       trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
                       onTap: () async {
                         // apply ทันที ไม่ต้องรอกด Save
                         await _lang.setLang(lang['code']!);
-                        // ล้าง cache เวลาละหมาด เพื่อให้ดึงชื่อตำแหน่ง (locationName)
-                        // ใหม่ตามภาษาที่เพิ่งเปลี่ยน แทนที่จะค้างเป็นภาษาเดิม
-                        await PrayerService.clearCache();
                         if (context.mounted) Navigator.pop(context);
                       },
                     );
@@ -456,13 +454,13 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
         elevation: 0,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back_ios, color: green, size: 20)),
+          child: Icon(Icons.arrow_back_ios, color: green, size: 20.sp)),
         title: Text(_lang.isThai ? 'หน้าตา' : 'Appearance',
-            style: TextStyle(color: textColor, fontSize: 17, fontWeight: FontWeight.w600)),
+            style: TextStyle(color: textColor, fontSize: 17.sp, fontWeight: FontWeight.w600)),
         centerTitle: true,
       ),
       body: ListView(children: [
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         _buildGroup(cardBg, divColor, _theme.isDark, [
           _buildSwitchRow(
             icon: Icons.dark_mode_outlined,
@@ -544,8 +542,8 @@ class _QuranSettingsPageState extends State<_QuranSettingsPage> {
       context: context,
       backgroundColor: _theme.cardColor,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.6,
         maxChildSize: 0.9,
@@ -553,16 +551,16 @@ class _QuranSettingsPageState extends State<_QuranSettingsPage> {
         expand: false,
         builder: (_, controller) => Column(
           children: [
-            const SizedBox(height: 12),
-            Container(width: 40, height: 4,
-                decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
+            Container(width: 40.w, height: 4.h,
+                decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r))),
+            SizedBox(height: 12.h),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Text(_lang.isThai ? 'ภาษาคำแปล' : 'Translation Language',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: _theme.textColor)),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Expanded(
               child: ListView(
                 controller: controller,
@@ -582,13 +580,13 @@ class _QuranSettingsPageState extends State<_QuranSettingsPage> {
                       if (context.mounted) Navigator.pop(context);
                     },
                   ),
-                  Divider(height: 1, color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFE5E5EA)),
+                  Divider(height: 1.h, color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFE5E5EA)),
                   ...LanguageService.availableLanguages.map((lang) {
                     final isSelected = _translationLang == lang['code'];
                     return ListTile(
-                      leading: Text(lang['flag']!, style: const TextStyle(fontSize: 24)),
+                      leading: Text(lang['flag']!, style: TextStyle(fontSize: 24.sp)),
                       title: Text(lang['native']!, style: TextStyle(color: _theme.textColor, fontWeight: FontWeight.w500)),
-                      subtitle: Text(lang['name']!, style: TextStyle(color: _theme.subTextColor, fontSize: 12)),
+                      subtitle: Text(lang['name']!, style: TextStyle(color: _theme.subTextColor, fontSize: 12.sp)),
                       trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
                       onTap: () async {
                         final prefs = await SharedPreferences.getInstance();
@@ -631,32 +629,32 @@ class _QuranSettingsPageState extends State<_QuranSettingsPage> {
         elevation: 0,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back_ios, color: green, size: 20)),
+          child: Icon(Icons.arrow_back_ios, color: green, size: 20.sp)),
         title: Text(_lang.isThai ? 'อัลกุรอาน' : 'Al-Quran',
-            style: TextStyle(color: textColor, fontSize: 17, fontWeight: FontWeight.w600)),
+            style: TextStyle(color: textColor, fontSize: 17.sp, fontWeight: FontWeight.w600)),
         centerTitle: true,
       ),
       body: ListView(children: [
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         _buildGroup(cardBg, divColor, _theme.isDark, [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
                 _iconBox(Icons.format_size, Colors.orange),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(child: Text(_lang.isThai ? 'ขนาดตัวอักษรอาหรับ' : 'Arabic Font Size',
-                    style: TextStyle(fontSize: 15, color: textColor))),
+                    style: TextStyle(fontSize: 15.sp, color: textColor))),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                  decoration: BoxDecoration(color: green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
+                  decoration: BoxDecoration(color: green.withOpacity(0.1), borderRadius: BorderRadius.circular(8.r)),
                   child: Text('${_quranFontSize.toInt()}',
-                      style: TextStyle(color: green, fontWeight: FontWeight.w600, fontSize: 13)),
+                      style: TextStyle(color: green, fontWeight: FontWeight.w600, fontSize: 13.sp)),
                 ),
               ]),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Center(child: Text('بِسْمِ ٱللَّهِ',
-                  style: TextStyle(fontSize: _quranFontSize, color: textColor, height: 1.8),
+                  style: TextStyle(fontSize: _quranFontSize, color: textColor, height: 1.8.h),
                   textDirection: TextDirection.rtl)),
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
@@ -673,8 +671,8 @@ class _QuranSettingsPageState extends State<_QuranSettingsPage> {
                 ),
               ),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text('A', style: TextStyle(fontSize: 12, color: subColor)),
-                Text('A', style: TextStyle(fontSize: 20, color: subColor, fontWeight: FontWeight.bold)),
+                Text('A', style: TextStyle(fontSize: 12.sp, color: subColor)),
+                Text('A', style: TextStyle(fontSize: 20.sp, color: subColor, fontWeight: FontWeight.bold)),
               ]),
             ]),
           ),
@@ -813,23 +811,23 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
     showModalBottomSheet(
       context: context,
       backgroundColor: _theme.cardColor,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
       builder: (_) => Column(children: [
-        const SizedBox(height: 12),
-        Container(width: 40, height: 4,
-            decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
+        Container(width: 40.w, height: 4.h,
+            decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r))),
+        SizedBox(height: 12.h),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Text(_lang.isThai ? 'เลือกเขตเวลา' : 'Select Timezone',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: _theme.textColor)),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Expanded(child: ListView(children: _timezones.map((tz) {
           final isSelected = _selectedTimezone == tz['value'];
           return ListTile(
-            title: Text(tz['label']!, style: TextStyle(color: _theme.textColor, fontSize: 14)),
+            title: Text(tz['label']!, style: TextStyle(color: _theme.textColor, fontSize: 14.sp)),
             trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
             onTap: () async {
               final prefs = await SharedPreferences.getInstance();
@@ -848,23 +846,23 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
     showModalBottomSheet(
       context: context,
       backgroundColor: _theme.cardColor,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
       builder: (_) => Column(children: [
-        const SizedBox(height: 12),
-        Container(width: 40, height: 4,
-            decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
+        Container(width: 40.w, height: 4.h,
+            decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r))),
+        SizedBox(height: 12.h),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Text(_lang.isThai ? 'เลือกวิธีคำนวณ' : 'Select Calculation Method',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: _theme.textColor)),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Expanded(child: ListView(children: _methods.map((m) {
           final isSelected = _selectedMethod == m['value'];
           return ListTile(
-            title: Text(m['label']!, style: TextStyle(color: _theme.textColor, fontSize: 14)),
+            title: Text(m['label']!, style: TextStyle(color: _theme.textColor, fontSize: 14.sp)),
             trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
             onTap: () async {
               final prefs = await SharedPreferences.getInstance();
@@ -884,8 +882,8 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
       context: context,
       backgroundColor: _theme.cardColor,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
       builder: (_) => _LocationSearchSheet(
         theme: _theme,
         lang: _lang,
@@ -902,8 +900,8 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
       context: context,
       backgroundColor: _theme.cardColor,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setSheetState) {
           String? playingId = AzanService.currentlyPlayingId;
@@ -962,16 +960,16 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 12),
-              Container(width: 40, height: 4,
-                  decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
+              Container(width: 40.w, height: 4.h,
+                  decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r))),
+              SizedBox(height: 12.h),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Text(_lang.isThai ? 'เลือกเสียงอาซาน' : 'Select Azan Sound',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
+                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: _theme.textColor)),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               ...AzanService.azanList.map((azan) {
                 final id = azan['id']!;
                 final name = _lang.isThai ? azan['nameTh']! : azan['name']!;
@@ -995,7 +993,7 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
                         child: _PulsingCircle(
                           playing: isPlaying,
                           child: Container(
-                            width: 38, height: 38,
+                            width: 38.w, height: 38.h,
                             decoration: BoxDecoration(
                               color: isPlaying
                                   ? _theme.iconColor
@@ -1005,7 +1003,7 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
                             child: Icon(
                               isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
                               color: isPlaying ? Colors.white : _theme.iconColor,
-                              size: 20,
+                              size: 20.sp,
                             ),
                           ),
                         ),
@@ -1013,9 +1011,9 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
                       title: Text(name, style: TextStyle(color: _theme.textColor)),
                       subtitle: isDownloading
                           ? Padding(
-                              padding: const EdgeInsets.only(top: 6, right: 40),
+                              padding: EdgeInsets.only(top: 6.h, right: 40.w),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(4.r),
                                 child: LinearProgressIndicator(
                                   value: _downloadProgress[id],
                                   minHeight: 4,
@@ -1026,7 +1024,7 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
                             )
                           : (isPlaying
                               ? Padding(
-                                  padding: const EdgeInsets.only(top: 6, right: 24),
+                                  padding: EdgeInsets.only(top: 6.h, right: 24.w),
                                   child: StreamBuilder<Duration>(
                                     stream: AzanService.durationStream,
                                     builder: (context, durSnap) {
@@ -1043,7 +1041,7 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               ClipRRect(
-                                                borderRadius: BorderRadius.circular(4),
+                                                borderRadius: BorderRadius.circular(4.r),
                                                 child: LinearProgressIndicator(
                                                   value: fraction,
                                                   minHeight: 4,
@@ -1052,11 +1050,11 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
                                                   color: _theme.iconColor,
                                                 ),
                                               ),
-                                              const SizedBox(height: 3),
+                                              SizedBox(height: 3.h),
                                               Text(
                                                 '${_fmtDuration(pos)} / ${_fmtDuration(dur)}',
                                                 style: TextStyle(
-                                                    fontSize: 10, color: _theme.subTextColor),
+                                                    fontSize: 10.sp, color: _theme.subTextColor),
                                               ),
                                             ],
                                           );
@@ -1067,14 +1065,14 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
                                 )
                               : (!ready
                                   ? Text(_lang.isThai ? 'ยังไม่ได้โหลด' : 'Not downloaded',
-                                      style: TextStyle(color: _theme.subTextColor, fontSize: 12))
+                                      style: TextStyle(color: _theme.subTextColor, fontSize: 12.sp))
                                   : null)),
                       trailing: isDownloading
                           ? SizedBox(
-                              width: 22, height: 22,
+                              width: 22.w, height: 22.h,
                               child: CircularProgressIndicator(
                                 value: _downloadProgress[id],
-                                strokeWidth: 2.5,
+                                strokeWidth: 2.5.w,
                                 color: _theme.iconColor,
                               ),
                             )
@@ -1123,13 +1121,13 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
         elevation: 0,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back_ios, color: green, size: 20)),
+          child: Icon(Icons.arrow_back_ios, color: green, size: 20.sp)),
         title: Text(_lang.isThai ? 'เวลาละหมาดและการแจ้งเตือน' : 'Prayer & Notifications',
-            style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w600)),
+            style: TextStyle(color: textColor, fontSize: 16.sp, fontWeight: FontWeight.w600)),
         centerTitle: true,
       ),
       body: ListView(children: [
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         _buildGroup(cardBg, divColor, _theme.isDark, [
           _buildSwitchRow(
             icon: Icons.notifications_outlined,
@@ -1307,20 +1305,20 @@ class _ChatbotSettingsPageState extends State<_ChatbotSettingsPage> {
         elevation: 0,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back_ios, color: green, size: 20)),
+          child: Icon(Icons.arrow_back_ios, color: green, size: 20.sp)),
         title: Text(_lang.isThai ? 'แชทบอต' : 'Chatbot',
-            style: TextStyle(color: textColor, fontSize: 17, fontWeight: FontWeight.w600)),
+            style: TextStyle(color: textColor, fontSize: 17.sp, fontWeight: FontWeight.w600)),
         centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 32.h),
         children: [
           // ── สถานะปัจจุบัน ──
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: cardBg,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(14.r),
               boxShadow: _theme.isDark ? [] : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)],
             ),
             child: Row(children: [
@@ -1328,7 +1326,7 @@ class _ChatbotSettingsPageState extends State<_ChatbotSettingsPage> {
                 _hasOwnKey ? Icons.check_circle : Icons.info_outline,
                 color: _hasOwnKey ? green : subColor,
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Text(
                   _hasOwnKey
@@ -1338,46 +1336,46 @@ class _ChatbotSettingsPageState extends State<_ChatbotSettingsPage> {
                       : (_lang.isThai
                           ? 'ตอนนี้แชทบอตใช้ค่าเริ่มต้นของแอป (มี usage จำกัดร่วมกับผู้ใช้คนอื่น)'
                           : "Chatbot is using the app's default key (shared usage limit)"),
-                  style: TextStyle(fontSize: 13, color: textColor),
+                  style: TextStyle(fontSize: 13.sp, color: textColor),
                 ),
               ),
             ]),
           ),
 
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
 
           Text(
             _lang.isThai ? 'ใช้ Gemini API key ของคุณเอง (ไม่บังคับ)' : 'Use your own Gemini API key (optional)',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: textColor),
+            style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: textColor),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             _lang.isThai
                 ? 'ถ้าใช้ของตัวเอง จะไม่ติด usage limit ที่แชร์กับผู้ใช้คนอื่น '
                     'สร้าง API key ฟรีได้ที่ Google AI Studio'
                 : "Using your own key avoids the shared usage limit. "
                     'Get a free key from Google AI Studio.',
-            style: TextStyle(fontSize: 13, color: subColor, height: 1.5),
+            style: TextStyle(fontSize: 13.sp, color: subColor, height: 1.5.h),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           OutlinedButton.icon(
             onPressed: _openAiStudio,
-            icon: Icon(Icons.open_in_new, color: green, size: 16),
+            icon: Icon(Icons.open_in_new, color: green, size: 16.sp),
             label: Text(_lang.isThai ? 'เปิด Google AI Studio' : 'Open Google AI Studio',
                 style: TextStyle(color: green)),
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: green.withOpacity(0.4)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
             ),
           ),
 
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
 
           TextField(
             controller: _controller,
             obscureText: _obscure,
-            style: TextStyle(color: textColor, fontSize: 13),
+            style: TextStyle(color: textColor, fontSize: 13.sp),
             decoration: InputDecoration(
               hintText: 'AIza...',
               hintStyle: TextStyle(color: subColor),
@@ -1385,18 +1383,18 @@ class _ChatbotSettingsPageState extends State<_ChatbotSettingsPage> {
               fillColor: cardBg,
               suffixIcon: IconButton(
                 icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                    color: subColor, size: 20),
+                    color: subColor, size: 20.sp),
                 onPressed: () => setState(() => _obscure = !_obscure),
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             ),
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           Row(children: [
             Expanded(
@@ -1404,24 +1402,24 @@ class _ChatbotSettingsPageState extends State<_ChatbotSettingsPage> {
                 onPressed: _saveKey,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: green,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                 ),
                 child: Text(_lang.isThai ? 'บันทึก' : 'Save',
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
               ),
             ),
             if (_hasOwnKey) ...[
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               OutlinedButton(
                 onPressed: () {
                   _controller.clear();
                   _saveKey();
                 },
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+                  padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 18.w),
                   side: BorderSide(color: Colors.red.shade300),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                 ),
                 child: Text(_lang.isThai ? 'ล้างค่า' : 'Clear',
                     style: TextStyle(color: Colors.red.shade400)),
@@ -1429,12 +1427,12 @@ class _ChatbotSettingsPageState extends State<_ChatbotSettingsPage> {
             ],
           ]),
 
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           Text(
             _lang.isThai
                 ? 'หมายเหตุ: key จะถูกเก็บไว้ในเครื่องนี้เท่านั้น ไม่ถูกส่งไปที่ไหนนอกจากตอนเรียก Gemini API โดยตรง'
                 : 'Note: your key is stored only on this device and sent only when calling the Gemini API directly.',
-            style: TextStyle(fontSize: 11, color: subColor, height: 1.5),
+            style: TextStyle(fontSize: 11.sp, color: subColor, height: 1.5.h),
           ),
         ],
       ),
@@ -1513,40 +1511,40 @@ class _AboutSettingsPageState extends State<_AboutSettingsPage> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: _theme.cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        contentPadding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 8.h),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           Container(
-            width: 72, height: 72,
+            width: 72.w, height: 72.h,
             decoration: BoxDecoration(
               color: const Color(0xFF1B5E20),
-              borderRadius: BorderRadius.circular(18)),
-            child: const Icon(Icons.mosque, color: Colors.white, size: 40)),
-          const SizedBox(height: 14),
+              borderRadius: BorderRadius.circular(18.r)),
+            child: Icon(Icons.mosque, color: Colors.white, size: 40.sp)),
+          SizedBox(height: 14.h),
           Text('DEEN', style: TextStyle(
-              fontSize: 22, fontWeight: FontWeight.bold, color: _theme.textColor)),
-          const SizedBox(height: 4),
+              fontSize: 22.sp, fontWeight: FontWeight.bold, color: _theme.textColor)),
+          SizedBox(height: 4.h),
           GestureDetector(
             onLongPress: _copyVersion,
             child: Text('Version 1.0.0',
-                style: TextStyle(fontSize: 13, color: _theme.subTextColor))),
-          const SizedBox(height: 12),
+                style: TextStyle(fontSize: 13.sp, color: _theme.subTextColor))),
+          SizedBox(height: 12.h),
           Text(
             _lang.isThai
                 ? 'แอพอิสลามสำหรับชีวิตประจำวัน\nพัฒนาด้วยความรักและศรัทธา 🕌'
                 : 'Your Islamic companion for daily life\nBuilt with love and faith 🕌',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, color: _theme.subTextColor, height: 1.6)),
-          const SizedBox(height: 16),
+            style: TextStyle(fontSize: 13.sp, color: _theme.subTextColor, height: 1.6.h)),
+          SizedBox(height: 16.h),
           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
             TextButton.icon(
               onPressed: _rateApp,
-              icon: const Icon(Icons.star_outline, color: Color(0xFF1B5E20), size: 18),
+              icon: Icon(Icons.star_outline, color: Color(0xFF1B5E20), size: 18.sp),
               label: Text(_lang.isThai ? 'ให้คะแนน' : 'Rate',
                   style: const TextStyle(color: Color(0xFF1B5E20)))),
             TextButton.icon(
               onPressed: _shareApp,
-              icon: const Icon(Icons.share_outlined, color: Color(0xFF1B5E20), size: 18),
+              icon: Icon(Icons.share_outlined, color: Color(0xFF1B5E20), size: 18.sp),
               label: Text(_lang.isThai ? 'แชร์' : 'Share',
                   style: const TextStyle(color: Color(0xFF1B5E20)))),
           ]),
@@ -1576,13 +1574,13 @@ class _AboutSettingsPageState extends State<_AboutSettingsPage> {
         elevation: 0,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back_ios, color: green, size: 20)),
+          child: Icon(Icons.arrow_back_ios, color: green, size: 20.sp)),
         title: Text(_lang.isThai ? 'เกี่ยวกับ' : 'About',
-            style: TextStyle(color: textColor, fontSize: 17, fontWeight: FontWeight.w600)),
+            style: TextStyle(color: textColor, fontSize: 17.sp, fontWeight: FontWeight.w600)),
         centerTitle: true,
       ),
       body: ListView(children: [
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         _buildGroup(cardBg, divColor, _theme.isDark, [
           _buildNavRow(
             icon: Icons.info_outline, iconColor: Colors.blue,
@@ -1731,19 +1729,19 @@ class _LocationSearchSheetState extends State<_LocationSearchSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 12),
-          Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
+          Container(width: 40.w, height: 4.h,
+              decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r))),
+          SizedBox(height: 12.h),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Text(lang.isThai ? 'ค้นหาเมือง' : 'Search City',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: theme.textColor)),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: theme.textColor)),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: TextField(
               controller: _controller,
               autofocus: true,
@@ -1756,28 +1754,28 @@ class _LocationSearchSheetState extends State<_LocationSearchSheet> {
                 prefixIcon: Icon(Icons.search, color: theme.subTextColor),
                 filled: true,
                 fillColor: theme.isDark ? Colors.white10 : const Color(0xFFF2F2F7),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                contentPadding: EdgeInsets.symmetric(vertical: 0.h),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide.none,
                 ),
               ),
             ),
           ),
 
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: _detecting ? null : _useCurrentLocation,
                 icon: _detecting
                     ? SizedBox(
-                        width: 16, height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: theme.iconColor))
-                    : Icon(Icons.my_location, color: theme.iconColor, size: 18),
+                        width: 16.w, height: 16.h,
+                        child: CircularProgressIndicator(strokeWidth: 2.w, color: theme.iconColor))
+                    : Icon(Icons.my_location, color: theme.iconColor, size: 18.sp),
                 label: Text(
                   _detecting
                       ? (lang.isThai ? 'กำลังค้นหาตำแหน่ง...' : 'Detecting...')
@@ -1785,47 +1783,47 @@ class _LocationSearchSheetState extends State<_LocationSearchSheet> {
                   style: TextStyle(color: theme.iconColor),
                 ),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
                   side: BorderSide(color: theme.iconColor.withOpacity(0.4)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                 ),
               ),
             ),
           ),
 
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
 
           if (_searching)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: CircularProgressIndicator(strokeWidth: 2),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              child: CircularProgressIndicator(strokeWidth: 2.w),
             ),
 
           if (_selectingPlace)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: CircularProgressIndicator(strokeWidth: 2),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              child: CircularProgressIndicator(strokeWidth: 2.w),
             ),
 
           if (_errorText != null)
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+              padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 4.h),
               child: Text(_errorText!,
-                  style: TextStyle(color: Colors.red.shade400, fontSize: 13)),
+                  style: TextStyle(color: Colors.red.shade400, fontSize: 13.sp)),
             ),
 
           if (!_searching && !_selectingPlace && _suggestions.isNotEmpty)
             Flexible(
               child: ListView.builder(
                 shrinkWrap: true,
-                padding: const EdgeInsets.only(top: 4),
+                padding: EdgeInsets.only(top: 4.h),
                 itemCount: _suggestions.length,
                 itemBuilder: (context, index) {
                   final s = _suggestions[index];
                   return ListTile(
                     leading: Icon(Icons.location_on_outlined, color: theme.iconColor),
                     title: Text(s['description']!,
-                        style: TextStyle(color: theme.textColor, fontSize: 14)),
+                        style: TextStyle(color: theme.textColor, fontSize: 14.sp)),
                     onTap: () => _selectSuggestion(s),
                   );
                 },
@@ -1834,11 +1832,11 @@ class _LocationSearchSheetState extends State<_LocationSearchSheet> {
 
           if (_suggestions.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+              padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 0.h),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: Text('Powered by Google',
-                    style: TextStyle(fontSize: 10, color: theme.subTextColor)),
+                    style: TextStyle(fontSize: 10.sp, color: theme.subTextColor)),
               ),
             ),
 

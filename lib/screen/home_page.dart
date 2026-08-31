@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -99,16 +100,16 @@ class _HomePageState extends State<HomePage> {
           _buildHeader(),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(_lang.nextPrayer,
                       style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
                           color: _theme.textColor)),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
 
                   GestureDetector(
                     onTap: () => Navigator.push(context,
@@ -123,21 +124,21 @@ class _HomePageState extends State<HomePage> {
 
                   // ── ชื่อตำแหน่งที่ใช้คำนวณเวลาละหมาดอยู่ตอนนี้ ──
                   if (_prayerData?['locationName'] != null) ...[
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Row(children: [
-                      Icon(Icons.location_on, size: 14, color: _theme.subTextColor),
-                      const SizedBox(width: 4),
+                      Icon(Icons.location_on, size: 14.sp, color: _theme.subTextColor),
+                      SizedBox(width: 4.w),
                       Expanded(
                         child: Text(
                           _prayerData!['locationName'] as String,
-                          style: TextStyle(fontSize: 12, color: _theme.subTextColor),
+                          style: TextStyle(fontSize: 12.sp, color: _theme.subTextColor),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ]),
                   ],
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   // ── Islamic Calendar ──────────────────
                   _IslamicCalendarCard(
@@ -146,7 +147,7 @@ class _HomePageState extends State<HomePage> {
                     theme: _theme,
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   GridView.count(
                     crossAxisCount: 2,
@@ -189,7 +190,7 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   _ChatbotBanner(
                     label: _lang.askChatbot,
                     subtitle: _lang.haveQuestion,
@@ -197,7 +198,7 @@ class _HomePageState extends State<HomePage> {
                     onTap: () => Navigator.push(context,
                         MaterialPageRoute(builder: (_) => const ChatbotPage())),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                 ],
               ),
             ),
@@ -242,9 +243,9 @@ class _HomePageState extends State<HomePage> {
               ? [const Color(0xFF0D3B1E), const Color(0xFF1A5C32)]
               : [const Color(0xFF1B5E20), const Color(0xFF2E7D32)],
         ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28.r),
+          bottomRight: Radius.circular(28.r),
         ),
         boxShadow: [
           BoxShadow(
@@ -254,7 +255,7 @@ class _HomePageState extends State<HomePage> {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 20.h),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,31 +265,31 @@ class _HomePageState extends State<HomePage> {
                 Text('As-salamu Alaykum',
                     style: TextStyle(
                         color: Colors.white.withOpacity(0.8),
-                        fontSize: 13, letterSpacing: 0.5)),
-                const SizedBox(height: 4),
+                        fontSize: 13.sp, letterSpacing: 0.5)),
+                SizedBox(height: 4.h),
                 Text(_getGreeting(),
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: Color(0xFFFFD700),
-                        fontSize: 22,
+                        fontSize: 22.sp,
                         fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(_lang.welcomeToDeen,
                     style: TextStyle(
                         color: Colors.white.withOpacity(0.6),
-                        fontSize: 12)),
+                        fontSize: 12.sp)),
               ])),
               // Right: clock
               Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                 Text(timeStr,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: Colors.white,
-                        fontSize: 28,
+                        fontSize: 28.sp,
                         fontWeight: FontWeight.w300,
                         letterSpacing: 1)),
                 Text(
                   '${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.weekday % 7]}, '
                   '${now.day} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.month-1]}',
-                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11)),
+                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11.sp)),
               ]),
             ],
           ),
@@ -367,38 +368,38 @@ class _MoreBottomSheet extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: theme.cardColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         border: theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Handle bar
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Container(
-            width: 40, height: 4,
+            width: 40.w, height: 4.h,
             decoration: BoxDecoration(
               color: Colors.grey.shade400,
-              borderRadius: BorderRadius.circular(2)),
+              borderRadius: BorderRadius.circular(2.r)),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // Title
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Row(
               children: [
                 Text(
                   lang.isThai ? 'เพิ่มเติม' : 'More',
                   style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: theme.textColor),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           // Items
           ...items.map((item) => _buildItem(context, item)),
@@ -414,24 +415,24 @@ class _MoreBottomSheet extends StatelessWidget {
     return InkWell(
       onTap: item.onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         child: Row(
           children: [
             Container(
-              width: 44, height: 44,
+              width: 44.w, height: 44.h,
               decoration: BoxDecoration(
                 color: item.color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12)),
-              child: Icon(item.icon, color: item.color, size: 22),
+                borderRadius: BorderRadius.circular(12.r)),
+              child: Icon(item.icon, color: item.color, size: 22.sp),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.w),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(item.label,
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: theme.textColor)),
+                  style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600, color: theme.textColor)),
               Text(item.subtitle,
-                  style: TextStyle(fontSize: 12, color: theme.subTextColor)),
+                  style: TextStyle(fontSize: 12.sp, color: theme.subTextColor)),
             ])),
-            Icon(Icons.chevron_right, color: theme.subTextColor, size: 20),
+            Icon(Icons.chevron_right, color: theme.subTextColor, size: 20.sp),
           ],
         ),
       ),
@@ -443,17 +444,17 @@ class _MoreBottomSheet extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: theme.cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Row(children: [
-          const Icon(Icons.mosque, color: Color(0xFF1B5E20), size: 28),
-          const SizedBox(width: 10),
+          Icon(Icons.mosque, color: Color(0xFF1B5E20), size: 28.sp),
+          SizedBox(width: 10.w),
           Text('DEEN', style: TextStyle(color: theme.textColor, fontWeight: FontWeight.bold)),
         ]),
         content: Text(
           lang.isThai
               ? 'แอพอิสลามสำหรับชีวิตประจำวัน\nเวอร์ชัน 1.0.0\nสร้างด้วยใจ ❤️'
               : 'Your Islamic companion app\nVersion 1.0.0\nMade with ❤️',
-          style: TextStyle(color: theme.subTextColor, height: 1.6),
+          style: TextStyle(color: theme.subTextColor, height: 1.6.h),
         ),
         actions: [
           TextButton(
@@ -526,13 +527,13 @@ class _IslamicCalendarCardState extends State<_IslamicCalendarCard> {
 
     if (widget.hijriData == null) {
       return Container(
-        height: 72,
+        height: 72.h,
         decoration: BoxDecoration(
           color: widget.theme.cardColor,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: isDark ? Border.all(color: ThemeService.darkBorder) : null,
         ),
-        child: Center(child: CircularProgressIndicator(color: widget.theme.iconColor, strokeWidth: 2)),
+        child: Center(child: CircularProgressIndicator(color: widget.theme.iconColor, strokeWidth: 2.w)),
       );
     }
 
@@ -567,7 +568,7 @@ class _IslamicCalendarCardState extends State<_IslamicCalendarCard> {
       child: Container(
         decoration: BoxDecoration(
           color: widget.theme.cardColor,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: isDark ? Border.all(color: ThemeService.darkBorder) : null,
           boxShadow: [BoxShadow(color: widget.theme.shadowColor, blurRadius: 8, offset: const Offset(0, 2))],
         ),
@@ -578,50 +579,50 @@ class _IslamicCalendarCardState extends State<_IslamicCalendarCard> {
             child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
               // Left: Hijri date
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft, end: Alignment.bottomRight,
                     colors: [headerColor, headerColor2])),
                 child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Text(_getLabel('hijri'),
-                      style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 9, letterSpacing: 0.5)),
+                      style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 9.sp, letterSpacing: 0.5)),
                   Text(hijriDay,
-                      style: const TextStyle(color: Color(0xFFFFD700), fontSize: 32, fontWeight: FontWeight.bold, height: 1.1)),
+                      style: TextStyle(color: Color(0xFFFFD700), fontSize: 32.sp, fontWeight: FontWeight.bold, height: 1.1.h)),
                   Text(hijriMonthName,
-                      style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 9, height: 1.3),
+                      style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 9.sp, height: 1.3.h),
                       textAlign: TextAlign.center),
                   Text('$hijriYear H',
-                      style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 9)),
+                      style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 9.sp)),
                 ]),
               ),
               // Right: Info
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
                     Text('$weekday, $gregDay $gregMonthEn $gregYear',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: widget.theme.textColor)),
-                    const SizedBox(height: 4),
+                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600, color: widget.theme.textColor)),
+                    SizedBox(height: 4.h),
                     if (holiday != null) ...[
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFD700).withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(8)),
+                          borderRadius: BorderRadius.circular(8.r)),
                         child: Text('⭐ $holiday',
-                            style: const TextStyle(fontSize: 11, color: Color(0xFFD4A017), fontWeight: FontWeight.w600))),
+                            style: TextStyle(fontSize: 11.sp, color: Color(0xFFD4A017), fontWeight: FontWeight.w600))),
                     ] else
                       Text('$hijriDay $hijriMonthName $hijriYear H',
-                          style: TextStyle(fontSize: 11, color: widget.theme.subTextColor)),
-                    const SizedBox(height: 8),
+                          style: TextStyle(fontSize: 11.sp, color: widget.theme.subTextColor)),
+                    SizedBox(height: 8.h),
                     Row(children: [
-                      Icon(Icons.calendar_month_rounded, size: 12, color: widget.theme.iconColor),
-                      const SizedBox(width: 4),
+                      Icon(Icons.calendar_month_rounded, size: 12.sp, color: widget.theme.iconColor),
+                      SizedBox(width: 4.w),
                       Text(_getLabel('viewCalendar'),
-                          style: TextStyle(fontSize: 11, color: widget.theme.iconColor, fontWeight: FontWeight.w500)),
-                      const SizedBox(width: 2),
-                      Icon(Icons.chevron_right, size: 14, color: widget.theme.iconColor),
+                          style: TextStyle(fontSize: 11.sp, color: widget.theme.iconColor, fontWeight: FontWeight.w500)),
+                      SizedBox(width: 2.w),
+                      Icon(Icons.chevron_right, size: 14.sp, color: widget.theme.iconColor),
                     ]),
                   ]),
                 ),
@@ -632,7 +633,7 @@ class _IslamicCalendarCardState extends State<_IslamicCalendarCard> {
           // ── Week strip ──
           Container(
             color: isDark ? const Color(0xFF0D2E1A) : const Color(0xFFE8F5E9),
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 12.w),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List.generate(7, (i) {
@@ -649,23 +650,23 @@ class _IslamicCalendarCardState extends State<_IslamicCalendarCard> {
 
                 return Column(children: [
                   Text(dayLetters[i],
-                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600,
+                      style: TextStyle(fontSize: 9.sp, fontWeight: FontWeight.w600,
                           color: isFri ? const Color(0xFF2E7D32) : isSun ? Colors.red.shade400 : widget.theme.subTextColor)),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   isToday
                     ? Container(
-                        width: 26, height: 26,
-                        decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(7)),
+                        width: 26.w, height: 26.h,
+                        decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(7.r)),
                         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                          Text('${d.day}', style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold, height: 1)),
+                          Text('${d.day}', style: TextStyle(fontSize: 10.sp, color: Colors.white, fontWeight: FontWeight.bold, height: 1.h)),
                           if (hijriD.isNotEmpty)
-                            Text(hijriD, style: TextStyle(fontSize: 6, color: Colors.white.withOpacity(0.8), height: 1.1)),
+                            Text(hijriD, style: TextStyle(fontSize: 6.sp, color: Colors.white.withOpacity(0.8), height: 1.1.h)),
                         ]))
                     : Column(children: [
-                        Text('${d.day}', style: TextStyle(fontSize: 11,
+                        Text('${d.day}', style: TextStyle(fontSize: 11.sp,
                             color: isFri ? const Color(0xFF2E7D32) : isSun ? Colors.red.shade400 : widget.theme.textColor)),
                         if (hijriD.isNotEmpty)
-                          Text(hijriD, style: TextStyle(fontSize: 7, color: widget.theme.subTextColor, height: 1.1)),
+                          Text(hijriD, style: TextStyle(fontSize: 7.sp, color: widget.theme.subTextColor, height: 1.1.h)),
                       ]),
                 ]);
               }),
@@ -792,85 +793,85 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
       builder: (_, ctrl) => Container(
         decoration: BoxDecoration(
           color: widget.theme.cardColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24))),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r))),
         child: Column(children: [
           // Handle
           Center(child: Container(
-            margin: const EdgeInsets.only(top: 10, bottom: 8),
-            width: 40, height: 4,
-            decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2)))),
+            margin: EdgeInsets.only(top: 10.h, bottom: 8.h),
+            width: 40.w, height: 4.h,
+            decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r)))),
 
           // Header with nav buttons
           Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            margin: EdgeInsets.fromLTRB(16.w, 0.h, 16.w, 12.h),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
             decoration: BoxDecoration(
               gradient: LinearGradient(colors: [headerColor, headerColor2],
                   begin: Alignment.topLeft, end: Alignment.bottomRight),
-              borderRadius: BorderRadius.circular(14)),
+              borderRadius: BorderRadius.circular(14.r)),
             child: Row(children: [
               // Prev button
               GestureDetector(
                 onTap: () => _changeMonth(-1),
                 child: Container(
-                  width: 32, height: 32,
+                  width: 32.w, height: 32.h,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(8)),
-                  child: const Icon(Icons.chevron_left, color: Colors.white, size: 20))),
-              const SizedBox(width: 12),
+                    borderRadius: BorderRadius.circular(8.r)),
+                  child: Icon(Icons.chevron_left, color: Colors.white, size: 20.sp))),
+              SizedBox(width: 12.w),
               // Month info
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 if (hijriMonthName.isNotEmpty)
                   Text('$hijriMonthName $hijriYear H',
-                      style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 11)),
+                      style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 11.sp)),
                 Text('$gregMonthName $gregYear',
-                    style: const TextStyle(color: Color(0xFFFFD700), fontSize: 17, fontWeight: FontWeight.bold)),
+                    style: TextStyle(color: Color(0xFFFFD700), fontSize: 17.sp, fontWeight: FontWeight.bold)),
               ])),
               // Today button
               if (!isCurrentMonth)
                 GestureDetector(
                   onTap: () { setState(() => _displayMonth = DateTime.now()); _loadCalendar(); },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(8.r)),
                     child: Text(
                       {'en':'Today','th':'วันนี้','ms':'Hari ini','id':'Hari ini','ar':'اليوم','ur':'آج','bn':'আজ'}[widget.lang.lang] ?? 'Today',
-                      style: const TextStyle(color: Colors.white, fontSize: 11)))),
-              const SizedBox(width: 8),
+                      style: TextStyle(color: Colors.white, fontSize: 11.sp)))),
+              SizedBox(width: 8.w),
               // Next button
               GestureDetector(
                 onTap: () => _changeMonth(1),
                 child: Container(
-                  width: 32, height: 32,
+                  width: 32.w, height: 32.h,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(8)),
-                  child: const Icon(Icons.chevron_right, color: Colors.white, size: 20))),
+                    borderRadius: BorderRadius.circular(8.r)),
+                  child: Icon(Icons.chevron_right, color: Colors.white, size: 20.sp))),
             ]),
           ),
 
           // Day labels
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: Row(children: List.generate(7, (i) {
               final isFri = i == 5;
               final isSun = i == 0;
               return Expanded(child: Text(dayLabels[i], textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
+                  style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600,
                       color: isFri ? const Color(0xFF2E7D32) : isSun ? Colors.red.shade400 : widget.theme.subTextColor)));
             })),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
 
           // Grid or loading
           Expanded(child: _loading
-            ? Center(child: CircularProgressIndicator(color: widget.theme.iconColor, strokeWidth: 2))
+            ? Center(child: CircularProgressIndicator(color: widget.theme.iconColor, strokeWidth: 2.w))
             : SingleChildScrollView(
                 controller: ctrl,
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 20),
+                padding: EdgeInsets.fromLTRB(12.w, 0.h, 12.w, 20.h),
                 child: GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -895,21 +896,21 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
                     return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                       isToday
                         ? Container(
-                            width: 34, height: 34,
-                            decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(9)),
+                            width: 34.w, height: 34.h,
+                            decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(9.r)),
                             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                              Text('$day', style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold, height: 1)),
+                              Text('$day', style: TextStyle(fontSize: 11.sp, color: Colors.white, fontWeight: FontWeight.bold, height: 1.h)),
                               if (hijriDayNum.isNotEmpty)
-                                Text(hijriDayNum, style: TextStyle(fontSize: 7, color: Colors.white.withOpacity(0.8), height: 1.1)),
+                                Text(hijriDayNum, style: TextStyle(fontSize: 7.sp, color: Colors.white.withOpacity(0.8), height: 1.1.h)),
                             ]))
                         : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            Text('$day', style: TextStyle(fontSize: 13,
+                            Text('$day', style: TextStyle(fontSize: 13.sp,
                                 color: isFri ? const Color(0xFF2E7D32) : isSun ? Colors.red.shade400 : widget.theme.textColor)),
                             if (hijriDayNum.isNotEmpty)
-                              Text(hijriDayNum, style: TextStyle(fontSize: 8, color: widget.theme.subTextColor, height: 1.1)),
+                              Text(hijriDayNum, style: TextStyle(fontSize: 8.sp, color: widget.theme.subTextColor, height: 1.1.h)),
                           ]),
                       if (hasHoliday)
-                        Container(width: 4, height: 4, margin: const EdgeInsets.only(top: 1),
+                        Container(width: 4.w, height: 4.h, margin: EdgeInsets.only(top: 1.h),
                             decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle)),
                     ]);
                   },
@@ -918,19 +919,19 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
 
           // Legend
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            padding: EdgeInsets.fromLTRB(16.w, 0.h, 16.w, 16.h),
             child: Row(children: [
-              Container(width: 12, height: 12, decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(3))),
-              const SizedBox(width: 4),
+              Container(width: 12.w, height: 12.h, decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(3.r))),
+              SizedBox(width: 4.w),
               Text(
                 {'en':'Today','th':'วันนี้','ms':'Hari ini','id':'Hari ini','ar':'اليوم','ur':'آج','bn':'আজ'}[widget.lang.lang] ?? 'Today',
-                style: TextStyle(fontSize: 11, color: widget.theme.subTextColor)),
-              const SizedBox(width: 12),
-              Container(width: 6, height: 6, decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle)),
-              const SizedBox(width: 4),
+                style: TextStyle(fontSize: 11.sp, color: widget.theme.subTextColor)),
+              SizedBox(width: 12.w),
+              Container(width: 6.w, height: 6.h, decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle)),
+              SizedBox(width: 4.w),
               Text(
                 {'en':'Islamic Holiday','th':'วันสำคัญอิสลาม','ms':'Hari Kebesaran Islam','id':'Hari Besar Islam','ar':'مناسبة إسلامية','ur':'اسلامی تہوار','bn':'ইসলামিক উৎসব'}[widget.lang.lang] ?? 'Islamic Holiday',
-                style: TextStyle(fontSize: 11, color: widget.theme.subTextColor)),
+                style: TextStyle(fontSize: 11.sp, color: widget.theme.subTextColor)),
             ]),
           ),
         ]),
@@ -950,7 +951,7 @@ class _NextPrayerCard extends StatelessWidget {
     return AspectRatio(
       // สัดส่วนเดียวกับไฟล์ prayer_widget_bg.png จริง (1920x691)
       // กันไม่ให้ BoxFit.cover ครอปภาพผิดสัดส่วนไปจากที่ออกแบบไว้ใน Figma
-      aspectRatio: 1920 / 691,
+      aspectRatio: 1920 / 620,
       child: Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -959,30 +960,49 @@ class _NextPrayerCard extends StatelessWidget {
           image: AssetImage('image/prayer/prayer_widget_bg.png'),
           fit: BoxFit.cover,
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: isDark ? Border.all(color: const Color(0xFF2ECC71).withOpacity(0.3)) : null,
         boxShadow: [BoxShadow(
           color: isDark ? const Color(0xFF2ECC71).withOpacity(0.1) : const Color(0xFF1B5E20).withOpacity(0.3),
           blurRadius: 12, offset: const Offset(0, 4))],
       ),
       child: Row(children: [
-        // เว้นระยะห่างจากขอบซ้ายเพิ่ม เพราะฝั่งซ้ายของภาพพื้นหลังมีมัสยิด/พระจันทร์
-        // อยู่แล้ว ถ้าข้อความอยู่ชิดซ้ายเกินไปจะไปทับกับภาพ
-        const SizedBox(width: 130),
-        Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(prayerName, style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
-          Row(children: [
-            Text(time, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w500)),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
-              child: Text(timeUntil, style: const TextStyle(color: Colors.white, fontSize: 12))),
-          ]),
-        ]),
-        const Spacer(),
-        const Padding(padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.chevron_right, color: Colors.white54, size: 24)),
+        // เว้นระยะห่างจากขอบซ้ายแบบ "สัดส่วน" ของความกว้างจอ แทนพิกเซลตายตัว
+        // (เดิมใช้ SizedBox(width: 130.w) คงที่ ซึ่งบนจอแคบกว่านี้ทำให้ข้อความ
+        // เหลือพื้นที่ไม่พอจนล้นจอได้ — ฝั่งซ้ายของภาพพื้นหลังมีมัสยิด/พระจันทร์
+        // อยู่แล้ว เลยเว้นสัดส่วนนี้ไว้กันข้อความไปทับภาพ)
+        Expanded(
+          flex: 34,
+          child: const SizedBox(),
+        ),
+        Expanded(
+          flex: 62,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(prayerName,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: TextStyle(color: Colors.white, fontSize: 26.sp, fontWeight: FontWeight.bold)),
+              Row(children: [
+                Text(time, style: TextStyle(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w500)),
+                SizedBox(width: 8.w),
+                Flexible(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(10.r)),
+                    child: Text(timeUntil,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(color: Colors.white, fontSize: 12.sp))),
+                ),
+              ]),
+            ],
+          ),
+        ),
+        Padding(padding: EdgeInsets.only(right: 16.w),
+            child: Icon(Icons.chevron_right, color: Colors.white54, size: 24.sp)),
       ]),
       ),
     );
@@ -1006,24 +1026,24 @@ class _FeatureCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: theme.cardColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: theme.isDark ? ThemeService.darkBorder : c.withOpacity(0.15)),
+            color: theme.isDark ? const Color.fromARGB(255, 36, 36, 36) : c.withOpacity(0.15)),
           boxShadow: theme.isDark ? null : [
             BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
         ),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(14.w),
             decoration: BoxDecoration(
               color: c.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(14)),
-            child: Icon(icon, size: 28, color: c)),
-          const SizedBox(height: 10),
+              borderRadius: BorderRadius.circular(14.r)),
+            child: Icon(icon, size: 28.sp, color: c)),
+          SizedBox(height: 10.h),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
             child: Text(label,
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.textColor),
+                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: theme.textColor),
                 textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis)),
         ]),
       ),
@@ -1043,40 +1063,40 @@ class _ChatbotBanner extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: theme.isDark
                 ? [const Color(0xFF0D3B1E), const Color(0xFF1A4A2A)]
                 : [const Color(0xFF1B5E20), const Color(0xFF2E7D32)],
             begin: Alignment.topLeft, end: Alignment.bottomRight),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [BoxShadow(
               color: const Color(0xFF1B5E20).withOpacity(0.3),
               blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: Row(children: [
           Container(
-            width: 48, height: 48,
+            width: 48.w, height: 48.h,
             decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12)),
-            child: const Icon(Icons.smart_toy, color: Colors.white, size: 26)),
-          const SizedBox(width: 14),
+                borderRadius: BorderRadius.circular(12.r)),
+            child: Icon(Icons.smart_toy, color: Colors.white, size: 26.sp)),
+          SizedBox(width: 14.w),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: const TextStyle(
-                fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
-            const SizedBox(height: 2),
+            Text(label, style: TextStyle(
+                fontSize: 15.sp, fontWeight: FontWeight.bold, color: Colors.white)),
+            SizedBox(height: 2.h),
             Text(subtitle, style: TextStyle(
-                fontSize: 12, color: Colors.white.withOpacity(0.75))),
+                fontSize: 12.sp, color: Colors.white.withOpacity(0.75))),
           ])),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20)),
-            child: const Text('Chat', style: TextStyle(
-                color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600))),
+                borderRadius: BorderRadius.circular(20.r)),
+            child: Text('Chat', style: TextStyle(
+                color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w600))),
         ]),
       ),
     );

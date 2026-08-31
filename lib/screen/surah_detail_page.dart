@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
@@ -27,23 +28,23 @@ class _AyahEndMarker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: EdgeInsets.symmetric(horizontal: 4.w),
       child: Container(
-        width: 26,
-        height: 26,
+        width: 26.w,
+        height: 26.h,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: accentColor, width: 1.4),
+          border: Border.all(color: accentColor, width: 1.4.w),
         ),
         child: Text(
           _toArabicIndic(verseNumber),
           textDirection: TextDirection.rtl,
           style: TextStyle(
             color: accentColor,
-            fontSize: 11,
+            fontSize: 11.sp,
             fontWeight: FontWeight.bold,
-            height: 1,
+            height: 1.h,
           ),
         ),
       ),
@@ -263,30 +264,30 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
       builder: (_) => Container(
         decoration: BoxDecoration(
           color: _theme.cardColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 12),
-            Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 16),
+            SizedBox(height: 12.h),
+            Container(width: 40.w, height: 4.h,
+              decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r))),
+            SizedBox(height: 16.h),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Text('เลือกนักอ่าน / Reciter',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor)),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: _theme.textColor)),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             ..._reciters.map((reciter) {
               final isSelected = _selectedReciter == reciter['id'];
               return ListTile(
                 leading: Container(
-                  width: 36, height: 36,
+                  width: 36.w, height: 36.h,
                   decoration: BoxDecoration(
                     color: _theme.iconColor.withOpacity(0.12),
                     shape: BoxShape.circle),
-                  child: Icon(Icons.record_voice_over, color: _theme.iconColor, size: 18)),
+                  child: Icon(Icons.record_voice_over, color: _theme.iconColor, size: 18.sp)),
                 title: Text(reciter['name']!,
                   style: TextStyle(color: _theme.textColor,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
@@ -298,7 +299,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                 },
               );
             }),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
           ],
         ),
       ),
@@ -330,7 +331,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
           // ปุ่มภาษา
           PopupMenuButton<String>(
             icon: Text(_languages[_selectedLang]!['flag'] as String,
-              style: const TextStyle(fontSize: 22)),
+              style: TextStyle(fontSize: 22.sp)),
             color: _theme.cardColor,
             onSelected: _changeLang,
             itemBuilder: (context) => _languages.entries.map((entry) {
@@ -338,28 +339,28 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
               return PopupMenuItem<String>(
                 value: entry.key,
                 child: Row(children: [
-                  Text(entry.value['flag'] as String, style: const TextStyle(fontSize: 18)),
-                  const SizedBox(width: 10),
+                  Text(entry.value['flag'] as String, style: TextStyle(fontSize: 18.sp)),
+                  SizedBox(width: 10.w),
                   Text(entry.value['label'] as String,
                     style: TextStyle(
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       color: isSelected ? _theme.iconColor : _theme.textColor)),
-                  if (isSelected) ...[const Spacer(), Icon(Icons.check, color: _theme.iconColor, size: 16)],
+                  if (isSelected) ...[const Spacer(), Icon(Icons.check, color: _theme.iconColor, size: 16.sp)],
                 ]),
               );
             }).toList(),
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
         ],
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator(color: _theme.iconColor))
           : errorMessage.isNotEmpty
               ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Icon(Icons.wifi_off, size: 64, color: _theme.subTextColor),
-                  const SizedBox(height: 16),
+                  Icon(Icons.wifi_off, size: 64.sp, color: _theme.subTextColor),
+                  SizedBox(height: 16.h),
                   Text(errorMessage, style: TextStyle(color: _theme.subTextColor)),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   ElevatedButton(onPressed: fetchFromApi,
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
                     child: const Text('Retry', style: TextStyle(color: Colors.white))),
@@ -367,19 +368,19 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
               : Column(children: [
                   // แสดงนักอ่านที่เลือกอยู่
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                     color: _theme.isDark ? const Color(0xFF0D3B1E) : const Color(0xFFE8F5E9),
                     child: Row(children: [
-                      Icon(Icons.record_voice_over, color: _theme.iconColor, size: 16),
-                      const SizedBox(width: 8),
+                      Icon(Icons.record_voice_over, color: _theme.iconColor, size: 16.sp),
+                      SizedBox(width: 8.w),
                       Text(
                         _reciters.firstWhere((r) => r['id'] == _selectedReciter)['name']!,
-                        style: TextStyle(fontSize: 13, color: _theme.iconColor, fontWeight: FontWeight.w500)),
+                        style: TextStyle(fontSize: 13.sp, color: _theme.iconColor, fontWeight: FontWeight.w500)),
                       const Spacer(),
                       GestureDetector(
                         onTap: _showReciterPicker,
                         child: Text('เปลี่ยน',
-                          style: TextStyle(fontSize: 12, color: _theme.iconColor,
+                          style: TextStyle(fontSize: 12.sp, color: _theme.iconColor,
                             decoration: TextDecoration.underline)),
                       ),
                     ]),
@@ -387,17 +388,17 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
 
                   if (widget.surahId != 1 && widget.surahId != 9)
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                      padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 0.h),
                       child: _theme.isDark
                           ? ColorFiltered(
                               colorFilter: const ColorFilter.mode(Color(0xFF2ECC71), BlendMode.srcIn),
-                              child: Image.asset('image/Bismillah.png', height: 100, fit: BoxFit.contain))
-                          : Image.asset('image/Bismillah.png', height: 150, fit: BoxFit.contain),
+                              child: Image.asset('image/Bismillah.png', height: 100.h, fit: BoxFit.contain))
+                          : Image.asset('image/Bismillah.png', height: 150.h, fit: BoxFit.contain),
                     ),
 
                   Expanded(
                     child: ListView.builder(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(12.w),
                       itemCount: verses.length,
                       itemBuilder: (context, index) {
                         final verse = verses[index];
@@ -406,13 +407,13 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                         final isThisPlaying = _playingVerseNumber == verseNumber && _isPlaying;
 
                         return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
+                          margin: EdgeInsets.only(bottom: 12.h),
+                          padding: EdgeInsets.all(16.w),
                           decoration: BoxDecoration(
                             color: isThisPlaying
                                 ? _theme.iconColor.withOpacity(0.08)
                                 : _theme.cardColor,
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                             border: isThisPlaying
                                 ? Border.all(color: _theme.iconColor.withOpacity(0.4))
                                 : _theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
@@ -424,7 +425,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                               GestureDetector(
                                 onTap: () => _playVerse(verseNumber),
                                 child: Container(
-                                  width: 36, height: 36,
+                                  width: 36.w, height: 36.h,
                                   decoration: BoxDecoration(
                                     color: isThisPlaying
                                         ? _theme.iconColor
@@ -433,26 +434,26 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                                   child: Icon(
                                     isThisPlaying ? Icons.stop : Icons.play_arrow,
                                     color: isThisPlaying ? Colors.white : _theme.iconColor,
-                                    size: 20),
+                                    size: 20.sp),
                                 ),
                               ),
 
                               Row(children: [
                                 // verse number badge
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                                   decoration: BoxDecoration(
                                     color: _theme.iconColor.withOpacity(0.12),
-                                    borderRadius: BorderRadius.circular(20)),
+                                    borderRadius: BorderRadius.circular(20.r)),
                                   child: Text('$verseNumber',
                                     style: TextStyle(color: _theme.iconColor,
-                                      fontWeight: FontWeight.bold, fontSize: 12)),
+                                      fontWeight: FontWeight.bold, fontSize: 12.sp)),
                                 ),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8.w),
                               ]),
                             ]),
 
-                            const SizedBox(height: 12),
+                            SizedBox(height: 12.h),
                             // ข้อความอาหรับ + สัญลักษณ์ปิดท้ายอายะห์แบบดั้งเดิม (วงกลมเลขอายะห์)
                             // ต่อท้ายด้วย WidgetSpan เพื่อให้อยู่ในบรรทัดเดียวกับข้อความ
                             // และอยู่ตำแหน่งท้ายอายะห์ตามทิศทาง RTL (ฝั่งซ้ายของบรรทัด)
@@ -460,9 +461,9 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                               TextSpan(children: [
                                 TextSpan(
                                   text: verse['text_uthmani'] ?? '',
-                                  style: TextStyle(fontSize: 24, height: 2.0, color: _theme.textColor),
+                                  style: TextStyle(fontSize: 24.sp, height: 2.0.h, color: _theme.textColor),
                                 ),
-                                const WidgetSpan(child: SizedBox(width: 6)),
+                                WidgetSpan(child: SizedBox(width: 6.w)),
                                 WidgetSpan(
                                   alignment: PlaceholderAlignment.middle,
                                   child: _AyahEndMarker(
@@ -476,11 +477,11 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                             ),
 
                             if (translation.isNotEmpty) ...[
-                              Divider(height: 20,
+                              Divider(height: 20.h,
                                 color: _theme.isDark ? ThemeService.darkBorder : Colors.grey.shade200),
                               Align(alignment: Alignment.centerLeft,
                                 child: Text(translation, textAlign: TextAlign.left,
-                                  style: TextStyle(fontSize: 13, color: _theme.subTextColor, height: 1.6))),
+                                  style: TextStyle(fontSize: 13.sp, color: _theme.subTextColor, height: 1.6.h))),
                             ],
                           ]),
                         );
@@ -500,21 +501,21 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
     )['name']!;
 
     return Container(
-      height: 72,
+      height: 72.h,
       decoration: BoxDecoration(
         color: _theme.isDark ? const Color(0xFF0D3B1E) : const Color(0xFF1B5E20),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, -2))],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(children: [
         // Icon
         Container(
-          width: 40, height: 40,
+          width: 40.w, height: 40.h,
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(8)),
-          child: const Icon(Icons.menu_book, color: Color(0xFFFFD700), size: 20)),
-        const SizedBox(width: 12),
+            borderRadius: BorderRadius.circular(8.r)),
+          child: Icon(Icons.menu_book, color: Color(0xFFFFD700), size: 20.sp)),
+        SizedBox(width: 12.w),
 
         // ข้อมูล
         Expanded(child: Column(
@@ -522,17 +523,17 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('${widget.surahName} · Ayah $_playingVerseNumber',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.sp),
               maxLines: 1, overflow: TextOverflow.ellipsis),
             Text(reciterName,
-              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11)),
+              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11.sp)),
           ])),
 
         // Controls
         IconButton(
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-          icon: const Icon(Icons.skip_previous, color: Colors.white, size: 24),
+          icon: Icon(Icons.skip_previous, color: Colors.white, size: 24.sp),
           onPressed: () {
             if (_playingVerseNumber != null && _playingVerseNumber! > 1) {
               _playVerse(_playingVerseNumber! - 1);
@@ -542,14 +543,14 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
         GestureDetector(
           onTap: _stopAudio,
           child: Container(
-            width: 36, height: 36,
+            width: 36.w, height: 36.h,
             decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle),
-            child: const Icon(Icons.stop, color: Color(0xFF1B5E20), size: 20)),
+            child: Icon(Icons.stop, color: Color(0xFF1B5E20), size: 20.sp)),
         ),
         IconButton(
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-          icon: const Icon(Icons.skip_next, color: Colors.white, size: 24),
+          icon: Icon(Icons.skip_next, color: Colors.white, size: 24.sp),
           onPressed: () {
             if (_playingVerseNumber != null && _playingVerseNumber! < verses.length) {
               _playVerse(_playingVerseNumber! + 1);

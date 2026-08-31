@@ -12,7 +12,6 @@ class PrayerService {
   static const String _lastFetchKey = 'prayer_last_fetch';
 
   static Future<Map<String, dynamic>?> getPrayerTimes() async {
-    print('>>>>>>>>>> PRAYER_SERVICE FILE CHECK: NEW CODE IS RUNNING <<<<<<<<<<');
     final prefs = await SharedPreferences.getInstance();
     final todayStr = _dateKey(DateTime.now());
 
@@ -20,10 +19,7 @@ class PrayerService {
     if (cached != null) {
       final data = json.decode(cached) as Map<String, dynamic>;
       data['nextPrayer'] = calculateNextPrayer(data['timings']);
-      // เรียกใหม่ทุกครั้งเสมอ (ไม่ใช้ ??=) เพราะ ??= จะข้ามการเรียกไปเลย
-      // ถ้า cache มีชื่อเมืองเก่าบันทึกไว้อยู่แล้ว ทำให้ไม่เคย re-localize
-      // ตามภาษาแอปที่เปลี่ยนใหม่เลยแม้แต่ครั้งเดียว
-      data['locationName'] = await _resolveLocationName();
+      data['locationName'] ??= await _resolveLocationName();
 
       // Schedule notifications จาก cache ด้วย
       // ห่อด้วย try-catch: ถ้าตั้งแจ้งเตือนไม่สำเร็จ (เช่น เสียงที่เลือกไว้หาไฟล์ไม่เจอ)
@@ -123,11 +119,9 @@ class PrayerService {
 
       if (todayData != null) {
         todayData['nextPrayer'] = calculateNextPrayer(todayData['timings']);
-        // เรียก _resolveLocationName() เสมอ ไม่ว่าจะใช้ตำแหน่งที่เลือกเองหรือ GPS
-        // (ฟังก์ชันนี้เช็ค manualLocation เองข้างในอยู่แล้ว และจะ re-localize
-        // ชื่อเมืองตามภาษาแอปปัจจุบันให้ — เดิมโค้ดข้ามไปใช้ manualLocation['name']
-        // ตรงๆ เมื่อมีตำแหน่งที่เลือกเอง ทำให้ไม่เคย localize เลยถ้าเคยค้นหาเมืองไว้)
-        todayData['locationName'] = await _resolveLocationName();
+        todayData['locationName'] = manualLocation != null
+            ? manualLocation['name'] as String
+            : await _resolveLocationName();
 
         // ── Schedule Notifications ──
         // ห่อด้วย try-catch: ถ้าตั้งแจ้งเตือนไม่สำเร็จ (เช่น เสียงที่เลือกไว้หาไฟล์ไม่เจอ)
@@ -154,43 +148,20 @@ class PrayerService {
   }
 
   /// หาชื่อตำแหน่งที่แสดงผลได้ในหน้า Home/Prayer Times
-  /// สำคัญ: ดึงชื่อใหม่ "ตามภาษาแอปปัจจุบัน" ทุกครั้ง (ไม่ใช้ชื่อที่แคชไว้แบบตายตัว)
-  /// เพื่อให้เปลี่ยนภาษาแอปแล้วชื่อเมือง/ประเทศเปลี่ยนตามด้วย
-  ///
-  /// ลำดับการพยายาม:
-  /// 1. Google Geocoding API พร้อมระบุ language (แม่นยำสุด รองรับการเปลี่ยนภาษา)
-  /// 2. package geocoding (placemarkFromCoordinates) — ยึดภาษาระบบเครื่อง ใช้เป็น fallback
-  /// 3. ชื่อที่เคยบันทึกไว้ตอนค้นหาเมือง (ถ้ามี) หรือข้อความทั่วไป
+  /// ใช้ package geocoding (placemarkFromCoordinates) เพียงอย่างเดียว — ชื่อเมือง
+  /// จะเป็นภาษาตามที่ระบบปฏิบัติการตั้งไว้ (ไม่ผูกกับภาษาที่เลือกในแอป เพราะ
+  /// การแปลตามภาษาแอปแบบเป๊ะๆ ต้องใช้ Google Geocoding API ซึ่งบังคับต้องเปิด
+  /// Billing บน Google Cloud ก่อน — ตัดสินใจไม่ผูกบัตรจึงใช้ fallback นี้แทน)
   static Future<String> _resolveLocationName() async {
     final manual = await LocationService.getSavedLocation();
+    if (manual != null) return manual['name'] as String;
 
-    double lat;
-    double lng;
-    if (manual != null) {
-      lat = manual['lat'] as double;
-      lng = manual['lng'] as double;
-    } else {
-      try {
-        final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.low,
-        );
-        lat = position.latitude;
-        lng = position.longitude;
-      } catch (_) {
-        return manual?['name'] as String? ?? 'ตำแหน่งปัจจุบัน';
-      }
-    }
-
-    // 1) ลองใช้ Google Geocoding API พร้อมภาษาปัจจุบันของแอปก่อน
-    final currentLang = LanguageService().lang;
-    print('=== _resolveLocationName: currentLang=$currentLang, lat=$lat, lng=$lng, manual=${manual != null} ===');
-    final localized = await LocationService.reverseGeocodeLocalized(lat, lng, currentLang);
-    print('=== _resolveLocationName: Geocoding API result = "$localized" ===');
-    if (localized != null && localized.isNotEmpty) return localized;
-
-    // 2) fallback: package geocoding (ภาษาตามระบบเครื่อง ไม่ใช่ภาษาแอป)
     try {
-      final placemarks = await placemarkFromCoordinates(lat, lng);
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.low,
+      );
+      final placemarks = await placemarkFromCoordinates(
+          position.latitude, position.longitude);
       if (placemarks.isNotEmpty) {
         final p = placemarks.first;
         final parts = [p.locality, p.administrativeArea, p.country]
@@ -200,8 +171,7 @@ class PrayerService {
       }
     } catch (_) {}
 
-    // 3) fallback สุดท้าย: ชื่อที่เคยบันทึกไว้ หรือข้อความทั่วไป
-    return manual?['name'] as String? ?? 'ตำแหน่งปัจจุบัน';
+    return 'ตำแหน่งปัจจุบัน';
   }
 
   static Map<String, dynamic> calculateNextPrayer(

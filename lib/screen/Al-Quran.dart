@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
@@ -178,10 +179,10 @@ class _AlQuranPageState extends State<AlQuranPage> {
           ? Center(child: CircularProgressIndicator(color: _theme.iconColor))
           : errorMessage.isNotEmpty
               ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Icon(Icons.wifi_off, size: 64, color: _theme.subTextColor),
-                  const SizedBox(height: 16),
+                  Icon(Icons.wifi_off, size: 64.sp, color: _theme.subTextColor),
+                  SizedBox(height: 16.h),
                   Text(errorMessage, style: TextStyle(color: _theme.subTextColor)),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   ElevatedButton(onPressed: fetchSurahsFromApi,
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
                     child: Text(_lang.retry, style: const TextStyle(color: Colors.white))),
@@ -189,29 +190,29 @@ class _AlQuranPageState extends State<AlQuranPage> {
               : Column(children: [
                   if (isDownloading)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                       color: _theme.iconColor.withOpacity(0.1),
                       child: Column(children: [
                         Row(children: [
-                          Icon(Icons.download, color: _theme.iconColor, size: 18),
-                          const SizedBox(width: 8),
+                          Icon(Icons.download, color: _theme.iconColor, size: 18.sp),
+                          SizedBox(width: 8.w),
                           Expanded(child: Text('${_lang.downloadingOffline} $downloadProgress/$totalSurahs',
-                              style: TextStyle(color: _theme.iconColor, fontSize: 13))),
+                              style: TextStyle(color: _theme.iconColor, fontSize: 13.sp))),
                         ]),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6.h),
                         LinearProgressIndicator(value: downloadProgress / totalSurahs,
                             backgroundColor: _theme.isDark ? const Color(0xFF2C3E50) : Colors.grey.shade300,
                             color: _theme.iconColor),
                       ]),
                     ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                    padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 4.h),
                     child: TextField(
                       controller: _searchController,
                       style: TextStyle(color: _theme.textColor),
                       decoration: InputDecoration(
                         hintText: _lang.searchHint,
-                        hintStyle: TextStyle(color: _theme.subTextColor, fontSize: 14),
+                        hintStyle: TextStyle(color: _theme.subTextColor, fontSize: 14.sp),
                         prefixIcon: Icon(Icons.search, color: _theme.iconColor),
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(icon: Icon(Icons.clear, color: _theme.subTextColor),
@@ -219,30 +220,30 @@ class _AlQuranPageState extends State<AlQuranPage> {
                             : null,
                         filled: true,
                         fillColor: _theme.cardColor,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16.r), borderSide: BorderSide.none),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.r),
                           borderSide: _theme.isDark ? BorderSide(color: ThemeService.darkBorder) : BorderSide.none),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                       ),
                     ),
                   ),
                   if (_searchController.text.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
                       child: Align(alignment: Alignment.centerLeft,
                         child: Text('${_lang.foundSurahs} ${filteredSurahs.length} ${_lang.surahUnit}',
-                            style: TextStyle(fontSize: 12, color: _theme.subTextColor))),
+                            style: TextStyle(fontSize: 12.sp, color: _theme.subTextColor))),
                     ),
                   Expanded(
                     child: filteredSurahs.isEmpty
                         ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            Icon(Icons.search_off, size: 64, color: _theme.subTextColor),
-                            const SizedBox(height: 12),
+                            Icon(Icons.search_off, size: 64.sp, color: _theme.subTextColor),
+                            SizedBox(height: 12.h),
                             Text(_lang.notFound, style: TextStyle(color: _theme.subTextColor)),
                           ]))
                         : ListView.builder(
-                            padding: const EdgeInsets.all(12),
+                            padding: EdgeInsets.all(12.w),
                             itemCount: filteredSurahs.length,
                             itemBuilder: (context, index) {
                               final surah = filteredSurahs[index];
@@ -271,32 +272,32 @@ class _SurahCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        margin: EdgeInsets.only(bottom: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: theme.cardColor,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(14.r),
           border: theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
           boxShadow: [BoxShadow(color: theme.shadowColor, blurRadius: 6, offset: const Offset(0, 2))],
         ),
         child: Row(children: [
-          Container(width: 40, height: 40,
+          Container(width: 40.w, height: 40.h,
             decoration: BoxDecoration(color: theme.iconColor.withOpacity(0.12), shape: BoxShape.circle),
             child: Center(child: Text('${surah['id']}',
-                style: TextStyle(color: theme.iconColor, fontWeight: FontWeight.bold, fontSize: 13)))),
-          const SizedBox(width: 14),
+                style: TextStyle(color: theme.iconColor, fontWeight: FontWeight.bold, fontSize: 13.sp)))),
+          SizedBox(width: 14.w),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(surah['name_simple'] ?? '',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: theme.textColor)),
-            const SizedBox(height: 2),
+                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: theme.textColor)),
+            SizedBox(height: 2.h),
             Text(
               lang.isThai && thaiName.isNotEmpty
                   ? '$thaiName • ${surah['verses_count']} ${lang.verses}'
                   : '${surah['translated_name'] ?? ''} • ${surah['verses_count']} ${lang.verses}',
-              style: TextStyle(fontSize: 12, color: theme.subTextColor)),
+              style: TextStyle(fontSize: 12.sp, color: theme.subTextColor)),
           ])),
           Text(surah['name_arabic'] ?? '',
-              style: TextStyle(fontSize: 18, color: theme.iconColor, fontWeight: FontWeight.bold)),
+              style: TextStyle(fontSize: 18.sp, color: theme.iconColor, fontWeight: FontWeight.bold)),
         ]),
       ),
     );

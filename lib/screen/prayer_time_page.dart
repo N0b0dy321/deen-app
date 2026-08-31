@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../services/prayer_service.dart';
 import '../services/language_service.dart';
 import '../services/theme_service.dart';
@@ -69,15 +70,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
               ? [const Color(0xFF0D3B1E), const Color(0xFF1A5C32)]
               : [const Color(0xFF1B5E20), const Color(0xFF2E7D32)],
         ),
-        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
+        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(24.r), bottomRight: Radius.circular(24.r)),
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
           child: Column(children: [
             Row(children: [
               GestureDetector(onTap: () => Navigator.pop(context),
-                  child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22)),
+                  child: Icon(Icons.arrow_back_ios, color: Colors.white, size: 22.sp)),
               GestureDetector(
                 onTap: () async {
                   await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
@@ -85,32 +86,32 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   // เพราะการเลือกตำแหน่งใน location sheet จะ apply ทันทีอยู่แล้ว
                   _loadPrayerTimes();
                 },
-                child: const Icon(Icons.settings, color: Colors.white70, size: 26)),
+                child: Icon(Icons.settings, color: Colors.white70, size: 26.sp)),
             ]),
-            const SizedBox(height: 8),
-            const Icon(Icons.access_time, color: Color(0xFFFFD700), size: 40),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
+            Icon(Icons.access_time, color: Color(0xFFFFD700), size: 40.sp),
+            SizedBox(height: 8.h),
             Text(_lang.prayerTimes,
-                style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
+                style: TextStyle(color: Color(0xFFFFD700), fontSize: 22.sp, fontWeight: FontWeight.bold)),
+            SizedBox(height: 4.h),
             if (_prayerData != null)
-              Text(_prayerData!['date'], style: const TextStyle(color: Colors.white70, fontSize: 13)),
+              Text(_prayerData!['date'], style: TextStyle(color: Colors.white70, fontSize: 13.sp)),
             // ── ชื่อตำแหน่งที่ใช้คำนวณเวลาละหมาดอยู่ตอนนี้ ──
             if (_prayerData?['locationName'] != null) ...[
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                const Icon(Icons.location_on, color: Colors.white70, size: 13),
-                const SizedBox(width: 4),
+                Icon(Icons.location_on, color: Colors.white70, size: 13.sp),
+                SizedBox(width: 4.w),
                 Flexible(
                   child: Text(
                     _prayerData!['locationName'] as String,
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    style: TextStyle(color: Colors.white70, fontSize: 12.sp),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ]),
             ],
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
           ]),
         ),
       ),
@@ -121,71 +122,104 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     final timings = _prayerData!['timings'];
     final nextPrayer = _prayerData!['nextPrayer'];
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Column(children: [
-        // Next Prayer Card
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: _theme.isDark
-                  ? [const Color(0xFF0D3B1E), const Color(0xFF1A6B35)]
-                  : [const Color(0xFF1B5E20), const Color(0xFF43A047)],
-              begin: Alignment.centerLeft, end: Alignment.centerRight,
+        // Next Prayer Card — เลย์เอาต์เดียวกับหน้า Home (สัดส่วนภาพถูกต้อง
+        // + เว้นพื้นที่ให้มัสยิด/พระจันทร์ในภาพพื้นหลัง ไม่ให้ข้อความไปทับ)
+        AspectRatio(
+          aspectRatio: 1920 / 620,
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              image: const DecorationImage(
+                image: AssetImage('image/prayer/prayer_widget_bg.png'),
+                fit: BoxFit.cover,
+              ),
+              borderRadius: BorderRadius.circular(16.r),
+              border: _theme.isDark ? Border.all(color: const Color(0xFF2ECC71).withOpacity(0.3)) : null,
             ),
-            borderRadius: BorderRadius.circular(16),
-            border: _theme.isDark ? Border.all(color: const Color(0xFF2ECC71).withOpacity(0.3)) : null,
+            child: Row(children: [
+              // เว้นพื้นที่ฝั่งซ้ายแบบสัดส่วน (ที่ที่มัสยิด/พระจันทร์อยู่ในภาพ)
+              Expanded(flex: 34, child: const SizedBox()),
+              Expanded(
+                flex: 66,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_lang.nextPrayerLabel,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: TextStyle(color: Colors.white70, fontSize: 11.sp)),
+                      Text(nextPrayer['name'],
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: TextStyle(color: Colors.white, fontSize: 22.sp, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 2.h),
+                      // เวลา + badge อยู่แถวเดียวกัน (เหมือนหน้า Home) แทนการเรียงซ้อนกัน
+                      // 4 บรรทัด เพราะพื้นที่การ์ดถูกจำกัดด้วย AspectRatio ไม่พอเรียงซ้อน
+                      Row(children: [
+                        Text(nextPrayer['time'],
+                            style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w500)),
+                        SizedBox(width: 8.w),
+                        Flexible(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20.r)),
+                            child: Text(nextPrayer['timeUntil'],
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: TextStyle(color: Colors.white, fontSize: 11.sp)),
+                          ),
+                        ),
+                      ]),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(width: 8.w),
+            ]),
           ),
-          child: Column(children: [
-            Text(_lang.nextPrayerLabel, style: const TextStyle(color: Colors.white70, fontSize: 13)),
-            const SizedBox(height: 8),
-            Text(nextPrayer['name'], style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
-            Text(nextPrayer['time'], style: const TextStyle(color: Colors.white, fontSize: 22)),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
-              child: Text(nextPrayer['timeUntil'], style: const TextStyle(color: Colors.white, fontSize: 13)),
-            ),
-          ]),
         ),
 
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
 
         ..._prayerInfo.map((prayer) {
           final time = timings[prayer['key']] ?? '-';
           final isNext = nextPrayer['name'] == prayer['label'];
           final label = _lang.isThai ? prayer['labelTh'] : prayer['label'];
           return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            margin: EdgeInsets.only(bottom: 10.h),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
             decoration: BoxDecoration(
               color: isNext ? const Color(0xFF1B5E20) : _theme.cardColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               border: !isNext && _theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
               boxShadow: [BoxShadow(color: _theme.shadowColor, blurRadius: 8, offset: const Offset(0, 2))],
             ),
             child: Row(children: [
               Icon(prayer['icon'] as IconData,
-                  color: isNext ? Colors.white : _theme.iconColor, size: 24),
-              const SizedBox(width: 16),
+                  color: isNext ? Colors.white : _theme.iconColor, size: 24.sp),
+              SizedBox(width: 16.w),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
+                Text(label, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold,
                     color: isNext ? Colors.white : _theme.textColor)),
-                Text(prayer['arabic'], style: TextStyle(fontSize: 12,
+                Text(prayer['arabic'], style: TextStyle(fontSize: 12.sp,
                     color: isNext ? Colors.white70 : _theme.subTextColor)),
               ])),
-              Text(time, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,
+              Text(time, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold,
                   color: isNext ? Colors.white : _theme.iconColor)),
               if (isNext)
-                const Padding(padding: EdgeInsets.only(left: 8),
-                  child: Icon(Icons.notifications_active, color: Colors.white, size: 18)),
+                Padding(padding: EdgeInsets.only(left: 8.w),
+                  child: Icon(Icons.notifications_active, color: Colors.white, size: 18.sp)),
             ]),
           );
         }),
 
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
@@ -194,8 +228,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             label: Text(_lang.refresh, style: const TextStyle(color: Colors.white)),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF1B5E20),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              padding: EdgeInsets.symmetric(vertical: 14.h),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r))),
           ),
         ),
       ]),
@@ -204,10 +238,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
   Widget _buildError() {
     return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      const Icon(Icons.error_outline, color: Colors.red, size: 48),
-      const SizedBox(height: 16),
+      Icon(Icons.error_outline, color: Colors.red, size: 48.sp),
+      SizedBox(height: 16.h),
       Text(_lang.couldNotLoad, style: TextStyle(color: _theme.subTextColor)),
-      const SizedBox(height: 16),
+      SizedBox(height: 16.h),
       ElevatedButton(onPressed: _loadPrayerTimes,
         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
         child: Text(_lang.tryAgain, style: const TextStyle(color: Colors.white))),
