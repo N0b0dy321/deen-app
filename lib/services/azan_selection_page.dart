@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../services/azan_service.dart';
 import '../services/language_service.dart';
 import '../services/theme_service.dart';
@@ -121,7 +122,7 @@ class _AzanSelectionPageState extends State<AzanSelectionPage> {
         ),
       ),
       body: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         itemCount: AzanService.azanList.length,
         itemBuilder: (context, index) {
           final azan = AzanService.azanList[index];
@@ -133,14 +134,14 @@ class _AzanSelectionPageState extends State<AzanSelectionPage> {
           final isPlaying = _playingId == id;
 
           return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            margin: EdgeInsets.only(bottom: 12.h),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
             decoration: BoxDecoration(
               color: _theme.cardColor,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(14.r),
               border: Border.all(
                 color: isSelected ? const Color(0xFF1B5E20) : Colors.transparent,
-                width: 2,
+                width: 2.w,
               ),
               boxShadow: [
                 BoxShadow(color: _theme.shadowColor, blurRadius: 6, offset: const Offset(0, 2)),
@@ -152,8 +153,8 @@ class _AzanSelectionPageState extends State<AzanSelectionPage> {
                 GestureDetector(
                   onTap: () => _togglePlay(id),
                   child: Container(
-                    width: 44,
-                    height: 44,
+                    width: 44.w,
+                    height: 44.h,
                     decoration: BoxDecoration(
                       color: isPlaying
                           ? const Color(0xFF1B5E20)
@@ -166,7 +167,7 @@ class _AzanSelectionPageState extends State<AzanSelectionPage> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14.w),
 
                 // ── ชื่อเสียง + สถานะโหลด ──
                 Expanded(
@@ -178,13 +179,13 @@ class _AzanSelectionPageState extends State<AzanSelectionPage> {
                       children: [
                         Text(name,
                             style: TextStyle(
-                                fontSize: 15,
+                                fontSize: 15.sp,
                                 fontWeight: FontWeight.w600,
                                 color: _theme.textColor)),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4.h),
                         if (status == 'downloading')
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(4.r),
                             child: LinearProgressIndicator(
                               value: _downloadProgress[id],
                               minHeight: 5,
@@ -199,14 +200,14 @@ class _AzanSelectionPageState extends State<AzanSelectionPage> {
                             status == 'downloaded'
                                 ? (_lang.isThai ? 'พร้อมใช้งาน' : 'Ready')
                                 : (_lang.isThai ? 'ยังไม่ได้โหลด' : 'Not downloaded'),
-                            style: TextStyle(fontSize: 12, color: _theme.subTextColor),
+                            style: TextStyle(fontSize: 12.sp, color: _theme.subTextColor),
                           ),
                       ],
                     ),
                   ),
                 ),
 
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
 
                 // ── ปุ่มโหลด / เครื่องหมายเลือกแล้ว ──
                 _buildTrailing(id, azan, status, isSelected),
@@ -226,11 +227,11 @@ class _AzanSelectionPageState extends State<AzanSelectionPage> {
   ) {
     if (status == 'downloading') {
       return SizedBox(
-        width: 36,
-        height: 36,
+        width: 36.w,
+        height: 36.h,
         child: CircularProgressIndicator(
           value: _downloadProgress[id],
-          strokeWidth: 3,
+          strokeWidth: 3.w,
           color: const Color(0xFF1B5E20),
         ),
       );
@@ -240,23 +241,23 @@ class _AzanSelectionPageState extends State<AzanSelectionPage> {
       return GestureDetector(
         onTap: () => _download(id, azan['url']!),
         child: Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
             color: const Color(0xFF1B5E20).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.download_rounded, color: Color(0xFF1B5E20), size: 22),
+          child: Icon(Icons.download_rounded, color: Color(0xFF1B5E20), size: 22.sp),
         ),
       );
     }
 
     // downloaded
     if (isSelected) {
-      return const Icon(Icons.check_circle, color: Color(0xFF1B5E20), size: 26);
+      return Icon(Icons.check_circle, color: Color(0xFF1B5E20), size: 26.sp);
     }
     return GestureDetector(
       onTap: () => _select(id),
-      child: Icon(Icons.radio_button_unchecked, color: _theme.subTextColor, size: 26),
+      child: Icon(Icons.radio_button_unchecked, color: _theme.subTextColor, size: 26.sp),
     );
   }
 }

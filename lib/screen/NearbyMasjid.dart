@@ -250,7 +250,11 @@ class _NearbyMosquesPageState extends State<NearbyMosquesPage> {
 
   Widget _buildList() {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      // เว้นพื้นที่ด้านล่างให้พอสำหรับ FloatingActionButton (refresh) + safe area ของเครื่อง
+      // ไม่งั้นปุ่ม FAB จะไปทับปุ่ม "Navigate" ของการ์ดสุดท้ายพอดี
+      padding: EdgeInsets.fromLTRB(
+        16, 0, 16, 88 + MediaQuery.of(context).padding.bottom,
+      ),
       itemCount: _mosques.length,
       itemBuilder: (context, index) {
         final mosque = _mosques[index];

@@ -53,6 +53,7 @@ dependencies:
   change_app_package_name: ^1.5.0
   audioplayers: ^6.7.1
   geocoding: ^3.0.0
+  google_fonts: ^6.2.1
 
 flutter_icons:
   android: true
@@ -85,6 +86,9 @@ flutter:
     - image/
     - image/prayer/
     - assets/audio/
+    - image/Icon.png 
+    - image/qibla/
+    - image/decor/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

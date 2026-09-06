@@ -47,6 +47,38 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     setState(() { _prayerData = data; _isLoading = false; });
   }
 
+  // ── เลือกภาพพื้นหลังการ์ด "ถัดไป" ตามชื่อละหมาดที่กำลังจะถึง ──────
+  // ฟัจร์/มัฆริบ = โทนรุ่งอรุณ-พลบค่ำ (sunrise_sunset.png)
+  // ซุฮร์/อัศร์ = โทนกลางวัน (day.png)
+  // อิชาอ์ (และกรณีอื่นๆ) = ภาพเดิมที่มีพระจันทร์ (prayer_widget_bg.png)
+  String _getNextPrayerBackground(String? prayerName) {
+    switch (prayerName) {
+      case 'Fajr':
+      case 'Maghrib':
+        return 'image/prayer/sunrise_sunset.png';
+      case 'Dhuhr':
+      case 'Asr':
+        return 'image/prayer/day.png';
+      default:
+        return 'image/prayer/prayer_widget_bg.png';
+    }
+  }
+
+  // ── แปลชื่อ/label ของ "ตอนนี้อยู่ในช่วงละหมาดไหน" ──────────────
+  // กรณี isSunrise = true (ช่วงหลังพระอาทิตย์ขึ้นถึงก่อนซุฮร์ = เวลาฎุฮา)
+  // ต้องไม่โชว์ว่าเป็นชื่อละหมาด เพราะ Sunrise ไม่ใช่เวลาละหมาดจริง
+  String _getCurrentPrayerLabel(Map<String, dynamic> currentPrayer) {
+    if (currentPrayer['isSunrise'] == true) {
+      return _lang.isThai ? 'หลังพระอาทิตย์ขึ้น (ฎุฮา)' : 'After Sunrise (Duha)';
+    }
+    final name = currentPrayer['name'] as String;
+    final info = _prayerInfo.firstWhere(
+      (p) => p['key'] == name,
+      orElse: () => {'label': name, 'labelTh': name},
+    );
+    return _lang.isThai ? info['labelTh'] as String : info['label'] as String;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,9 +153,48 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Widget _buildContent() {
     final timings = _prayerData!['timings'];
     final nextPrayer = _prayerData!['nextPrayer'];
+    final currentPrayer = _prayerData!['currentPrayer'] as Map<String, dynamic>?;
+
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16.w),
+      // เผื่อพื้นที่ด้านล่างให้ gesture bar / home indicator ไม่งั้นปุ่ม Refresh
+      // จะไปติดขอบจอในเครื่องที่ใช้ gesture navigation (เหมือนปัญหาที่เจอใน
+      // NearbyMasjid.dart / HalalRestaurant.dart ก่อนหน้านี้)
+      padding: EdgeInsets.fromLTRB(
+        16.w, 16.w, 16.w, 16.w + MediaQuery.of(context).padding.bottom,
+      ),
       child: Column(children: [
+        // ── แถบ "ตอนนี้" — วางไว้เหนือการ์ดภาพพื้นหลังเดิม ไม่แตะโครงสร้าง
+        // AspectRatio/DecorationImage ของการ์ด Next Prayer เลย กันไม่ให้ไป
+        // บีบพื้นที่จนเกิด overflow ซ้ำแบบที่เจอตอนแรก (การ์ดนั้นความสูงถูก
+        // ล็อกด้วยสัดส่วนภาพ เพิ่มแถวเข้าไปข้างในเสี่ยงล้นอีกครั้ง) ──
+        if (currentPrayer != null) ...[
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: _theme.isDark ? const Color(0xFF0D3B1E) : const Color(0xFF1B5E20),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Row(children: [
+              Icon(Icons.access_time_filled_rounded, color: const Color(0xFFFFD700), size: 15.sp),
+              SizedBox(width: 6.w),
+              Text(_lang.isThai ? 'ตอนนี้' : 'Now',
+                  style: TextStyle(color: Colors.white70, fontSize: 12.sp)),
+              SizedBox(width: 4.w),
+              Flexible(
+                child: Text(_getCurrentPrayerLabel(currentPrayer),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+              ),
+              const Spacer(),
+              Text('${currentPrayer['startTime']} - ${currentPrayer['endTime']}',
+                  style: TextStyle(color: Colors.white60, fontSize: 11.sp)),
+            ]),
+          ),
+          SizedBox(height: 10.h),
+        ],
+
         // Next Prayer Card — เลย์เอาต์เดียวกับหน้า Home (สัดส่วนภาพถูกต้อง
         // + เว้นพื้นที่ให้มัสยิด/พระจันทร์ในภาพพื้นหลัง ไม่ให้ข้อความไปทับ)
         AspectRatio(
@@ -131,8 +202,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              image: const DecorationImage(
-                image: AssetImage('image/prayer/prayer_widget_bg.png'),
+              image: DecorationImage(
+                image: AssetImage(_getNextPrayerBackground(nextPrayer['name'])),
                 fit: BoxFit.cover,
               ),
               borderRadius: BorderRadius.circular(16.r),
@@ -190,6 +261,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         ..._prayerInfo.map((prayer) {
           final time = timings[prayer['key']] ?? '-';
           final isNext = nextPrayer['name'] == prayer['label'];
+          final isCurrent = currentPrayer != null &&
+              currentPrayer['isSunrise'] != true &&
+              currentPrayer['name'] == prayer['key'];
           final label = _lang.isThai ? prayer['labelTh'] : prayer['label'];
           return Container(
             margin: EdgeInsets.only(bottom: 10.h),
@@ -197,7 +271,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             decoration: BoxDecoration(
               color: isNext ? const Color(0xFF1B5E20) : _theme.cardColor,
               borderRadius: BorderRadius.circular(16.r),
-              border: !isNext && _theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
+              border: isCurrent
+                  ? Border.all(color: const Color(0xFFFFD700), width: 1.5.w)
+                  : (!isNext && _theme.isDark ? Border.all(color: ThemeService.darkBorder) : null),
               boxShadow: [BoxShadow(color: _theme.shadowColor, blurRadius: 8, offset: const Offset(0, 2))],
             ),
             child: Row(children: [
@@ -205,8 +281,21 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   color: isNext ? Colors.white : _theme.iconColor, size: 24.sp),
               SizedBox(width: 16.w),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(label, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold,
-                    color: isNext ? Colors.white : _theme.textColor)),
+                Row(children: [
+                  Text(label, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold,
+                      color: isNext ? Colors.white : _theme.textColor)),
+                  if (isCurrent) ...[
+                    SizedBox(width: 6.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(6.r)),
+                      child: Text(_lang.isThai ? 'ตอนนี้' : 'Now',
+                          style: TextStyle(fontSize: 9.sp, color: const Color(0xFFB8860B), fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ]),
                 Text(prayer['arabic'], style: TextStyle(fontSize: 12.sp,
                     color: isNext ? Colors.white70 : _theme.subTextColor)),
               ])),

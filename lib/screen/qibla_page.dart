@@ -273,4 +273,6 @@ class _QiblaPageState extends State<QiblaPage> {
         child: Text(_lang.tryAgain, style: const TextStyle(color: Colors.white))),
     ]));
   }
+
+
 }

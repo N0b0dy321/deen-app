@@ -287,7 +287,11 @@ class _HalalRestaurantPageState extends State<HalalRestaurantPage> {
 
   Widget _buildList() {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      // เว้นพื้นที่ด้านล่างให้พอสำหรับ FloatingActionButton (refresh) + safe area ของเครื่อง
+      // ไม่งั้นปุ่ม FAB จะไปทับปุ่ม "Navigate" ของการ์ดสุดท้ายพอดี (บั๊กเดียวกับหน้า Nearby Mosques)
+      padding: EdgeInsets.fromLTRB(
+        16, 0, 16, 88 + MediaQuery.of(context).padding.bottom,
+      ),
       itemCount: _restaurants.length,
       itemBuilder: (context, index) {
         final r = _restaurants[index];

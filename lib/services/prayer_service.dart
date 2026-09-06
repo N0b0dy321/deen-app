@@ -19,6 +19,7 @@ class PrayerService {
     if (cached != null) {
       final data = json.decode(cached) as Map<String, dynamic>;
       data['nextPrayer'] = calculateNextPrayer(data['timings']);
+      data['currentPrayer'] = calculateCurrentPrayer(data['timings']);
       data['locationName'] ??= await _resolveLocationName();
 
       // Schedule notifications จาก cache ด้วย
@@ -46,7 +47,7 @@ class PrayerService {
       SharedPreferences prefs) async {
     try {
       final timezone = prefs.getString('timezone') ?? 'Asia/Bangkok';
-      final method = prefs.getString('method') ?? '16';
+      final method = prefs.getString('method') ?? '3'; // Default: Muslim World League
 
       // ── หาพิกัดที่จะใช้คำนวณเวลาละหมาด ──────────────────────
       // ลำดับความสำคัญ:
@@ -119,6 +120,7 @@ class PrayerService {
 
       if (todayData != null) {
         todayData['nextPrayer'] = calculateNextPrayer(todayData['timings']);
+        todayData['currentPrayer'] = calculateCurrentPrayer(todayData['timings']);
         todayData['locationName'] = manualLocation != null
             ? manualLocation['name'] as String
             : await _resolveLocationName();
@@ -210,12 +212,76 @@ class PrayerService {
     };
   }
 
+  // ── หาว่า "ตอนนี้" อยู่ในช่วงเวลาละหมาดไหน ──────────────────
+  // ต่างจาก calculateNextPrayer ที่หาละหมาด "ถัดไป" ตัวนี้หาว่าเรากำลังอยู่
+  // ในช่วงเวลาของละหมาดตัวไหนอยู่ ณ ขณะนี้ (ตั้งแต่เวลาเริ่มของละหมาดนั้น
+  // จนถึงก่อนเวลาเริ่มของละหมาดถัดไป)
+  //
+  // กรณีพิเศษที่ต้องระวัง:
+  // 1. Sunrise ไม่ใช่เวลาละหมาด เป็นแค่จุดสิ้นสุดเวลาฟัจร์ ถ้าตอนนี้อยู่ในช่วง
+  //    Sunrise ถึงก่อน Dhuhr (เวลาฎุฮา) ต้องบอกว่า isSunrise = true ให้ UI
+  //    ไปโชว์ข้อความแยกต่างหาก ไม่ใช่โชว์ "ตอนนี้: Sunrise" เหมือนเป็นละหมาด
+  // 2. ถ้าตอนนี้ยังไม่ถึงฟัจร์ของวันนี้เลย (ดึกๆ หลังเที่ยงคืน) แปลว่ายังอยู่
+  //    ในช่วงเวลาอิชาอ์ที่ต่อเนื่องมาจากคืนก่อน — ใช้เวลา Isha ของวันนี้แทน
+  //    เป็นค่าประมาณเวลาเริ่ม (เวลาละหมาดแทบไม่ขยับข้ามคืน ต่างกันแค่ 1-2 นาที)
+  static Map<String, dynamic> calculateCurrentPrayer(
+      Map<String, dynamic> timings) {
+    final periods = [
+      {'name': 'Fajr', 'time': timings['Fajr'], 'isSunrise': false},
+      {'name': 'Sunrise', 'time': timings['Sunrise'], 'isSunrise': true},
+      {'name': 'Dhuhr', 'time': timings['Dhuhr'], 'isSunrise': false},
+      {'name': 'Asr', 'time': timings['Asr'], 'isSunrise': false},
+      {'name': 'Maghrib', 'time': timings['Maghrib'], 'isSunrise': false},
+      {'name': 'Isha', 'time': timings['Isha'], 'isSunrise': false},
+    ];
+
+    final now = DateTime.now();
+    DateTime parseTime(String t) {
+      final parts = t.split(':');
+      return DateTime(now.year, now.month, now.day,
+          int.parse(parts[0]), int.parse(parts[1]));
+    }
+
+    int currentIndex = -1;
+    for (int i = 0; i < periods.length; i++) {
+      final t = parseTime(periods[i]['time'] as String);
+      if (!t.isAfter(now)) {
+        currentIndex = i;
+      } else {
+        break;
+      }
+    }
+
+    // ก่อนฟัจร์ของวันนี้ — ยังอยู่ในช่วงอิชาอ์ต่อเนื่องจากคืนก่อน
+    if (currentIndex == -1) {
+      return {
+        'name': 'Isha',
+        'startTime': periods.last['time'],
+        'endTime': periods[0]['time'],
+        'isSunrise': false,
+      };
+    }
+
+    final current = periods[currentIndex];
+    final endTime = currentIndex + 1 < periods.length
+        ? periods[currentIndex + 1]['time']
+        : periods[0]['time'];
+
+    return {
+      'name': current['name'],
+      'startTime': current['time'],
+      'endTime': endTime,
+      'isSunrise': current['isSunrise'],
+    };
+  }
+
   static Map<String, dynamic>? _loadAnyCache(SharedPreferences prefs) {
     final todayStr = _dateKey(DateTime.now());
     final cached = prefs.getString('$_cachePrefix$todayStr');
     if (cached != null) {
       final data = json.decode(cached) as Map<String, dynamic>;
       data['nextPrayer'] = calculateNextPrayer(data['timings']);
+      data['currentPrayer'] = calculateCurrentPrayer(data['timings']);
       data['locationName'] ??= 'ตำแหน่งปัจจุบัน'; // เผื่อ cache เก่าก่อนมีฟีเจอร์นี้
       data['isOffline'] = true;
       return data;
@@ -226,6 +292,7 @@ class PrayerService {
       if (old != null) {
         final data = json.decode(old) as Map<String, dynamic>;
         data['nextPrayer'] = calculateNextPrayer(data['timings']);
+        data['currentPrayer'] = calculateCurrentPrayer(data['timings']);
         data['locationName'] ??= 'ตำแหน่งปัจจุบัน';
         data['isOffline'] = true;
         return data;

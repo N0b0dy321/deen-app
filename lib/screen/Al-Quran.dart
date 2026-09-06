@@ -243,7 +243,9 @@ class _AlQuranPageState extends State<AlQuranPage> {
                             Text(_lang.notFound, style: TextStyle(color: _theme.subTextColor)),
                           ]))
                         : ListView.builder(
-                            padding: EdgeInsets.all(12.w),
+                            padding: EdgeInsets.fromLTRB(
+                              12.w, 12.w, 12.w, 12.w + MediaQuery.of(context).padding.bottom,
+                            ),
                             itemCount: filteredSurahs.length,
                             itemBuilder: (context, index) {
                               final surah = filteredSurahs[index];

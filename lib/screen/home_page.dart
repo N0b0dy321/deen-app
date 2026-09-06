@@ -17,6 +17,30 @@ import 'package:DEEN/screen/qibla_page.dart';
 import 'package:DEEN/screen/chatbot_page.dart';
 import 'package:DEEN/services/Setting_Time.dart';
 
+// ── ลายมุมตกแต่งหัวข้อ (ลายดาวทอง export จาก Canva แบบโปร่งใส) ──
+// asset เดียวกับที่ใช้ใน lessons_page.dart (คนละไฟล์เลยประกาศแยก ไม่ import
+// ข้ามกัน) พลิกด้วย Transform ใช้ซ้ำทั้ง 4 มุมจากไฟล์เดียว
+const String kHeaderCornerAsset = 'image/decor/corner_star.png';
+// ── ลายเส้นขอบฟ้ามัสยิดสีทอง (export จาก Canva แบบโปร่งใส) ──
+// วางไว้ล่างสุดของ header หน้า Home แบบจางๆ เป็นพื้นผิวตกแต่ง
+const String kMosqueSkylineAsset = 'image/decor/mosque_skyline.png';
+
+List<Widget> headerCornerDecor({double size = 38}) {
+  Widget cornerImg() => Image.asset(kHeaderCornerAsset, width: size, height: size,
+      errorBuilder: (_, __, ___) => const SizedBox.shrink());
+  Widget flipped(double sx, double sy, Widget child) => Transform(
+      alignment: Alignment.center,
+      transform: Matrix4.diagonal3Values(sx, sy, 1),
+      child: child);
+
+  return [
+    Positioned(top: 2, left: 2, child: cornerImg()),
+    Positioned(top: 2, right: 2, child: flipped(-1, 1, cornerImg())),
+    Positioned(bottom: 2, left: 2, child: flipped(1, -1, cornerImg())),
+    Positioned(bottom: 2, right: 2, child: flipped(-1, -1, cornerImg())),
+  ];
+}
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -27,6 +51,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Map<String, dynamic>? _prayerData;
   Map<String, dynamic>? _hijriData;
+  bool _hijriLoadFailed = false; // แยกสถานะ "โหลดไม่สำเร็จ" ออกจาก "กำลังโหลด"
   final _lang = LanguageService();
   final _theme = ThemeService();
   Timer? _timer;
@@ -53,12 +78,23 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadHijriDate() async {
     // Load today first (fast), then prefetch in background
+    print('=== _loadHijriDate: เริ่มพยายามโหลดปฏิทินฮิจเราะห์ ===');
+    setState(() => _hijriLoadFailed = false);
     final data = await IslamicCalendarService.getTodayHijri();
-    if (mounted && data != null) {
-      setState(() => _hijriData = data);
+    if (!mounted) return;
+    if (data != null) {
+      print('=== _loadHijriDate: โหลดสำเร็จ ===');
+      setState(() { _hijriData = data; _hijriLoadFailed = false; });
+      // Prefetch next month in background (don't await) — ทำเฉพาะตอนโหลดสำเร็จ
+      IslamicCalendarService.prefetchCalendars();
+    } else {
+      // โหลดไม่สำเร็จ (เช่น เน็ตหลุด/API ตอบช้า) — ต้องบอกสถานะนี้ชัดๆ
+      // ไม่งั้นการ์ดจะค้างแสดง spinner ตลอดไปโดยไม่มีทางรู้ว่าล้มเหลว
+      // (ดู error ที่แท้จริงได้จาก log บรรทัด "Islamic calendar error: ..."
+      //  ที่ print ไว้แล้วใน islamic_calendar_service.dart)
+      print('=== _loadHijriDate: โหลดไม่สำเร็จ (data == null) ===');
+      setState(() => _hijriLoadFailed = true);
     }
-    // Prefetch next month in background (don't await)
-    IslamicCalendarService.prefetchCalendars();
   }
 
   @override
@@ -143,6 +179,8 @@ class _HomePageState extends State<HomePage> {
                   // ── Islamic Calendar ──────────────────
                   _IslamicCalendarCard(
                     hijriData: _hijriData,
+                    loadFailed: _hijriLoadFailed,
+                    onRetry: _loadHijriDate,
                     lang: _lang,
                     theme: _theme,
                   ),
@@ -232,9 +270,14 @@ class _HomePageState extends State<HomePage> {
   Widget _buildHeader() {
     final now = DateTime.now();
     final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    // ── ใช้ service กลางแปลชื่อวัน/เดือนเกรกอเรียนแทน hardcode อังกฤษตายตัว
+    // (Dart's DateTime.weekday: Monday=1..Sunday=7 → %7 แปลงเป็น Sunday=0..Saturday=6)
+    final weekdayShort = IslamicCalendarService.getWeekdayShortLabels(_lang.lang)[now.weekday % 7];
+    final monthShort = IslamicCalendarService.getGregorianMonthName(now.month, _lang.lang);
 
     return Container(
       width: double.infinity,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -254,7 +297,27 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       child: SafeArea(
-        child: Padding(
+        child: Stack(children: [
+          // ── ลายเส้นขอบฟ้ามัสยิดสีทอง (จางๆ) แปะไว้ล่างสุดของ Stack
+          // ให้ทุกอย่าง (ลายมุม + ข้อความ) render ทับข้างบนอีกที ──
+          Positioned(
+            left: 0, right: 0, bottom: 0,
+            height: 80.h,
+            child: ClipRect(
+              child: Opacity(
+                opacity: 0.22,
+                child: Image.asset(
+                  kMosqueSkylineAsset,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.bottomCenter,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ),
+          ...headerCornerDecor(),
+          Padding(
           padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 20.h),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -287,13 +350,13 @@ class _HomePageState extends State<HomePage> {
                         fontWeight: FontWeight.w300,
                         letterSpacing: 1)),
                 Text(
-                  '${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.weekday % 7]}, '
-                  '${now.day} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.month-1]}',
+                  '$weekdayShort, ${now.day} $monthShort',
                   style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11.sp)),
               ]),
             ],
           ),
-        ),
+          ),
+        ]),
       ),
     );
   }
@@ -481,11 +544,15 @@ class _MoreItem {
 // ── Islamic Calendar Card ──────────────────────────
 class _IslamicCalendarCard extends StatefulWidget {
   final Map<String, dynamic>? hijriData;
+  final bool loadFailed;
+  final VoidCallback onRetry;
   final LanguageService lang;
   final ThemeService theme;
 
   const _IslamicCalendarCard({
     required this.hijriData,
+    required this.loadFailed,
+    required this.onRetry,
     required this.lang,
     required this.theme,
   });
@@ -515,6 +582,8 @@ class _IslamicCalendarCardState extends State<_IslamicCalendarCard> {
       'today': {'en': 'Today', 'th': 'วันนี้', 'ms': 'Hari ini', 'id': 'Hari ini', 'ar': 'اليوم', 'ur': 'آج', 'bn': 'আজ'},
       'hijri': {'en': 'Hijri', 'th': 'ฮิจเราะห์', 'ms': 'Hijri', 'id': 'Hijriah', 'ar': 'هجري', 'ur': 'ہجری', 'bn': 'হিজরি'},
       'viewCalendar': {'en': 'View Calendar', 'th': 'ดูปฏิทิน', 'ms': 'Lihat Kalendar', 'id': 'Lihat Kalender', 'ar': 'عرض التقويم', 'ur': 'کیلنڈر دیکھیں', 'bn': 'ক্যালেন্ডার দেখুন'},
+      'loadFailed': {'en': 'Could not load calendar', 'th': 'โหลดปฏิทินไม่สำเร็จ', 'ms': 'Gagal memuat kalendar', 'id': 'Gagal memuat kalender', 'ar': 'تعذر تحميل التقويم', 'ur': 'کیلنڈر لوڈ نہیں ہوسکا', 'bn': 'ক্যালেন্ডার লোড করা যায়নি'},
+      'tapToRetry': {'en': 'Tap to retry', 'th': 'แตะเพื่อลองใหม่', 'ms': 'Ketik untuk cuba lagi', 'id': 'Ketuk untuk coba lagi', 'ar': 'اضغط لإعادة المحاولة', 'ur': 'دوبارہ کوشش کے لیے ٹیپ کریں', 'bn': 'আবার চেষ্টা করতে ট্যাপ করুন'},
     };
     return labels[key]?[widget.lang.lang] ?? labels[key]?['en'] ?? key;
   }
@@ -524,6 +593,40 @@ class _IslamicCalendarCardState extends State<_IslamicCalendarCard> {
     final isDark = widget.theme.isDark;
     final headerColor = isDark ? const Color(0xFF0D2E1A) : const Color(0xFF1B5E20);
     final headerColor2 = isDark ? const Color(0xFF1A4A2A) : const Color(0xFF2E7D32);
+
+    // โหลดไม่สำเร็จ (เช่น เน็ตหลุด) — ต้องมีทางออกให้ user กดลองใหม่
+    // แทนที่จะปล่อยให้ spinner หมุนค้างตลอดไปแบบไม่มีความหมาย
+    if (widget.loadFailed && widget.hijriData == null) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque, // บังคับให้พื้นที่ทั้งการ์ดรับแตะได้แน่นอน
+        onTap: () {
+          print('=== ผู้ใช้กดปุ่ม retry ปฏิทิน ===');
+          widget.onRetry();
+        },
+        child: Container(
+          height: 72.h,
+          decoration: BoxDecoration(
+            color: widget.theme.cardColor,
+            borderRadius: BorderRadius.circular(18.r),
+            border: isDark ? Border.all(color: ThemeService.darkBorder) : null,
+          ),
+          child: Center(
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(Icons.refresh, size: 18.sp, color: widget.theme.subTextColor),
+              SizedBox(width: 8.w),
+              Flexible(
+                child: Text(
+                  '${_getLabel('loadFailed')} · ${_getLabel('tapToRetry')}',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: TextStyle(fontSize: 12.sp, color: widget.theme.subTextColor),
+                ),
+              ),
+            ]),
+          ),
+        ),
+      );
+    }
 
     if (widget.hijriData == null) {
       return Container(
@@ -545,11 +648,13 @@ class _IslamicCalendarCardState extends State<_IslamicCalendarCard> {
     final hijriYear = hijri['year']?.toString() ?? '';
     final hijriMonthName = IslamicCalendarService.getHijriMonthName(hijriMonthEn, widget.lang.lang);
     final gregDay = gregorian['day']?.toString() ?? '';
-    final gregMonthEn = gregorian['month']?['en'] as String? ?? '';
     final gregYear = gregorian['year']?.toString() ?? '';
-    final weekday = gregorian['weekday']?['en'] as String? ?? '';
     final holiday = IslamicCalendarService.getIslamicHoliday(holidays, widget.lang.lang);
     final now = DateTime.now();
+    // ── ใช้ service กลางแปลชื่อวัน/เดือนเกรกอเรียนแทน ['en'] ตรงๆ
+    // (ก่อนหน้านี้เป็นสาเหตุที่ทำให้ตรงนี้ไม่เปลี่ยนภาษาตามแอปเลย) ──
+    final weekday = IslamicCalendarService.getWeekdayName(now.weekday % 7, widget.lang.lang);
+    final gregMonthName = IslamicCalendarService.getGregorianMonthName(now.month, widget.lang.lang);
 
     // Build week strip (current week)
     final weekday0 = now.weekday % 7; // Sun=0
@@ -562,6 +667,9 @@ class _IslamicCalendarCardState extends State<_IslamicCalendarCard> {
         if (gd > 0) dayMap[gd] = day;
       }
     }
+
+    // ตัวย่อวันในสัปดาห์ตามภาษาปัจจุบัน (แทน hardcode ['S','M','T','W','T','F','S'])
+    final dayLetters = IslamicCalendarService.getWeekdayShortLabels(widget.lang.lang);
 
     return GestureDetector(
       onTap: () => _showFullCalendar(context),
@@ -601,8 +709,9 @@ class _IslamicCalendarCardState extends State<_IslamicCalendarCard> {
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Text('$weekday, $gregDay $gregMonthEn $gregYear',
-                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600, color: widget.theme.textColor)),
+                    Text('$weekday, $gregDay $gregMonthName $gregYear',
+                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600, color: widget.theme.textColor),
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
                     SizedBox(height: 4.h),
                     if (holiday != null) ...[
                       Container(
@@ -646,7 +755,6 @@ class _IslamicCalendarCardState extends State<_IslamicCalendarCard> {
                 if (d.month == now.month && dayMap.containsKey(d.day)) {
                   hijriD = (dayMap[d.day]?['hijri'] as Map?)?['day']?.toString() ?? '';
                 }
-                const dayLetters = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
                 return Column(children: [
                   Text(dayLetters[i],
@@ -712,10 +820,27 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
   List<Map<String, dynamic>>? _calendarData;
   bool _loading = true;
 
+  // ── มุมมองฮิจเราะห์ (สลับได้จากปุ่มด้านบน) — แก้ปัญหาเดือนคาบเกี่ยว
+  // ตรงจุดที่สุด เพราะโหมดนี้จะโชว์ครบ 1 เดือนฮิจเราะห์เป๊ะๆ ไม่มีเดือนอื่นปนมา ──
+  bool _isHijriView = false;
+  late int _hijriMonth;
+  late int _hijriYear;
+  late int _todayHijriMonth;
+  late int _todayHijriYear;
+  List<Map<String, dynamic>>? _hijriViewData;
+  bool _hijriViewLoading = false;
+
   @override
   void initState() {
     super.initState();
     _displayMonth = DateTime.now();
+    // ตั้งต้นเดือนฮิจเราะห์จากข้อมูล "วันนี้" ที่ส่งมาจากการ์ดหน้า Home อยู่แล้ว
+    // ไม่ต้องยิง API ซ้ำ
+    final todayHijri = widget.hijriData?['hijri'] as Map<String, dynamic>?;
+    _hijriMonth = int.tryParse(todayHijri?['month']?['number']?.toString() ?? '') ?? 1;
+    _hijriYear = int.tryParse(todayHijri?['year']?.toString() ?? '') ?? 1447;
+    _todayHijriMonth = _hijriMonth;
+    _todayHijriYear = _hijriYear;
     _loadCalendar();
   }
 
@@ -734,6 +859,130 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
     _loadCalendar();
   }
 
+  Future<void> _loadHijriViewCalendar() async {
+    setState(() => _hijriViewLoading = true);
+    final data = await IslamicCalendarService.getHijriToGregorianCalendar(_hijriMonth, _hijriYear);
+    if (mounted) setState(() { _hijriViewData = data; _hijriViewLoading = false; });
+  }
+
+  void _changeHijriMonth(int delta) {
+    setState(() {
+      _hijriMonth += delta;
+      if (_hijriMonth > 12) { _hijriMonth = 1; _hijriYear++; }
+      if (_hijriMonth < 1) { _hijriMonth = 12; _hijriYear--; }
+      _hijriViewData = null;
+    });
+    _loadHijriViewCalendar();
+  }
+
+  void _toggleViewMode(bool toHijri) {
+    if (toHijri == _isHijriView) return;
+    setState(() => _isHijriView = toHijri);
+    if (toHijri && _hijriViewData == null) _loadHijriViewCalendar();
+  }
+
+  String _todayLabel() =>
+      {'en': 'Today', 'th': 'วันนี้', 'ms': 'Hari ini', 'id': 'Hari ini', 'ar': 'اليوم', 'ur': 'آج', 'bn': 'আজ'}[widget.lang.lang] ?? 'Today';
+
+  // ปุ่มเดียวในชุด segmented switch เกรกอเรียน/ฮิจเราะห์
+  Widget _viewToggleButton({required String label, required bool selected, required Color headerColor, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: EdgeInsets.symmetric(vertical: 8.h),
+        decoration: BoxDecoration(
+          color: selected ? headerColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(8.r)),
+        alignment: Alignment.center,
+        child: Text(label, style: TextStyle(
+            fontSize: 12.sp, fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : widget.theme.subTextColor)),
+      ),
+    );
+  }
+
+  // ── แตะวันไหนในตาราง ดูรายละเอียดวันนั้นแบบเต็ม (เกรกอเรียน + ฮิจเราะห์
+  // + วันสำคัญถ้ามี) ให้หน้าปฏิทินเต็มใช้งานได้จริงมากขึ้น ไม่ใช่แค่ดูเฉยๆ
+  // รับ item ตรงๆ แล้วดึงข้อมูลเกรกอเรียนจากตัว item เอง (ไม่พึ่ง _displayMonth)
+  // เพื่อให้ใช้ได้ทั้งมุมมองเกรกอเรียนและมุมมองฮิจเราะห์ ──
+  void _showDayDetail(Map<String, dynamic> item) {
+    final headerColor = widget.theme.isDark ? const Color(0xFF0D2E1A) : const Color(0xFF1B5E20);
+    final headerColor2 = widget.theme.isDark ? const Color(0xFF1A4A2A) : const Color(0xFF2E7D32);
+
+    final g = item['gregorian'] as Map<String, dynamic>? ?? {};
+    final h = item['hijri'] as Map<String, dynamic>? ?? {};
+
+    final gDay = int.tryParse(g['day']?.toString() ?? '') ?? 0;
+    final gMonthNum = int.tryParse(g['month']?['number']?.toString() ?? '') ?? 0;
+    final gYear = int.tryParse(g['year']?.toString() ?? '') ?? 0;
+    final weekdayIdx = (gDay > 0 && gMonthNum > 0 && gYear > 0)
+        ? DateTime(gYear, gMonthNum, gDay).weekday % 7
+        : 0;
+    final weekdayName = IslamicCalendarService.getWeekdayName(weekdayIdx, widget.lang.lang);
+    final gregMonthName = gMonthNum > 0
+        ? IslamicCalendarService.getGregorianMonthName(gMonthNum, widget.lang.lang)
+        : '';
+
+    final hijriDayNum = h['day']?.toString() ?? '';
+    final hMonthEn = h['month']?['en'] as String? ?? '';
+    final hijriMonthName = IslamicCalendarService.getHijriMonthName(hMonthEn, widget.lang.lang);
+    final hijriYearStr = h['year']?.toString() ?? '';
+    final hols = h['holidays'] as List<dynamic>? ?? [];
+    final holidayName = IslamicCalendarService.getIslamicHoliday(hols, widget.lang.lang);
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: widget.theme.cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        contentPadding: EdgeInsets.zero,
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 20.h),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [headerColor, headerColor2],
+                  begin: Alignment.topLeft, end: Alignment.bottomRight),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+            child: Column(children: [
+              Text('$weekdayName',
+                  style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 12.sp)),
+              SizedBox(height: 4.h),
+              Text('$gDay $gregMonthName $gYear',
+                  style: TextStyle(color: Color(0xFFFFD700), fontSize: 18.sp, fontWeight: FontWeight.bold)),
+              if (hijriDayNum.isNotEmpty) ...[
+                SizedBox(height: 6.h),
+                Text('$hijriDayNum $hijriMonthName $hijriYearStr H',
+                    style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 12.sp)),
+              ],
+            ]),
+          ),
+          Padding(
+            padding: EdgeInsets.all(20.w),
+            child: holidayName != null
+                ? Row(children: [
+                    const Text('⭐', style: TextStyle(fontSize: 18)),
+                    SizedBox(width: 8.w),
+                    Expanded(child: Text(holidayName,
+                        style: TextStyle(color: widget.theme.textColor, fontSize: 14.sp, fontWeight: FontWeight.w600))),
+                  ])
+                : Text(
+                    {'en':'No Islamic holiday on this day','th':'ไม่มีวันสำคัญอิสลามในวันนี้','ms':'Tiada hari kebesaran Islam','id':'Tidak ada hari besar Islam','ar':'لا توجد مناسبة إسلامية','ur':'اس دن کوئی اسلامی تہوار نہیں','bn':'এই দিনে কোনো ইসলামিক উৎসব নেই'}[widget.lang.lang]
+                        ?? 'No Islamic holiday on this day',
+                    style: TextStyle(color: widget.theme.subTextColor, fontSize: 13.sp)),
+          ),
+        ]),
+        actionsPadding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK', style: TextStyle(color: widget.theme.iconColor, fontWeight: FontWeight.w600))),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = widget.theme.isDark;
@@ -744,7 +993,9 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
 
     // Build dayMap from calendar data
     final Map<int, Map<String, dynamic>> dayMap = {};
-    Set<int> holidayDays = {};
+    // วันสำคัญในเดือนนี้ทั้งหมด (day -> ชื่อวันสำคัญที่แปลแล้ว) ใช้ทำลิสต์
+    // "วันสำคัญเดือนนี้" ด้านล่างตาราง ให้หน้าปฏิทินเต็มมีประโยชน์มากขึ้น
+    final Map<int, String> holidaysThisMonth = {};
     if (_calendarData != null) {
       for (final day in _calendarData!) {
         final g = day['gregorian'] as Map<String, dynamic>? ?? {};
@@ -753,10 +1004,14 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
           dayMap[gd] = day;
           final h = day['hijri'] as Map<String, dynamic>? ?? {};
           final hols = h['holidays'] as List<dynamic>? ?? [];
-          if (hols.isNotEmpty) holidayDays.add(gd);
+          if (hols.isNotEmpty) {
+            final name = IslamicCalendarService.getIslamicHoliday(hols, widget.lang.lang);
+            if (name != null) holidaysThisMonth[gd] = name;
+          }
         }
       }
     }
+    final holidayDays = holidaysThisMonth.keys.toSet();
 
     // Get hijri info for displayed month
     String hijriMonthName = '';
@@ -768,23 +1023,35 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
       hijriYear = h['year']?.toString() ?? '';
     }
 
-    final monthNames = {
-      'en': ['January','February','March','April','May','June','July','August','September','October','November','December'],
-      'th': ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
-      'ms': ['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'],
-      'id': ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
-      'ar': ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
-      'ur': ['جنوری','فروری','مارچ','اپریل','مئی','جون','جولائی','اگست','ستمبر','اکتوبر','نومبر','دسمبر'],
-      'bn': ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'],
-    };
-    final langMonths = monthNames[widget.lang.lang] ?? monthNames['en']!;
-    final gregMonthName = langMonths[_displayMonth.month - 1];
+    // ── ใช้ service กลางแทน map ชื่อเดือนที่ hardcode ซ้ำในไฟล์นี้ก่อนหน้า ──
+    final gregMonthName = IslamicCalendarService.getGregorianMonthName(_displayMonth.month, widget.lang.lang);
     final gregYear = _displayMonth.year.toString();
 
     final firstDay = DateTime(_displayMonth.year, _displayMonth.month, 1);
     final startOffset = firstDay.weekday % 7;
     final daysInMonth = DateTime(_displayMonth.year, _displayMonth.month + 1, 0).day;
-    const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    // ── ตัวย่อวันในสัปดาห์ตามภาษาปัจจุบัน (แทน hardcode ['S','M','T','W','T','F','S']
+    // ที่ทำให้หัวตารางไม่เปลี่ยนภาษาตามแอปมาก่อนหน้านี้) ──
+    final dayLabels = IslamicCalendarService.getWeekdayShortLabels(widget.lang.lang);
+
+    // ── เดือนฮิจเราะห์ไม่ยาวพอดีเท่าเดือนเกรกอเรียน (29-30 วัน vs 28-31 วัน)
+    // ทำให้บางวันต้น/ท้ายเดือนในตารางนี้ อาจเป็นคนละเดือนฮิจเราะห์กับที่โชว์
+    // อยู่ในหัวข้อ (hijriMonthName) ถ้าไม่มีสัญญาณบอก user จะงงว่าทำไมเลขวัน
+    // ฮิจเราะห์เด้งจาก 29 กลับไป 1 กลางตาราง — เลยหาให้ว่าวันไหนเป็น "คนละเดือน"
+    // กับเดือนหลัก และวันไหนคือจุดเริ่มต้นของเดือนใหม่พอดี (ใส่ label ตรงนั้น)
+    final String primaryHijriMonthEn = dayMap[15] != null
+        ? ((dayMap[15]!['hijri'] as Map?)?['month']?['en'] as String? ?? '')
+        : '';
+    final Map<int, String> monthTransitionLabels = {}; // day -> ชื่อเดือนฮิจเราะห์ใหม่ที่แปลแล้ว
+    String? prevHijriMonthEn;
+    for (int d = 1; d <= daysInMonth; d++) {
+      final mEn = (dayMap[d]?['hijri'] as Map?)?['month']?['en'] as String? ?? '';
+      if (mEn.isEmpty) continue;
+      if (prevHijriMonthEn != null && mEn != prevHijriMonthEn) {
+        monthTransitionLabels[d] = IslamicCalendarService.getHijriMonthName(mEn, widget.lang.lang);
+      }
+      prevHijriMonthEn = mEn;
+    }
 
     return DraggableScrollableSheet(
       initialChildSize: 0.75,
@@ -801,6 +1068,188 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
             width: 40.w, height: 4.h,
             decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r)))),
 
+          // ── ปุ่มสลับมุมมอง เกรกอเรียน / ฮิจเราะห์ ──
+          // แก้ปัญหาเดือนคาบเกี่ยว: มุมมองฮิจเราะห์จะโชว์ครบ 1 เดือนฮิจเราะห์
+          // เป๊ะๆ ไม่มีเดือนอื่นปนมาเลย ให้ user เลือกดูแบบไหนก็ได้ตามสะดวก
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: Container(
+              padding: EdgeInsets.all(3.w),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0D2E1A) : const Color(0xFFE8F5E9),
+                borderRadius: BorderRadius.circular(10.r)),
+              child: Row(children: [
+                Expanded(child: _viewToggleButton(
+                  label: {'en':'Gregorian','th':'เกรกอเรียน','ms':'Gregorian','id':'Masehi','ar':'ميلادي','ur':'عیسوی','bn':'গ্রেগরিয়ান'}[widget.lang.lang] ?? 'Gregorian',
+                  selected: !_isHijriView,
+                  headerColor: headerColor,
+                  onTap: () => _toggleViewMode(false),
+                )),
+                Expanded(child: _viewToggleButton(
+                  label: {'en':'Hijri','th':'ฮิจเราะห์','ms':'Hijri','id':'Hijriah','ar':'هجري','ur':'ہجری','bn':'হিজরি'}[widget.lang.lang] ?? 'Hijri',
+                  selected: _isHijriView,
+                  headerColor: headerColor,
+                  onTap: () => _toggleViewMode(true),
+                )),
+              ]),
+            ),
+          ),
+          SizedBox(height: 10.h),
+
+          if (_isHijriView) ...[
+            // ══════════════ มุมมองฮิจเราะห์ ══════════════
+            // Header with nav buttons (นับตามเดือนฮิจเราะห์)
+            Container(
+              margin: EdgeInsets.fromLTRB(16.w, 0.h, 16.w, 12.h),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [headerColor, headerColor2],
+                    begin: Alignment.topLeft, end: Alignment.bottomRight),
+                borderRadius: BorderRadius.circular(14.r)),
+              child: Row(children: [
+                GestureDetector(
+                  onTap: () => _changeHijriMonth(-1),
+                  child: Container(
+                    width: 32.w, height: 32.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8.r)),
+                    child: Icon(Icons.chevron_left, color: Colors.white, size: 20.sp))),
+                SizedBox(width: 12.w),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  if (_hijriViewData != null && _hijriViewData!.isNotEmpty)
+                    Builder(builder: (_) {
+                      final firstG = _hijriViewData!.first['gregorian'] as Map<String, dynamic>? ?? {};
+                      final lastG = _hijriViewData!.last['gregorian'] as Map<String, dynamic>? ?? {};
+                      final fMonth = int.tryParse(firstG['month']?['number']?.toString() ?? '') ?? 0;
+                      final lMonth = int.tryParse(lastG['month']?['number']?.toString() ?? '') ?? 0;
+                      final fName = fMonth > 0 ? IslamicCalendarService.getGregorianMonthName(fMonth, widget.lang.lang) : '';
+                      final lName = lMonth > 0 ? IslamicCalendarService.getGregorianMonthName(lMonth, widget.lang.lang) : '';
+                      final rangeText = fName == lName
+                          ? '$fName ${firstG['year']}'
+                          : '$fName - $lName ${lastG['year']}';
+                      return Text(rangeText,
+                          style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 11.sp));
+                    }),
+                  Text('${IslamicCalendarService.getHijriMonthNameByNumber(_hijriMonth, widget.lang.lang)} $_hijriYear H',
+                      style: TextStyle(color: Color(0xFFFFD700), fontSize: 17.sp, fontWeight: FontWeight.bold)),
+                ])),
+                if (!(_hijriMonth == _todayHijriMonth && _hijriYear == _todayHijriYear))
+                  GestureDetector(
+                    onTap: () {
+                      setState(() { _hijriMonth = _todayHijriMonth; _hijriYear = _todayHijriYear; });
+                      _loadHijriViewCalendar();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8.r)),
+                      child: Text(_todayLabel(),
+                          style: TextStyle(color: Colors.white, fontSize: 11.sp)))),
+                SizedBox(width: 8.w),
+                GestureDetector(
+                  onTap: () => _changeHijriMonth(1),
+                  child: Container(
+                    width: 32.w, height: 32.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8.r)),
+                    child: Icon(Icons.chevron_right, color: Colors.white, size: 20.sp))),
+              ]),
+            ),
+
+            // Day labels (ใช้ตัวย่อวันชุดเดียวกันทั้งสองมุมมอง)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: Row(children: List.generate(7, (i) {
+                final isFri = i == 5;
+                final isSun = i == 0;
+                return Expanded(child: Text(
+                    IslamicCalendarService.getWeekdayShortLabels(widget.lang.lang)[i],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600,
+                        color: isFri ? const Color(0xFF2E7D32) : isSun ? Colors.red.shade400 : widget.theme.subTextColor)));
+              })),
+            ),
+            SizedBox(height: 6.h),
+
+            // Grid — ครบ 1 เดือนฮิจเราะห์เป๊ะๆ ไม่มีเดือนอื่นปนมา
+            Expanded(child: _hijriViewLoading || _hijriViewData == null
+              ? Center(child: CircularProgressIndicator(color: widget.theme.iconColor, strokeWidth: 2.w))
+              : Builder(builder: (_) {
+                  final data = _hijriViewData!;
+                  final firstG = data.first['gregorian'] as Map<String, dynamic>? ?? {};
+                  final fd = int.tryParse(firstG['day']?.toString() ?? '') ?? 1;
+                  final fm = int.tryParse(firstG['month']?['number']?.toString() ?? '') ?? 1;
+                  final fy = int.tryParse(firstG['year']?.toString() ?? '') ?? DateTime.now().year;
+                  final hijriStartOffset = DateTime(fy, fm, fd).weekday % 7;
+                  final now = DateTime.now();
+
+                  return SingleChildScrollView(
+                    controller: ctrl,
+                    padding: EdgeInsets.fromLTRB(12.w, 0.h, 12.w, 20.h),
+                    child: GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 7, childAspectRatio: 1.1),
+                      itemCount: hijriStartOffset + data.length,
+                      itemBuilder: (_, idx) {
+                        if (idx < hijriStartOffset) return const SizedBox();
+                        final item = data[idx - hijriStartOffset];
+                        final h = item['hijri'] as Map<String, dynamic>? ?? {};
+                        final g = item['gregorian'] as Map<String, dynamic>? ?? {};
+                        final hijriDayNum = h['day']?.toString() ?? '${idx - hijriStartOffset + 1}';
+                        final gDayStr = g['day']?.toString() ?? '';
+                        final gMonthNum = int.tryParse(g['month']?['number']?.toString() ?? '') ?? 0;
+                        final gYear = int.tryParse(g['year']?.toString() ?? '') ?? 0;
+                        final gDayInt = int.tryParse(gDayStr) ?? 0;
+                        final isToday = gDayInt > 0 && gDayInt == now.day && gMonthNum == now.month && gYear == now.year;
+                        final hols = h['holidays'] as List<dynamic>? ?? [];
+                        final hasHoliday = hols.isNotEmpty;
+                        final weekdayIdx = (hijriStartOffset + (idx - hijriStartOffset)) % 7;
+                        final isFri = weekdayIdx == 5;
+                        final isSun = weekdayIdx == 0;
+
+                        return GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => _showDayDetail(item),
+                          child: Container(
+                            decoration: isFri
+                                ? BoxDecoration(
+                                    color: (isDark ? const Color(0xFF2ECC71) : const Color(0xFF1B5E20))
+                                        .withOpacity(isDark ? 0.06 : 0.04),
+                                    borderRadius: BorderRadius.circular(8.r))
+                                : null,
+                            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                              isToday
+                                ? Container(
+                                    width: 34.w, height: 34.h,
+                                    decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(9.r)),
+                                    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                      Text(hijriDayNum, style: TextStyle(fontSize: 11.sp, color: Colors.white, fontWeight: FontWeight.bold, height: 1.h)),
+                                      if (gDayStr.isNotEmpty)
+                                        Text('$gDayStr/$gMonthNum', style: TextStyle(fontSize: 7.sp, color: Colors.white.withOpacity(0.8), height: 1.1.h)),
+                                    ]))
+                                : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                    Text(hijriDayNum, style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600,
+                                        color: isFri ? const Color(0xFF2E7D32) : isSun ? Colors.red.shade400 : widget.theme.textColor)),
+                                    if (gDayStr.isNotEmpty)
+                                      Text('$gDayStr/$gMonthNum', style: TextStyle(fontSize: 8.sp, color: widget.theme.subTextColor, height: 1.1.h)),
+                                  ]),
+                              if (hasHoliday)
+                                Container(width: 4.w, height: 4.h, margin: EdgeInsets.only(top: 1.h),
+                                    decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle)),
+                            ]),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                })),
+          ] else ...[
+          // ══════════════ มุมมองเกรกอเรียน (ของเดิม) ══════════════
           // Header with nav buttons
           Container(
             margin: EdgeInsets.fromLTRB(16.w, 0.h, 16.w, 12.h),
@@ -837,9 +1286,8 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(8.r)),
-                    child: Text(
-                      {'en':'Today','th':'วันนี้','ms':'Hari ini','id':'Hari ini','ar':'اليوم','ur':'آج','bn':'আজ'}[widget.lang.lang] ?? 'Today',
-                      style: TextStyle(color: Colors.white, fontSize: 11.sp)))),
+                    child: Text(_todayLabel(),
+                        style: TextStyle(color: Colors.white, fontSize: 11.sp)))),
               SizedBox(width: 8.w),
               // Next button
               GestureDetector(
@@ -872,68 +1320,174 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
             : SingleChildScrollView(
                 controller: ctrl,
                 padding: EdgeInsets.fromLTRB(12.w, 0.h, 12.w, 20.h),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 7, childAspectRatio: 1.1),
-                  itemCount: startOffset + daysInMonth,
-                  itemBuilder: (_, idx) {
-                    if (idx < startOffset) return const SizedBox();
-                    final day = idx - startOffset + 1;
-                    final isToday = isCurrentMonth && day == now.day;
-                    final dayData = dayMap[day];
-                    String hijriDayNum = '';
-                    if (dayData != null) {
-                      final hMap = dayData['hijri'] as Map<String, dynamic>?;
-                      hijriDayNum = hMap?['day']?.toString() ?? '';
-                    }
-                    final hasHoliday = holidayDays.contains(day);
-                    final weekdayIdx = (startOffset + day - 1) % 7;
-                    final isFri = weekdayIdx == 5;
-                    final isSun = weekdayIdx == 0;
+                child: Column(children: [
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 7, childAspectRatio: 1.1),
+                    itemCount: startOffset + daysInMonth,
+                    itemBuilder: (_, idx) {
+                      if (idx < startOffset) return const SizedBox();
+                      final day = idx - startOffset + 1;
+                      final isToday = isCurrentMonth && day == now.day;
+                      final dayData = dayMap[day];
+                      String hijriDayNum = '';
+                      if (dayData != null) {
+                        final hMap = dayData['hijri'] as Map<String, dynamic>?;
+                        hijriDayNum = hMap?['day']?.toString() ?? '';
+                      }
+                      final hasHoliday = holidayDays.contains(day);
+                      final weekdayIdx = (startOffset + day - 1) % 7;
+                      final isFri = weekdayIdx == 5;
+                      final isSun = weekdayIdx == 0;
 
-                    return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      isToday
-                        ? Container(
-                            width: 34.w, height: 34.h,
-                            decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(9.r)),
-                            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                              Text('$day', style: TextStyle(fontSize: 11.sp, color: Colors.white, fontWeight: FontWeight.bold, height: 1.h)),
-                              if (hijriDayNum.isNotEmpty)
-                                Text(hijriDayNum, style: TextStyle(fontSize: 7.sp, color: Colors.white.withOpacity(0.8), height: 1.1.h)),
-                            ]))
-                        : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            Text('$day', style: TextStyle(fontSize: 13.sp,
-                                color: isFri ? const Color(0xFF2E7D32) : isSun ? Colors.red.shade400 : widget.theme.textColor)),
-                            if (hijriDayNum.isNotEmpty)
-                              Text(hijriDayNum, style: TextStyle(fontSize: 8.sp, color: widget.theme.subTextColor, height: 1.1.h)),
+                      // ── วันนี้อยู่คนละเดือนฮิจเราะห์กับที่โชว์ในหัวข้อไหม
+                      // (เช่น หัวบอก "รอมฎอน" แต่ 2 วันท้ายตารางเป็น "เชาวาล" ไปแล้ว)
+                      // ถ้าใช่ ทำเลขฮิจเราะห์เป็นสีเหลืองทองแทนสีปกติ ให้สังเกตง่าย
+                      // โดยไม่ต้องกดเข้าไปดูทีละวัน ──
+                      final dayHijriMonthEn = (dayData?['hijri'] as Map?)?['month']?['en'] as String? ?? '';
+                      final isOtherHijriMonth = dayHijriMonthEn.isNotEmpty &&
+                          primaryHijriMonthEn.isNotEmpty &&
+                          dayHijriMonthEn != primaryHijriMonthEn;
+                      final hijriNumColor = isOtherHijriMonth
+                          ? const Color(0xFFC9971A)
+                          : widget.theme.subTextColor;
+                      final transitionLabel = monthTransitionLabels[day];
+
+                      // ── แตะดูรายละเอียดวันนั้นได้ (ทำให้หน้าปฏิทินเต็ม
+                      // ใช้งานได้จริง ไม่ใช่แค่ดูเฉยๆ) ──
+                      return GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: dayData != null ? () => _showDayDetail(dayData) : null,
+                        child: Container(
+                          decoration: isFri
+                              ? BoxDecoration(
+                                  color: (isDark ? const Color(0xFF2ECC71) : const Color(0xFF1B5E20))
+                                      .withOpacity(isDark ? 0.06 : 0.04),
+                                  borderRadius: BorderRadius.circular(8.r))
+                              : null,
+                          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                            // ── ป้ายชื่อเดือนฮิจเราะห์ใหม่ ติดเฉพาะวันแรกที่เดือนเปลี่ยน
+                            // (ไม่ใช่ทุกวันของ "คนละเดือน" กันรก) ──
+                            if (transitionLabel != null)
+                              Container(
+                                margin: EdgeInsets.only(bottom: 1.h),
+                                padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 0.5.h),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFC9971A).withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(4.r)),
+                                child: Text(transitionLabel,
+                                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(fontSize: 6.5.sp, color: const Color(0xFFC9971A), fontWeight: FontWeight.bold)),
+                              ),
+                            isToday
+                              ? Container(
+                                  width: 34.w, height: 34.h,
+                                  decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(9.r)),
+                                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                    Text('$day', style: TextStyle(fontSize: 11.sp, color: Colors.white, fontWeight: FontWeight.bold, height: 1.h)),
+                                    if (hijriDayNum.isNotEmpty)
+                                      Text(hijriDayNum, style: TextStyle(
+                                          fontSize: 7.sp,
+                                          color: isOtherHijriMonth ? const Color(0xFFFFE28A) : Colors.white.withOpacity(0.8),
+                                          height: 1.1.h)),
+                                  ]))
+                              : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                  Text('$day', style: TextStyle(fontSize: 13.sp,
+                                      color: isFri ? const Color(0xFF2E7D32) : isSun ? Colors.red.shade400 : widget.theme.textColor)),
+                                  if (hijriDayNum.isNotEmpty)
+                                    Text(hijriDayNum, style: TextStyle(fontSize: 8.sp, color: hijriNumColor, height: 1.1.h,
+                                        fontWeight: isOtherHijriMonth ? FontWeight.bold : FontWeight.normal)),
+                                ]),
+                            if (hasHoliday)
+                              Container(width: 4.w, height: 4.h, margin: EdgeInsets.only(top: 1.h),
+                                  decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle)),
                           ]),
-                      if (hasHoliday)
-                        Container(width: 4.w, height: 4.h, margin: EdgeInsets.only(top: 1.h),
-                            decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle)),
-                    ]);
-                  },
-                ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // ── ลิสต์วันสำคัญในเดือนนี้ (ถ้ามี) ให้เห็นภาพรวมทั้งเดือน
+                  // โดยไม่ต้องไล่แตะทีละวัน ── เพิ่มความ "ใช้งานได้จริง" ให้หน้านี้
+                  if (holidaysThisMonth.isNotEmpty) ...[
+                    SizedBox(height: 16.h),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        {'en':'This month','th':'วันสำคัญเดือนนี้','ms':'Bulan ini','id':'Bulan ini','ar':'هذا الشهر','ur':'اس مہینے','bn':'এই মাসে'}[widget.lang.lang]
+                            ?? 'This month',
+                        style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: widget.theme.subTextColor)),
+                    ),
+                    SizedBox(height: 8.h),
+                    ...(holidaysThisMonth.entries.toList()..sort((a, b) => a.key.compareTo(b.key))).map((e) {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 6.h),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFD700).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10.r)),
+                          child: Row(children: [
+                            Container(
+                              width: 32.w, height: 32.h,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(8.r)),
+                              child: Text('${e.key}', style: TextStyle(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.bold))),
+                            SizedBox(width: 10.w),
+                            Expanded(child: Text(e.value,
+                                style: TextStyle(fontSize: 12.5.sp, color: widget.theme.textColor, fontWeight: FontWeight.w500))),
+                            const Text('⭐', style: TextStyle(fontSize: 14)),
+                          ]),
+                        ),
+                      );
+                    }),
+                  ],
+                ]),
               )),
+          ], // ปิด else ของมุมมองเกรกอเรียน
 
           // Legend
           Padding(
             padding: EdgeInsets.fromLTRB(16.w, 0.h, 16.w, 16.h),
-            child: Row(children: [
-              Container(width: 12.w, height: 12.h, decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(3.r))),
-              SizedBox(width: 4.w),
-              Text(
-                {'en':'Today','th':'วันนี้','ms':'Hari ini','id':'Hari ini','ar':'اليوم','ur':'آج','bn':'আজ'}[widget.lang.lang] ?? 'Today',
-                style: TextStyle(fontSize: 11.sp, color: widget.theme.subTextColor)),
-              SizedBox(width: 12.w),
-              Container(width: 6.w, height: 6.h, decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle)),
-              SizedBox(width: 4.w),
-              Text(
-                {'en':'Islamic Holiday','th':'วันสำคัญอิสลาม','ms':'Hari Kebesaran Islam','id':'Hari Besar Islam','ar':'مناسبة إسلامية','ur':'اسلامی تہوار','bn':'ইসলামিক উৎসব'}[widget.lang.lang] ?? 'Islamic Holiday',
-                style: TextStyle(fontSize: 11.sp, color: widget.theme.subTextColor)),
-            ]),
+            child: Wrap(
+              spacing: 12.w,
+              runSpacing: 6.h,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Row(mainAxisSize: MainAxisSize.min, children: [
+                  Container(width: 12.w, height: 12.h, decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(3.r))),
+                  SizedBox(width: 4.w),
+                  Text(_todayLabel(), style: TextStyle(fontSize: 11.sp, color: widget.theme.subTextColor)),
+                ]),
+                Row(mainAxisSize: MainAxisSize.min, children: [
+                  Container(width: 6.w, height: 6.h, decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle)),
+                  SizedBox(width: 4.w),
+                  Text(
+                    {'en':'Islamic Holiday','th':'วันสำคัญอิสลาม','ms':'Hari Kebesaran Islam','id':'Hari Besar Islam','ar':'مناسبة إسلامية','ur':'اسلامی تہوار','bn':'ইসলামিক উৎসব'}[widget.lang.lang] ?? 'Islamic Holiday',
+                    style: TextStyle(fontSize: 11.sp, color: widget.theme.subTextColor)),
+                ]),
+                // ── คำอธิบายสีเหลืองทอง: วันที่อยู่คนละเดือนฮิจเราะห์กับหัวข้อ
+                // (จุดที่ user เคยงงว่าทำไมเลขฮิจเราะห์เด้งจาก 29 กลับไป 1)
+                // ไม่เกี่ยวข้องในมุมมองฮิจเราะห์ (ที่นั่นมีแต่เดือนเดียวเป๊ะๆ) ──
+                if (!_isHijriView)
+                  Row(mainAxisSize: MainAxisSize.min, children: [
+                    Text('12', style: TextStyle(fontSize: 10.sp, color: const Color(0xFFC9971A), fontWeight: FontWeight.bold)),
+                    SizedBox(width: 4.w),
+                    Flexible(child: Text(
+                      {'en':'Different Hijri month','th':'คนละเดือนฮิจเราะห์','ms':'Bulan Hijri lain','id':'Bulan Hijriah lain','ar':'شهر هجري مختلف','ur':'مختلف ہجری مہینہ','bn':'ভিন্ন হিজরি মাস'}[widget.lang.lang]
+                          ?? 'Different Hijri month',
+                      style: TextStyle(fontSize: 11.sp, color: widget.theme.subTextColor))),
+                  ]),
+              ],
+            ),
           ),
+
+          // ── เผื่อพื้นที่ด้านล่างให้ gesture bar / home indicator ──
+          // (แผ่นชีทนี้ maxChildSize สูงถึง 0.92 ของจอ มีโอกาสให้ legend
+          // แถวสุดท้ายไปติดขอบจอในเครื่องที่ใช้ gesture navigation)
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 8.h),
         ]),
       ),
     );
@@ -946,18 +1500,35 @@ class _NextPrayerCard extends StatelessWidget {
   final bool isDark;
   const _NextPrayerCard({required this.prayerName, required this.time, required this.timeUntil, required this.isDark});
 
+  // ── เลือกภาพพื้นหลังตามชื่อละหมาดที่กำลังจะถึง (เหมือนหน้า Prayer Times) ──
+  // ฟัจร์/มัฆริบ = โทนรุ่งอรุณ-พลบค่ำ, ซุฮร์/อัศร์ = โทนกลางวัน,
+  // อิชาอ์ (และกรณีอื่นๆ) = ภาพเดิมที่มีพระจันทร์
+  String _getBackground(String name) {
+    switch (name) {
+      case 'Fajr':
+      case 'Maghrib':
+        return 'image/prayer/sunrise_sunset.png';
+      case 'Dhuhr':
+      case 'Asr':
+        return 'image/prayer/day.png';
+      default:
+        return 'image/prayer/prayer_widget_bg.png';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       // สัดส่วนเดียวกับไฟล์ prayer_widget_bg.png จริง (1920x691)
       // กันไม่ให้ BoxFit.cover ครอปภาพผิดสัดส่วนไปจากที่ออกแบบไว้ใน Figma
-      aspectRatio: 1920 / 620,
+      aspectRatio: 1920 / 621,
       child: Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        // ใช้ภาพพื้นหลังที่ออกแบบเอง (มัสยิด+พระจันทร์เสี้ยว) แทน gradient เดิม
-        image: const DecorationImage(
-          image: AssetImage('image/prayer/prayer_widget_bg.png'),
+        // ใช้ภาพพื้นหลังที่ออกแบบเอง (มัสยิด+พระจันทร์เสี้ยว/รุ่งอรุณ/กลางวัน
+        // แล้วแต่ละหมาดถัดไป) แทน gradient เดิม
+        image: DecorationImage(
+          image: AssetImage(_getBackground(prayerName)),
           fit: BoxFit.cover,
         ),
         borderRadius: BorderRadius.circular(18.r),
@@ -1028,7 +1599,7 @@ class _FeatureCard extends StatelessWidget {
           color: theme.cardColor,
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: theme.isDark ? const Color.fromARGB(255, 36, 36, 36) : c.withOpacity(0.15)),
+            color: theme.isDark ? ThemeService.darkBorder : c.withOpacity(0.15)),
           boxShadow: theme.isDark ? null : [
             BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
         ),

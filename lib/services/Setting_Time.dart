@@ -11,6 +11,7 @@ import '../services/language_service.dart';
 import '../services/notification_service.dart';
 import '../services/azan_service.dart';
 import '../services/location_service.dart';
+import '../services/quran_font_service.dart';
 
 // ── ตัวช่วยฟอร์แมตเวลาเป็น mm:ss สำหรับ progress bar ──────────
 String _fmtDuration(Duration d) {
@@ -170,7 +171,8 @@ class _SettingsPageState extends State<SettingsPage> {
   final _lang = LanguageService();
 
   // ── ค่าสรุปสั้นๆ ใต้แต่ละหมวด (โชว์ให้กวาดตาดูได้เร็วโดยไม่ต้องกดเข้าไป) ──
-  double _quranFontSize = 24.0;
+  double _quranFontSize = kQuranFontSizeDefault;
+  String _quranFontId = kQuranFontDefault;
   String _azanName = '';
   String? _locationName;
   String _chatbotSubtitle = '';
@@ -199,7 +201,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final userKey = prefs.getString('user_gemini_api_key');
     if (!mounted) return;
     setState(() {
-      _quranFontSize = prefs.getDouble('quran_font_size') ?? 24.0;
+      _quranFontSize = prefs.getDouble(kQuranFontSizePrefKey) ?? kQuranFontSizeDefault;
+      _quranFontId = prefs.getString(kQuranFontPrefKey) ?? kQuranFontDefault;
       _azanName = AzanService.getAzanById(azanId)[_lang.isThai ? 'nameTh' : 'name'] ?? '';
       _locationName = savedLocation?['name'] as String?;
       _chatbotSubtitle = (userKey != null && userKey.trim().isNotEmpty)
@@ -235,10 +238,19 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Row(children: [
         Container(
           width: 56.w, height: 56.h,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(16.r)),
-          child: Icon(Icons.mosque, color: Color(0xFFFFD700), size: 30.sp),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16.r)),
+          clipBehavior: Clip.antiAlias,
+          child: Image.asset(
+            'image/Icon.png',
+            fit: BoxFit.cover,
+            // เผื่อ path ไม่ตรง ไม่ให้แอปพังหรือโชว์ broken image icon —
+            // fallback กลับไปใช้ไอคอนมัสยิดเดิมแทน (พร้อมพื้นหลังจางๆ
+            // เฉพาะตอน fallback เท่านั้น ไม่ใช่ตอนโชว์ไอคอนแอปจริง)
+            errorBuilder: (_, __, ___) => Container(
+              color: Colors.white.withOpacity(0.15),
+              child: Icon(Icons.mosque, color: Color(0xFFFFD700), size: 30.sp),
+            ),
+          ),
         ),
         SizedBox(width: 16.w),
         Expanded(
@@ -276,8 +288,8 @@ class _SettingsPageState extends State<SettingsPage> {
         ? '${langInfo['native']} • ${_theme.isDark ? 'โหมดมืด' : 'โหมดสว่าง'}'
         : '${langInfo['native']} • ${_theme.isDark ? 'Dark' : 'Light'} mode';
     final quranSubtitle = _lang.isThai
-        ? 'ขนาดตัวอักษร ${_quranFontSize.toInt()}'
-        : 'Font size ${_quranFontSize.toInt()}';
+        ? '${getQuranFont(_quranFontId).label} • ขนาด ${_quranFontSize.toInt()}'
+        : '${getQuranFont(_quranFontId).label} • Size ${_quranFontSize.toInt()}';
     final prayerSubtitle = [
       _locationName ?? (_lang.isThai ? 'อัตโนมัติ (GPS)' : 'Automatic (GPS)'),
       if (_azanName.isNotEmpty) _azanName,
@@ -501,7 +513,8 @@ class _QuranSettingsPage extends StatefulWidget {
 class _QuranSettingsPageState extends State<_QuranSettingsPage> {
   final _theme = ThemeService();
   final _lang = LanguageService();
-  double _quranFontSize = 24.0;
+  double _quranFontSize = kQuranFontSizeDefault;
+  String _selectedFont = kQuranFontDefault;
 
   // null = ยังไม่ได้ตั้งค่าเอง ใช้ภาษาแอปเป็นค่าเริ่มต้น (พฤติกรรมเดิม)
   String? _translationLang;
@@ -514,25 +527,107 @@ class _QuranSettingsPageState extends State<_QuranSettingsPage> {
     _theme.addListener(_rebuild);
     _lang.addListener(_rebuild);
     _loadFontSize();
+    _loadFontFamily();
     _loadTranslationLang();
   }
 
   Future<void> _loadFontSize() async {
     final prefs = await SharedPreferences.getInstance();
     if (mounted) {
-      setState(() => _quranFontSize = prefs.getDouble('quran_font_size') ?? 24.0);
+      setState(() => _quranFontSize = prefs.getDouble(kQuranFontSizePrefKey) ?? kQuranFontSizeDefault);
     }
   }
 
   Future<void> _saveFontSize(double value) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble('quran_font_size', value);
+    await prefs.setDouble(kQuranFontSizePrefKey, value);
+  }
+
+  Future<void> _loadFontFamily() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      final saved = prefs.getString(kQuranFontPrefKey) ?? kQuranFontDefault;
+      setState(() => _selectedFont = kQuranFonts.any((f) => f.id == saved) ? saved : kQuranFontDefault);
+    }
+  }
+
+  Future<void> _saveFontFamily(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(kQuranFontPrefKey, id);
+  }
+
+  // ── เลือกรูปแบบตัวอักษร: พรีวิวคำว่า "بِسْمِ اللَّهِ" ในฟอนต์จริงก่อนเลือก ──
+  void _showFontFamilySheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _theme.cardColor,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      builder: (_) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 12.h),
+          Container(width: 40.w, height: 4.h,
+              decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r))),
+          SizedBox(height: 12.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Text(_lang.isThai ? 'รูปแบบตัวอักษร' : 'Font Style',
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: _theme.textColor)),
+          ),
+          SizedBox(height: 8.h),
+          ...kQuranFonts.map((font) {
+            final isSelected = _selectedFont == font.id;
+            return ListTile(
+              title: Text(
+                'بِسْمِ اللَّهِ',
+                textDirection: TextDirection.rtl,
+                style: font.style(fontSize: 22.sp, color: _theme.textColor),
+              ),
+              subtitle: Padding(
+                padding: EdgeInsets.only(top: 4.h),
+                child: Text('${font.label} · ${font.description}',
+                    style: TextStyle(color: _theme.subTextColor, fontSize: 12.sp,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+              ),
+              trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
+              onTap: () async {
+                await _saveFontFamily(font.id);
+                if (mounted) setState(() => _selectedFont = font.id);
+                if (context.mounted) Navigator.pop(context);
+              },
+            );
+          }),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+        ],
+      ),
+    );
   }
 
   Future<void> _loadTranslationLang() async {
     final prefs = await SharedPreferences.getInstance();
     if (mounted) {
       setState(() => _translationLang = prefs.getString('quran_translation_lang'));
+    }
+  }
+
+  // ── รีเซ็ตทุกอย่างในหน้านี้กลับเป็นค่าเริ่มต้น ──────────────────
+  // (ขนาดฟอนต์, รูปแบบฟอนต์, ภาษาคำแปล → กลับไปตามภาษาแอป)
+  Future<void> _resetToDefault() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(kQuranFontSizePrefKey, kQuranFontSizeDefault);
+    await prefs.setString(kQuranFontPrefKey, kQuranFontDefault);
+    await prefs.remove('quran_translation_lang');
+    if (mounted) {
+      setState(() {
+        _quranFontSize = kQuranFontSizeDefault;
+        _selectedFont = kQuranFontDefault;
+        _translationLang = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(_lang.isThai ? 'รีเซ็ตเป็นค่าเริ่มต้นแล้ว' : 'Reset to default'),
+        backgroundColor: const Color(0xFF1B5E20),
+      ));
     }
   }
 
@@ -621,6 +716,7 @@ class _QuranSettingsPageState extends State<_QuranSettingsPage> {
     final subColor = _theme.subTextColor;
     final green = _theme.iconColor;
     final divColor = _theme.isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA);
+    final currentFont = getQuranFont(_selectedFont);
 
     return Scaffold(
       backgroundColor: bg,
@@ -653,8 +749,9 @@ class _QuranSettingsPageState extends State<_QuranSettingsPage> {
                 ),
               ]),
               SizedBox(height: 8.h),
+              // พรีวิวใช้ทั้งฟอนต์และขนาดจริงที่จะไปแสดงในหน้า Surah Detail
               Center(child: Text('بِسْمِ ٱللَّهِ',
-                  style: TextStyle(fontSize: _quranFontSize, color: textColor, height: 1.8.h),
+                  style: currentFont.style(fontSize: _quranFontSize, color: textColor),
                   textDirection: TextDirection.rtl)),
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
@@ -664,7 +761,8 @@ class _QuranSettingsPageState extends State<_QuranSettingsPage> {
                   overlayColor: green.withOpacity(0.1),
                 ),
                 child: Slider(
-                  value: _quranFontSize, min: 16, max: 36, divisions: 10,
+                  value: _quranFontSize,
+                  min: kQuranFontSizeMin, max: kQuranFontSizeMax, divisions: 10,
                   onChanged: (v) => setState(() => _quranFontSize = v),
                   // apply ทันทีตอนปล่อยนิ้ว ไม่ต้อง Save
                   onChangeEnd: (v) => _saveFontSize(v),
@@ -675,6 +773,15 @@ class _QuranSettingsPageState extends State<_QuranSettingsPage> {
                 Text('A', style: TextStyle(fontSize: 20.sp, color: subColor, fontWeight: FontWeight.bold)),
               ]),
             ]),
+          ),
+          _buildNavRow(
+            icon: Icons.text_fields,
+            iconColor: Colors.deepOrange,
+            label: _lang.isThai ? 'รูปแบบตัวอักษร' : 'Font Style',
+            value: currentFont.label,
+            textColor: textColor,
+            subColor: subColor,
+            onTap: _showFontFamilySheet,
           ),
         ]),
 
@@ -694,6 +801,21 @@ class _QuranSettingsPageState extends State<_QuranSettingsPage> {
             onTap: _showTranslationLangSheet,
           ),
         ]),
+
+        Padding(
+          padding: EdgeInsets.fromLTRB(16.w, 20.h, 16.w, 8.h),
+          child: OutlinedButton.icon(
+            onPressed: _resetToDefault,
+            icon: Icon(Icons.restore, color: Colors.red.shade400, size: 18.sp),
+            label: Text(_lang.isThai ? 'รีเซ็ตเป็นค่าเริ่มต้น' : 'Reset to Default',
+                style: TextStyle(color: Colors.red.shade400, fontWeight: FontWeight.w500)),
+            style: OutlinedButton.styleFrom(
+              minimumSize: Size(double.infinity, 48.h),
+              side: BorderSide(color: Colors.red.shade300),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+            ),
+          ),
+        ),
       ]),
     );
   }
@@ -715,7 +837,7 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
   final _lang = LanguageService();
 
   String _selectedTimezone = 'Asia/Bangkok';
-  String _selectedMethod = '16';
+  String _selectedMethod = '3'; // Default: Muslim World League
   bool _notificationEnabled = true;
   String _selectedAzanId = 'azan_makkah';
   String? _selectedLocationName;
@@ -782,7 +904,7 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
     if (!mounted) return;
     setState(() {
       _selectedTimezone = prefs.getString('timezone') ?? 'Asia/Bangkok';
-      _selectedMethod = prefs.getString('method') ?? '16';
+      _selectedMethod = prefs.getString('method') ?? '3'; // Default: Muslim World League
       _notificationEnabled = prefs.getBool('notification') ?? true;
       _selectedAzanId = azanId;
       _selectedLocationName = savedLocation?['name'] as String?;

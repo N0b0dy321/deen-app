@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/quran_database.dart';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
+import '../services/quran_font_service.dart';
 
 // ── แปลงเลขอารบิก 0-9 (Western) เป็นเลขอินเดีย-อารบิก (Arabic-Indic) ──
 // ใช้กับเลขอายะห์ในสัญลักษณ์ปิดท้ายอายะห์ ให้ตรงกับรูปแบบมุศฮัฟจริง
@@ -22,8 +23,9 @@ String _toArabicIndic(int number) {
 class _AyahEndMarker extends StatelessWidget {
   final int verseNumber;
   final Color accentColor;
+  final QuranFontOption fontOption;
 
-  const _AyahEndMarker({required this.verseNumber, required this.accentColor});
+  const _AyahEndMarker({required this.verseNumber, required this.accentColor, required this.fontOption});
 
   @override
   Widget build(BuildContext context) {
@@ -40,11 +42,11 @@ class _AyahEndMarker extends StatelessWidget {
         child: Text(
           _toArabicIndic(verseNumber),
           textDirection: TextDirection.rtl,
-          style: TextStyle(
-            color: accentColor,
+          style: fontOption.builder(
             fontSize: 11.sp,
-            fontWeight: FontWeight.bold,
-            height: 1.h,
+            height: 1.0,
+            color: accentColor,
+            weight: FontWeight.bold,
           ),
         ),
       ),
@@ -66,6 +68,8 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
   String errorMessage = '';
   String _selectedLang = 'en';
   String _selectedReciter = 'ar.alafasy';
+  String _selectedFont = kQuranFontDefault;
+  double _quranFontSize = kQuranFontSizeDefault;
   final _theme = ThemeService();
   final _lang = LanguageService();
 
@@ -130,14 +134,79 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
     final prefs = await SharedPreferences.getInstance();
     final savedTranslationLang = prefs.getString('quran_translation_lang');
     final resolvedLang = savedTranslationLang ?? _lang.lang;
+    final savedFont = prefs.getString(kQuranFontPrefKey) ?? kQuranFontDefault;
+    final savedFontSize = prefs.getDouble(kQuranFontSizePrefKey) ?? kQuranFontSizeDefault;
 
     if (mounted) {
       setState(() {
         _selectedLang = _languages.containsKey(resolvedLang) ? resolvedLang : 'en';
+        _selectedFont = kQuranFonts.any((f) => f.id == savedFont) ? savedFont : kQuranFontDefault;
+        _quranFontSize = savedFontSize.clamp(kQuranFontSizeMin, kQuranFontSizeMax);
       });
     }
 
     loadVerses();
+  }
+
+  void _changeFont(String fontId) async {
+    if (fontId == _selectedFont) return;
+    setState(() => _selectedFont = fontId);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(kQuranFontPrefKey, fontId);
+  }
+
+  // ── Font Picker ─────────────────────────────────────
+  void _showFontPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: BoxDecoration(
+          color: _theme.cardColor,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 12.h),
+              Container(width: 40.w, height: 4.h,
+                decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r))),
+              SizedBox(height: 16.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Text('เลือกฟอนต์อัลกุรอาน / Quran Font',
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: _theme.textColor)),
+              ),
+              SizedBox(height: 8.h),
+              ...kQuranFonts.map((font) {
+                final isSelected = _selectedFont == font.id;
+                return ListTile(
+                  title: Text(
+                    'بِسْمِ اللَّهِ',
+                    textDirection: TextDirection.rtl,
+                    style: font.style(fontSize: 22.sp, color: _theme.textColor),
+                  ),
+                  subtitle: Padding(
+                    padding: EdgeInsets.only(top: 4.h),
+                    child: Text('${font.label} · ${font.description}',
+                      style: TextStyle(color: _theme.subTextColor, fontSize: 12.sp,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                  ),
+                  trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
+                  onTap: () {
+                    _changeFont(font.id);
+                    Navigator.pop(context);
+                  },
+                );
+              }),
+              SizedBox(height: 16.h),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -266,41 +335,44 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
           color: _theme.cardColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(height: 12.h),
-            Container(width: 40.w, height: 4.h,
-              decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r))),
-            SizedBox(height: 16.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Text('เลือกนักอ่าน / Reciter',
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: _theme.textColor)),
-            ),
-            SizedBox(height: 8.h),
-            ..._reciters.map((reciter) {
-              final isSelected = _selectedReciter == reciter['id'];
-              return ListTile(
-                leading: Container(
-                  width: 36.w, height: 36.h,
-                  decoration: BoxDecoration(
-                    color: _theme.iconColor.withOpacity(0.12),
-                    shape: BoxShape.circle),
-                  child: Icon(Icons.record_voice_over, color: _theme.iconColor, size: 18.sp)),
-                title: Text(reciter['name']!,
-                  style: TextStyle(color: _theme.textColor,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
-                trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
-                onTap: () {
-                  setState(() => _selectedReciter = reciter['id']!);
-                  _stopAudio();
-                  Navigator.pop(context);
-                },
-              );
-            }),
-            SizedBox(height: 16.h),
-          ],
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 12.h),
+              Container(width: 40.w, height: 4.h,
+                decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2.r))),
+              SizedBox(height: 16.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Text('เลือกนักอ่าน / Reciter',
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: _theme.textColor)),
+              ),
+              SizedBox(height: 8.h),
+              ..._reciters.map((reciter) {
+                final isSelected = _selectedReciter == reciter['id'];
+                return ListTile(
+                  leading: Container(
+                    width: 36.w, height: 36.h,
+                    decoration: BoxDecoration(
+                      color: _theme.iconColor.withOpacity(0.12),
+                      shape: BoxShape.circle),
+                    child: Icon(Icons.record_voice_over, color: _theme.iconColor, size: 18.sp)),
+                  title: Text(reciter['name']!,
+                    style: TextStyle(color: _theme.textColor,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                  trailing: isSelected ? Icon(Icons.check_circle, color: _theme.iconColor) : null,
+                  onTap: () {
+                    setState(() => _selectedReciter = reciter['id']!);
+                    _stopAudio();
+                    Navigator.pop(context);
+                  },
+                );
+              }),
+              SizedBox(height: 16.h),
+            ],
+          ),
         ),
       ),
     );
@@ -316,6 +388,12 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          // ปุ่มเลือกฟอนต์
+          IconButton(
+            icon: const Icon(Icons.text_fields, color: Colors.white),
+            onPressed: _showFontPicker,
+            tooltip: 'เลือกฟอนต์',
+          ),
           // ปุ่มเลือกนักอ่าน
           IconButton(
             icon: const Icon(Icons.record_voice_over, color: Colors.white),
@@ -398,7 +476,9 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
 
                   Expanded(
                     child: ListView.builder(
-                      padding: EdgeInsets.all(12.w),
+                      padding: EdgeInsets.fromLTRB(
+                        12.w, 12.w, 12.w, 12.w + MediaQuery.of(context).padding.bottom,
+                      ),
                       itemCount: verses.length,
                       itemBuilder: (context, index) {
                         final verse = verses[index];
@@ -454,14 +534,17 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                             ]),
 
                             SizedBox(height: 12.h),
-                            // ข้อความอาหรับ + สัญลักษณ์ปิดท้ายอายะห์แบบดั้งเดิม (วงกลมเลขอายะห์)
+                            // ข้อความอาหรับ (ฟอนต์ Amiri) + สัญลักษณ์ปิดท้ายอายะห์แบบดั้งเดิม (วงกลมเลขอายะห์)
                             // ต่อท้ายด้วย WidgetSpan เพื่อให้อยู่ในบรรทัดเดียวกับข้อความ
                             // และอยู่ตำแหน่งท้ายอายะห์ตามทิศทาง RTL (ฝั่งซ้ายของบรรทัด)
                             Text.rich(
                               TextSpan(children: [
                                 TextSpan(
                                   text: verse['text_uthmani'] ?? '',
-                                  style: TextStyle(fontSize: 24.sp, height: 2.0.h, color: _theme.textColor),
+                                  style: getQuranFont(_selectedFont).style(
+                                    fontSize: _quranFontSize.sp,
+                                    color: _theme.textColor,
+                                  ),
                                 ),
                                 WidgetSpan(child: SizedBox(width: 6.w)),
                                 WidgetSpan(
@@ -469,6 +552,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                                   child: _AyahEndMarker(
                                     verseNumber: verseNumber,
                                     accentColor: _theme.iconColor,
+                                    fontOption: getQuranFont(_selectedFont),
                                   ),
                                 ),
                               ]),
@@ -500,64 +584,67 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
       orElse: () => {'name': ''},
     )['name']!;
 
-    return Container(
-      height: 72.h,
-      decoration: BoxDecoration(
-        color: _theme.isDark ? const Color(0xFF0D3B1E) : const Color(0xFF1B5E20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, -2))],
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: 72.h,
+        decoration: BoxDecoration(
+          color: _theme.isDark ? const Color(0xFF0D3B1E) : const Color(0xFF1B5E20),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, -2))],
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        child: Row(children: [
+          // Icon
+          Container(
+            width: 40.w, height: 40.h,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8.r)),
+            child: Icon(Icons.menu_book, color: Color(0xFFFFD700), size: 20.sp)),
+          SizedBox(width: 12.w),
+
+          // ข้อมูล
+          Expanded(child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('${widget.surahName} · Ayah $_playingVerseNumber',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.sp),
+                maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(reciterName,
+                style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11.sp)),
+            ])),
+
+          // Controls
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            icon: Icon(Icons.skip_previous, color: Colors.white, size: 24.sp),
+            onPressed: () {
+              if (_playingVerseNumber != null && _playingVerseNumber! > 1) {
+                _playVerse(_playingVerseNumber! - 1);
+              }
+            },
+          ),
+          GestureDetector(
+            onTap: _stopAudio,
+            child: Container(
+              width: 36.w, height: 36.h,
+              decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle),
+              child: Icon(Icons.stop, color: Color(0xFF1B5E20), size: 20.sp)),
+          ),
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            icon: Icon(Icons.skip_next, color: Colors.white, size: 24.sp),
+            onPressed: () {
+              if (_playingVerseNumber != null && _playingVerseNumber! < verses.length) {
+                _playVerse(_playingVerseNumber! + 1);
+              }
+            },
+          ),
+        ]),
       ),
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Row(children: [
-        // Icon
-        Container(
-          width: 40.w, height: 40.h,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(8.r)),
-          child: Icon(Icons.menu_book, color: Color(0xFFFFD700), size: 20.sp)),
-        SizedBox(width: 12.w),
-
-        // ข้อมูล
-        Expanded(child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${widget.surahName} · Ayah $_playingVerseNumber',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.sp),
-              maxLines: 1, overflow: TextOverflow.ellipsis),
-            Text(reciterName,
-              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11.sp)),
-          ])),
-
-        // Controls
-        IconButton(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-          icon: Icon(Icons.skip_previous, color: Colors.white, size: 24.sp),
-          onPressed: () {
-            if (_playingVerseNumber != null && _playingVerseNumber! > 1) {
-              _playVerse(_playingVerseNumber! - 1);
-            }
-          },
-        ),
-        GestureDetector(
-          onTap: _stopAudio,
-          child: Container(
-            width: 36.w, height: 36.h,
-            decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle),
-            child: Icon(Icons.stop, color: Color(0xFF1B5E20), size: 20.sp)),
-        ),
-        IconButton(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-          icon: Icon(Icons.skip_next, color: Colors.white, size: 24.sp),
-          onPressed: () {
-            if (_playingVerseNumber != null && _playingVerseNumber! < verses.length) {
-              _playVerse(_playingVerseNumber! + 1);
-            }
-          },
-        ),
-      ]),
     );
   }
 }

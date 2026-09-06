@@ -2,6 +2,30 @@ import 'package:flutter/material.dart';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
 
+// ── ลายมุมตกแต่งหัวข้อ (ลายดาวทอง export จาก Canva แบบโปร่งใส) ──
+// ใช้ asset เดียว 4 มุม พลิกด้วย Transform แทนที่จะมีไฟล์แยกต่อมุม
+// ขนาด/ตำแหน่งผ่านการทดสอบประกอบภาพจริงก่อนแล้ว (เยื้องเข้ามา 6px ไม่ล้นขอบ)
+const String kHeaderCornerAsset = 'image/decor/corner_star.png';
+// ── ลายดอกไม้คั่น (export จาก Canva แบบโปร่งใส) ใช้คั่นระหว่างกล่องอารบิก
+// กับกล่องเนื้อหาในหน้าเนื้อหาบทเรียน ──
+const String kFlowerDividerAsset = 'image/decor/flower_divider.png';
+
+List<Widget> headerCornerDecor({double size = 75}) {
+  Widget cornerImg() => Image.asset(kHeaderCornerAsset, width: size, height: size,
+      errorBuilder: (_, __, ___) => const SizedBox.shrink());
+  Widget flipped(double sx, double sy, Widget child) => Transform(
+      alignment: Alignment.center,
+      transform: Matrix4.diagonal3Values(sx, sy, 1),
+      child: child);
+
+  return [
+    Positioned(top: 6, left: 6, child: cornerImg()),
+    Positioned(top: 6, right: 6, child: flipped(-1, 1, cornerImg())),
+    Positioned(bottom: 6, left: 6, child: flipped(1, -1, cornerImg())),
+    Positioned(bottom: 6, right: 6, child: flipped(-1, -1, cornerImg())),
+  ];
+}
+
 const Map<String, Map<String, List<String>>> kLessonTitleTranslations = {
   'ms': {
     'pillars': ['Syahadah (Pengakuan Iman)', 'Solat (Sembahyang)', 'Zakat (Derma)', 'Sawm (Puasa)', 'Haji (Ziarah)'],
@@ -770,22 +794,62 @@ class LessonData {
       'no': 4, 'titleEn': 'Tarawih Prayer', 'titleTh': 'ละหมาดตะรอวีห์',
       'arabic': 'وَمِنَ اللَّيْلِ فَتَهَجَّدْ بِهِ نَافِلَةً لَّكَ',
       'contentEn': 'Tarawih is the special night prayer performed in Ramadan.\n\nRulings:\n• Sunnah Muakkadah\n• Performed in congregation at mosque\n• After Isha prayer and before Witr\n• Time: After Isha until Fajr\n\nNumber of rakahs:\n• Most common: 20 rakahs (Hanafi, Maliki, Shafi)\n• Also valid: 8 rakahs (based on some hadith)\n• Witr: 1 or 3 rakahs at end\n\nMethod:\n• Prayed in sets of 2 rakahs\n• Short rest (tarwihah) between sets\n• Complete Quran recitation in Ramadan (Khatam)\n\nVirtues:\n• "Whoever prays Ramadan nights with faith and seeking reward, his past sins are forgiven" (Bukhari)',
-      'contentTh': 'ตะรอวีห์คือการละหมาดกลางคืนพิเศษในรอมฎอน\n\nหลักการ:\n• ซุนนะห์มุอักกะดะห์\n• ทำเป็นญะมาอะห์ในมัสยิด\n• หลังละหมาดอิชาอ์ก่อนวิตร์\n• เวลา: หลังอิชาอ์ถึงฟัจร์\n\nจำนวนร็อกอะห์:\n• นิยมมากที่สุด: 20 ร็อกอะห์ (ฮะนะฟี มาลิกี ชาฝีอี)\n• ถูกต้องเช่นกัน: 8 ร็อกอะห์ (ตามบางหะดีษ)\n• วิตร์: 1 หรือ 3 ร็อกอะห์ท้าย\n\nวิธีละหมาด:\n• ละหมาดทีละ 2 ร็อกอะห์\n• พักสั้นๆ (ตัรวีฮะห์) ระหว่างชุด\n• อ่านอัลกุรอานครบในรอมฎอน (ค็อตม์)\n\nอานิสงส์:\n• "ผู้ใดละหมาดในคืนรอมฎอนด้วยศรัทธาและหวังผลตอบแทน บาปที่ผ่านมาของเขาจะได้รับการอภัย" (บุคอรี)',
-    },
+      'contentTh': 'ตะรอวีห์คือการละหมาดกลางคืนพิเศษในรอมฎอน\n\nหลักการ:\n• ซุนนะห์มุอักกะดะห์\n• ทำเป็นญะมาอะห์ในมัสยิด\n• หลังละหมาดอิชาอ์ก่อนวิตร์\n• เวลา: หลังอิชาอ์ถึงฟัจร์\n\nจำนวนร็อกอะห์:\n• นิยมมากที่สุด: 20 ร็อกอะห์ (ฮะนะฟี มาลิกี ชาฝีอี)\n• ถูกต้องเช่นกัน: 8 ร็อกอะห์ (ตามบางหะดีษ)\n• วิตร์: 1 หรือ 3 ร็อกอะห์ท้าย\n\nวิธีละหมาด:\n• ละหมาดทีละ 2 ร็อกอะห์\n• พักสั้นๆ (ตัรวีฮะห์) ระหว่างชุด\n• อ่านอัลกุรอานครบในรอมฎอน (ค็อตม์)\n\nอานิสงส์:\n• "ผู้ใดละหมาดในคืนรอมฎอนด้วยศรัทธาและหวังผลตอบแทน บาปที่ผ่านมาของเขาจะได้รับการอภัย" (บุคอรี)'},
     {
       'no': 5, 'titleEn': 'Istisqa Prayer (Rain Prayer)', 'titleTh': 'ละหมาดอิสติสก้า (ขอฝน)',
       'arabic': 'وَأَنِ اسْتَغْفِرُوا رَبَّكُمْ ثُمَّ تُوبُوا إِلَيْهِ',
       'contentEn': 'Istisqa prayer is performed to seek rain during drought.\n\nMethod:\n• 2 rakahs like Eid prayer\n• Imam delivers 2 khutbahs\n• In second khutbah: imam turns cloak inside out as sign of change\n• Make abundant dua and istighfar\n• Face Qibla during dua\n\nDua of Istisqa:\n"Allahumma-asqina ghaysan mughithan mari\'an mari\'an nafi\'an ghayra dharr"\n\nConditions for answered prayer:\n• Tawbah (repentance) before the prayer\n• Give charity to the poor\n• Resolve disputes and oppressions\n• Sincerity and humility before Allah\n\nWhen rain comes:\n• Say: "Allahumma sayyiban nafi\'a"\n• Do not curse the rain\n• Seek shelter from harmful rain',
-      'contentTh': 'ละหมาดอิสติสก้าทำเพื่อขอฝนในยามแล้ง\n\nวิธีละหมาด:\n• 2 ร็อกอะห์ เหมือนละหมาดอีด\n• อิหม่ามกล่าวคุฏบะห์ 2 ครั้ง\n• ในคุฏบะห์ที่ 2: อิหม่ามพลิกเสื้อคลุมเป็นสัญลักษณ์การเปลี่ยนแปลง\n• ดุอาและอิสติฆฝารมากๆ\n• หันหน้าไปทางกิบลัตขณะดุอา\n\nดุอาอิสติสก้า:\n"อัลลอฮุมมัสกินา ฆอยษัน มุฆีษัน มะรีอัน มะรีอัน นาฝิอัน ฆอยรอ ดอรร์"\n\nเงื่อนไขสำหรับดุอาที่ถูกรับ:\n• เตาบะห์ (สำนึกผิด) ก่อนละหมาด\n• บริจาคทานให้คนยากจน\n• แก้ไขความขัดแย้งและการอธรรม\n• ความจริงใจและความถ่อมตนต่ออัลลอฮ์\n\nเมื่อฝนตก:\n• กล่าว: "อัลลอฮุมมะ ซ็อยยิบัน นาฝิอา"\n• อย่าด่าฝน\n• หลบฝนที่เป็นอันตราย',
-    },
+      'contentTh': 'ละหมาดอิสติสก้าทำเพื่อขอฝนในยามแล้ง\n\nวิธีละหมาด:\n• 2 ร็อกอะห์ เหมือนละหมาดอีด\n• อิหม่ามกล่าวคุฏบะห์ 2 ครั้ง\n• ในคุฏบะห์ที่ 2: อิหม่ามพลิกเสื้อคลุมเป็นสัญลักษณ์การเปลี่ยนแปลง\n• ดุอาและอิสติฆฝารมากๆ\n• หันหน้าไปทางกิบลัตขณะดุอา\n\nดุอาอิสติสก้า:\n"อัลลอฮุมมัสกินา ฆอยษัน มุฆีษัน มะรีอัน มะรีอัน นาฝิอัน ฆอยรอ ดอรร์"\n\nเงื่อนไขสำหรับดุอาที่ถูกรับ:\n• เตาบะห์ (สำนึกผิด) ก่อนละหมาด\n• บริจาคทานให้คนยากจน\n• แก้ไขความขัดแย้งและการอธรรม\n• ความจริงใจและความถ่อมตนต่ออัลลอฮ์\n\nเมื่อฝนตก:\n• กล่าว: "อัลลอฮุมมะ ซ็อยยิบัน นาฝิอา"\n• อย่าด่าฝน\n• หลบฝนที่เป็นอันตราย'},
     {
       'no': 6, 'titleEn': 'Eclipse Prayer (Kusuf/Khusuf)', 'titleTh': 'ละหมาดกุสูฟ/คุสูฟ (สุริยุปราคา/จันทรุปราคา)',
       'arabic': 'إِنَّ الشَّمْسَ وَالْقَمَرَ آيَتَانِ مِنْ آيَاتِ اللَّهِ',
       'contentEn': '"The sun and moon are two of Allah\'s signs. They do not eclipse for the death of anyone." (Bukhari)\n\nKusuf = Solar eclipse\nKhusuf = Lunar eclipse\n\nMethod (unique, unlike regular prayer):\n1. First rakah:\n   - Recite Al-Fatihah + long surah\n   - Long Ruku\n   - Rise from Ruku\n   - Recite Al-Fatihah + surah again (shorter)\n   - Second long Ruku\n   - Rise, then Sujud (2 times)\n2. Second rakah: same as first\n\nDuration: Continue until eclipse ends\n\nSunnah:\n• Perform in congregation\n• Imam delivers khutbah after prayer\n• Make lots of dua, istighfar, and sadaqah\n• Free slaves (historically)',
-      'contentTh': '"พระอาทิตย์และพระจันทร์เป็นสองสัญลักษณ์จากสัญลักษณ์ของอัลลอฮ์ พวกมันไม่ได้เกิดอุปราคาเพราะการตายของผู้ใด" (บุคอรี)\n\nกุสูฟ = สุริยุปราคา\nคุสูฟ = จันทรุปราคา\n\nวิธีละหมาด (พิเศษ ต่างจากปกติ):\n1. ร็อกอะห์แรก:\n   - อ่านอัลฟาติฮะห์ + ซูเราะห์ยาว\n   - รุกูอ์นาน\n   - ลุกจากรุกูอ์\n   - อ่านอัลฟาติฮะห์ + ซูเราะห์อีกครั้ง (สั้นกว่า)\n   - รุกูอ์นานครั้งที่สอง\n   - ลุกขึ้น แล้วสุญูด 2 ครั้ง\n2. ร็อกอะห์ที่สอง: เหมือนร็อกอะห์แรก\n\nระยะเวลา: ละหมาดจนกว่าอุปราคาจะสิ้นสุด\n\nซุนนะห์:\n• ทำเป็นญะมาอะห์\n• อิหม่ามกล่าวคุฏบะห์หลังละหมาด\n• ดุอา อิสติฆฝาร และบริจาคทานมากๆ',
-    },
+      'contentTh': '"พระอาทิตย์และพระจันทร์เป็นสองสัญลักษณ์จากสัญลักษณ์ของอัลลอฮ์ พวกมันไม่ได้เกิดอุปราคาเพราะการตายของผู้ใด" (บุคอรี)\n\nกุสูฟ = สุริยุปราคา\nคุสูฟ = จันทรุปราคา\n\nวิธีละหมาด (พิเศษ ต่างจากปกติ):\n1. ร็อกอะห์แรก:\n   - อ่านอัลฟาติฮะห์ + ซูเราะห์ยาว\n   - รุกูอ์นาน\n   - ลุกจากรุกูอ์\n   - อ่านอัลฟาติฮะห์ + ซูเราะห์อีกครั้ง (สั้นกว่า)\n   - รุกูอ์นานครั้งที่สอง\n   - ลุกขึ้น แล้วสุญูด 2 ครั้ง\n2. ร็อกอะห์ที่สอง: เหมือนร็อกอะห์แรก\n\nระยะเวลา: ละหมาดจนกว่าอุปราคาจะสิ้นสุด\n\nซุนนะห์:\n• ทำเป็นญะมาอะห์\n• อิหม่ามกล่าวคุฏบะห์หลังละหมาด\n• ดุอา อิสติฆฝาร และบริจาคทานมากๆ'},
   ];
 }
+// ── ไอคอนหมวดหมู่บทเรียน (ใช้ร่วมกันหลายจุด: การ์ดหมวดหมู่, หัวข้อในหน้า
+// เนื้อหาบทเรียน) รวมไว้ที่เดียวแทนที่จะประกาศซ้ำในแต่ละ State class ──
+const Map<String, IconData> kLessonCategoryIcons = {
+  'pillars': Icons.mosque_outlined,
+  'iman': Icons.auto_awesome_outlined,
+  'wudhu': Icons.water_drop_outlined,
+  'prayer': Icons.self_improvement_outlined,
+  'hadith': Icons.menu_book_outlined,
+  'adab': Icons.handshake_outlined,
+  'history': Icons.account_balance_outlined,
+  'fasting': Icons.nightlight_outlined,
+  'special_prayer': Icons.mosque,
+};
+
+// ── ไอคอนแบบภาพ (silhouette สีขาว export จาก Canva) ใช้แทน Material icon
+// เฉพาะบางหมวดหมู่ — ตอนนี้มีแค่ "prayer" (คนละหมาดนั่งดุอาอ์ แทน
+// Icons.self_improvement_outlined ที่จริงๆ เป็นท่าโยคะ ไม่ใช่ท่าละหมาด)
+// ใช้ ColorFiltered ทาสีทับ silhouette ขาวให้เป็นสีอะไรก็ได้ เหมือน Icon(color:)
+const Map<String, String> kLessonCategoryImageIcons = {
+  'prayer': 'image/decor/prayer_icon.png',
+};
+
+/// ตัวช่วยเรนเดอร์ไอคอนหมวดหมู่ — เช็คก่อนว่ามีไอคอนแบบภาพไหม ถ้ามีใช้ภาพ
+/// (ทาสีด้วย ColorFiltered) ถ้าไม่มีใช้ Material icon จาก kLessonCategoryIcons
+/// เหมือนเดิม ใช้แทนที่ Icon(kLessonCategoryIcons[catId], ...) ได้ทุกจุด
+Widget buildCategoryIcon(String catId, {required double size, required Color color}) {
+  final imageAsset = kLessonCategoryImageIcons[catId];
+  if (imageAsset != null) {
+    return ColorFiltered(
+      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+      child: Image.asset(
+        imageAsset,
+        width: size, height: size,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => Icon(
+            kLessonCategoryIcons[catId] ?? Icons.menu_book_outlined,
+            size: size, color: color),
+      ),
+    );
+  }
+  return Icon(kLessonCategoryIcons[catId] ?? Icons.menu_book_outlined, size: size, color: color);
+}
+
 class LessonsPage extends StatefulWidget {
   const LessonsPage({super.key});
 
@@ -870,6 +934,7 @@ class _LessonsPageState extends State<LessonsPage> {
   Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft, end: Alignment.bottomRight,
@@ -879,23 +944,26 @@ class _LessonsPageState extends State<LessonsPage> {
         borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24))),
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Column(children: [
-            Row(children: [
-              GestureDetector(onTap: () => Navigator.pop(context),
-                  child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22))]),
-            const SizedBox(height: 8),
-            const Text('📚', style: TextStyle(fontSize: 40)),
-            const SizedBox(height: 8),
-            Text(_lang.lang == 'th' ? 'บทเรียน' : 'Lessons',
-                style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(_lang.lang == 'th' ? 'เรียนรู้อิสลามทีละขั้นตอน' : 'Learn Islam step by step',
-                style: const TextStyle(color: Colors.white70, fontSize: 13)),
-            const SizedBox(height: 16),
-          ]),
-        ),
+        child: Stack(children: [
+          ...headerCornerDecor(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Column(children: [
+              Row(children: [
+                GestureDetector(onTap: () => Navigator.pop(context),
+                    child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22))]),
+              const SizedBox(height: 8),
+              const Icon(Icons.menu_book, color: Color(0xFFFFD700), size: 40),
+              const SizedBox(height: 8),
+              Text(_lang.lang == 'th' ? 'บทเรียน' : 'Lessons',
+                  style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text(_lang.lang == 'th' ? 'เรียนรู้อิสลามทีละขั้นตอน' : 'Learn Islam step by step',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13)),
+              const SizedBox(height: 16),
+            ]),
+          ),
+        ]),
       ),
     );
   }
@@ -904,6 +972,7 @@ class _LessonsPageState extends State<LessonsPage> {
     final title = _getLangText(cat, 'title', _lang.lang);
     final subtitle = _getLangText(cat, 'subtitle', _lang.lang);
     final color = cat['color'] as Color;
+    final showGradient = !_theme.isDark;
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(
           builder: (_) => LessonDetailPage(category: cat, lang: _lang, theme: _theme))),
@@ -911,32 +980,48 @@ class _LessonsPageState extends State<LessonsPage> {
         margin: const EdgeInsets.only(bottom: 14),
         decoration: BoxDecoration(
           color: _theme.cardColor,
+          gradient: showGradient
+              ? LinearGradient(
+                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  colors: [Colors.white, color.withOpacity(0.05)])
+              : null,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFF0F0F0)),
-          boxShadow: _theme.isDark ? null : [
-            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))]),
-        child: Row(children: [
-          Container(width: 4, height: 90,
-            decoration: BoxDecoration(color: color, borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(14), bottomLeft: Radius.circular(14)))),
-          const SizedBox(width: 16),
-          Expanded(child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          boxShadow: [
+            BoxShadow(
+                color: _theme.isDark ? Colors.black.withOpacity(0.15) : color.withOpacity(0.08),
+                blurRadius: 10, offset: const Offset(0, 3))]),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Container(
+              width: 48, height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withOpacity(0.14),
+                border: Border.all(color: color.withOpacity(0.35), width: 1.2)),
+              child: Padding(
+                padding: const EdgeInsets.all(11),
+                child: buildCategoryIcon(cat['id'] as String, size: 24, color: color),
+              )),
+            const SizedBox(width: 14),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _theme.textColor)),
               const SizedBox(height: 3),
-              Text(subtitle, style: TextStyle(fontSize: 12, color: _theme.subTextColor, height: 1.4)),
+              Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 12, color: _theme.subTextColor, height: 1.4)),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
                 child: Text('${cat['lessons']} ${_lang.lang == 'th' ? 'บทเรียน' : 'lessons'}',
                     style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600))),
-            ]))),
-          Padding(padding: const EdgeInsets.only(right: 12),
-              child: Icon(Icons.chevron_right, size: 18, color: _theme.subTextColor)),
-        ]),
+            ])),
+            const SizedBox(width: 8),
+            Icon(Icons.chevron_right, size: 18, color: _theme.subTextColor),
+          ]),
+        ),
       ),
     );
   }
@@ -960,26 +1045,30 @@ class LessonDetailPage extends StatelessWidget {
       body: Column(children: [
         Container(
           width: double.infinity,
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             gradient: LinearGradient(colors: [color, color.withOpacity(0.7)],
                 begin: Alignment.topLeft, end: Alignment.bottomRight),
             borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24))),
           child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Column(children: [
-                Row(children: [
-                  GestureDetector(onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22))]),
-                const SizedBox(height: 8),
-                Text(category['icon'], style: const TextStyle(fontSize: 40)),
-                const SizedBox(height: 8),
-                Text(title, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 16),
-              ]),
-            ),
+            child: Stack(children: [
+              ...headerCornerDecor(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                child: Column(children: [
+                  Row(children: [
+                    GestureDetector(onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22))]),
+                  const SizedBox(height: 8),
+                  buildCategoryIcon(category['id'] as String, size: 40, color: Colors.white),
+                  const SizedBox(height: 8),
+                  Text(title, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                ]),
+              ),
+            ]),
           ),
         ),
         Expanded(
@@ -1000,6 +1089,9 @@ class LessonDetailPage extends StatelessWidget {
                         lang: lang,
                         theme: theme,
                         translatedTitle: _getLessonTitle(lesson, category['id'] as String, lang.lang, i),
+                        allLessons: lessons,
+                        categoryId: category['id'] as String,
+                        currentIndex: i,
                       );
                     })),
                 child: Container(
@@ -1036,7 +1128,78 @@ class LessonContentPage extends StatelessWidget {
   final LanguageService lang;
   final ThemeService theme;
   final String? translatedTitle;
-  const LessonContentPage({super.key, required this.lesson, required this.color, required this.lang, required this.theme, this.translatedTitle});
+  // ── เพิ่มไว้ทำปุ่มก่อนหน้า/ถัดไป + แถบความคืบหน้า "บทที่ X จาก Y" ──
+  final List<Map<String, dynamic>>? allLessons;
+  final String? categoryId;
+  final int? currentIndex;
+  const LessonContentPage({
+    super.key,
+    required this.lesson,
+    required this.color,
+    required this.lang,
+    required this.theme,
+    this.translatedTitle,
+    this.allLessons,
+    this.categoryId,
+    this.currentIndex,
+  });
+
+  // ── จัดรูปแบบเนื้อหาให้อ่านง่ายขึ้น: แยกเป็นย่อหน้าตาม \n\n แล้วในแต่ละ
+  // ย่อหน้า ถ้าบรรทัดไหนขึ้นต้นด้วย "•" จะเรนเดอร์เป็นแถวบูลเล็ตจริงๆ
+  // (จุดกลมสีตามหมวดหมู่ + ข้อความเยื้อง) แทนที่จะปล่อยเป็นตัวอักษร "•" ดิบๆ
+  // ปนอยู่ในก้อนข้อความเดียว ──
+  List<Widget> _buildContentBlocks(String content) {
+    final blocks = content.split('\n\n').map((b) => b.trim()).where((b) => b.isNotEmpty).toList();
+    final widgets = <Widget>[];
+    for (int b = 0; b < blocks.length; b++) {
+      final lines = blocks[b].split('\n');
+      final lineWidgets = <Widget>[];
+      for (final rawLine in lines) {
+        final line = rawLine.trim();
+        if (line.isEmpty) continue;
+        if (line.startsWith('•')) {
+          final text = line.replaceFirst('•', '').trim();
+          lineWidgets.add(Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 7, right: 10),
+                child: Container(width: 5, height: 5,
+                    decoration: BoxDecoration(color: color, shape: BoxShape.circle))),
+              Expanded(child: Text(text,
+                  style: TextStyle(fontSize: 15, color: theme.textColor, height: 1.6))),
+            ]),
+          ));
+        } else {
+          lineWidgets.add(Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(line, style: TextStyle(fontSize: 15, color: theme.textColor, height: 1.6)),
+          ));
+        }
+      }
+      widgets.add(Column(crossAxisAlignment: CrossAxisAlignment.start, children: lineWidgets));
+      if (b < blocks.length - 1) widgets.add(const SizedBox(height: 14));
+    }
+    return widgets;
+  }
+
+  void _goToLesson(BuildContext context, int index) {
+    final lessons = allLessons!;
+    final target = lessons[index];
+    final targetWithCat = Map<String, dynamic>.from(target);
+    targetWithCat['catId'] = categoryId;
+    Navigator.pushReplacement(context, MaterialPageRoute(
+        builder: (_) => LessonContentPage(
+              lesson: targetWithCat,
+              color: color,
+              lang: lang,
+              theme: theme,
+              translatedTitle: _getLessonTitle(target, categoryId ?? '', lang.lang, index),
+              allLessons: allLessons,
+              categoryId: categoryId,
+              currentIndex: index,
+            )));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1045,6 +1208,8 @@ class LessonContentPage extends StatelessWidget {
     final lessonNo = lesson['no'] as int? ?? 0;
     final content = _getLessonContent(lesson, catId, lang.lang, lessonNo);
     final arabic = lesson['arabic'] ?? '';
+    final hasNav = allLessons != null && currentIndex != null && allLessons!.length > 1;
+    final total = allLessons?.length ?? 0;
 
     // Wudhu image
     const wudhuImages = {
@@ -1069,95 +1234,211 @@ class LessonContentPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: theme.bgColor,
-      appBar: AppBar(
-        backgroundColor: color,
-        title: Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
-        iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(20)),
-            child: Text('${lang.lang == 'th' ? 'บทที่' : 'Lesson'} ${lesson['no']}',
-                style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13))),
-          const SizedBox(height: 16),
-          Text(title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: theme.textColor)),
-          const SizedBox(height: 20),
+      body: Column(children: [
+        // ── หัวข้อแบบไล่เฉดสีตามหมวดหมู่ + มุมโค้งด้านล่าง (แพทเทิร์นเดียวกับ
+        // หน้าอื่นๆ ในแอป) แทน AppBar เรียบๆ สีเดียวเดิม ──
+        Container(
+          width: double.infinity,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [color, color.withOpacity(0.75)],
+                begin: Alignment.topLeft, end: Alignment.bottomRight),
+            borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24))),
+          child: SafeArea(
+            bottom: false,
+            child: Stack(children: [
+              ...headerCornerDecor(size: 45),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(children: [
+                    GestureDetector(onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20)),
+                    const Spacer(),
+                    if (total > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(20)),
+                        child: Text(
+                          lang.lang == 'th' ? 'บทที่ ${lessonNo} จาก $total' : 'Lesson $lessonNo of $total',
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600))),
+                  ]),
+                  const SizedBox(height: 14),
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Container(width: 46, height: 46,
+                        decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.16), borderRadius: BorderRadius.circular(13)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(11),
+                          child: buildCategoryIcon(catId, size: 24, color: Colors.white),
+                        )),
+                    const SizedBox(width: 14),
+                    Expanded(child: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(title,
+                          style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.bold, height: 1.3)),
+                    )),
+                  ]),
+                  if (total > 0) ...[
+                    const SizedBox(height: 14),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(3),
+                      child: LinearProgressIndicator(
+                        value: total > 0 ? lessonNo / total : 0,
+                        minHeight: 4,
+                        backgroundColor: Colors.white.withOpacity(0.2),
+                        valueColor: const AlwaysStoppedAnimation(Colors.white),
+                      ),
+                    ),
+                  ],
+                ]),
+              ),
+            ]),
+          ),
+        ),
 
-          // Prayer image(s)
-          if (prayerImageList != null && prayerImageList.isNotEmpty) ...[
-            if (prayerImageList.length == 1)
-              Container(
-                height: 200,
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: theme.isDark ? const Color(0xFF0D2E1A) : const Color(0xFFF1F8E9),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: color.withOpacity(0.15))),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.asset(prayerImageList[0], fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Center(
-                          child: Icon(Icons.image_not_supported_outlined,
-                              color: theme.subTextColor, size: 40)))))
-            else ...[
-              Row(children: [
-                for (int i = 0; i < prayerImageList.length; i++) ...[
-                  Expanded(
-                    child: Container(
-                      height: 180,
-                      margin: EdgeInsets.only(
-                        right: i < prayerImageList.length - 1 ? 8 : 0),
-                      decoration: BoxDecoration(
-                        color: theme.isDark ? const Color(0xFF0D2E1A) : const Color(0xFFF1F8E9),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: color.withOpacity(0.15))),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: Image.asset(prayerImageList[i], fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => Center(
-                                child: Icon(Icons.image_not_supported_outlined,
-                                    color: theme.subTextColor, size: 32))))),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // Prayer image(s)
+              if (prayerImageList != null && prayerImageList.isNotEmpty) ...[
+                if (prayerImageList.length == 1)
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: theme.isDark ? const Color(0xFF0D2E1A) : const Color(0xFFF1F8E9),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: color.withOpacity(0.15))),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.asset(prayerImageList[0], fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Center(
+                              child: Icon(Icons.image_not_supported_outlined,
+                                  color: theme.subTextColor, size: 40)))))
+                else ...[
+                  Row(children: [
+                    for (int i = 0; i < prayerImageList.length; i++) ...[
+                      Expanded(
+                        child: Container(
+                          height: 180,
+                          margin: EdgeInsets.only(
+                            right: i < prayerImageList.length - 1 ? 8 : 0),
+                          decoration: BoxDecoration(
+                            color: theme.isDark ? const Color(0xFF0D2E1A) : const Color(0xFFF1F8E9),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: color.withOpacity(0.15))),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: Image.asset(prayerImageList[i], fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => Center(
+                                    child: Icon(Icons.image_not_supported_outlined,
+                                        color: theme.subTextColor, size: 32))))),
+                      ),
+                    ],
+                  ]),
+                  const SizedBox(height: 20),
+                ],
+              ],
+              if (arabic.isNotEmpty) ...[
+                Container(
+                  width: double.infinity,
+                  clipBehavior: Clip.hardEdge,
+                  decoration: BoxDecoration(
+                    color: theme.isDark ? const Color(0xFF0D3B1E) : const Color(0xFFE8F5E9),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: color.withOpacity(0.3))),
+                  child: Column(children: [
+                    // แถบทองบางๆ บนสุด เป็นจุดตกแต่งเล็กๆ แยกกล่องอารบิกให้
+                    // เด่นออกมาจากกล่องเนื้อหาด้านล่าง
+                    Container(height: 4, width: double.infinity, color: const Color(0xFFFFD700).withOpacity(0.6)),
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(children: [
+                        Text(arabic, textAlign: TextAlign.center, textDirection: TextDirection.rtl,
+                            style: TextStyle(fontSize: 24, height: 2.0, color: theme.textColor)),
+                        if (_getLessonTrans(lesson, lang.lang).isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(_getLessonTrans(lesson, lang.lang),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 13, color: theme.subTextColor,
+                                  fontStyle: FontStyle.italic, height: 1.6)),
+                        ],
+                      ]),
+                    ),
+                  ]),
+                ),
+                // ── ลายดอกไม้คั่น (asset จริงจาก Canva) แทนช่องว่างเปล่าๆ
+                // ระหว่างกล่องอารบิกกับกล่องเนื้อหา ──
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: FractionallySizedBox(
+                      widthFactor: 0.85,
+                      child: AspectRatio(
+                        aspectRatio: 900 / 110,
+                        child: Image.asset(kFlowerDividerAsset, fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                      ),
+                    ),
                   ),
-                ],
-              ]),
+                ),
+              ],
+              Container(
+                width: double.infinity, padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: theme.cardColor, borderRadius: BorderRadius.circular(16),
+                  border: theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
+                  boxShadow: [BoxShadow(color: theme.shadowColor, blurRadius: 6, offset: const Offset(0, 2))]),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                    children: _buildContentBlocks(content)),
+              ),
+              const SizedBox(height: 24),
+
+              // ── ปุ่มก่อนหน้า/ถัดไป — ให้เรียนต่อเนื่องได้โดยไม่ต้องกลับไปหน้าลิสต์ ──
+              if (hasNav)
+                Row(children: [
+                  Expanded(
+                    child: currentIndex! > 0
+                        ? OutlinedButton.icon(
+                            onPressed: () => _goToLesson(context, currentIndex! - 1),
+                            icon: Icon(Icons.chevron_left, color: color, size: 18),
+                            label: Text(lang.lang == 'th' ? 'ก่อนหน้า' : 'Previous',
+                                style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              side: BorderSide(color: color.withOpacity(0.4)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                  if (currentIndex! > 0 && currentIndex! < total - 1) const SizedBox(width: 12),
+                  Expanded(
+                    child: currentIndex! < total - 1
+                        ? ElevatedButton.icon(
+                            onPressed: () => _goToLesson(context, currentIndex! + 1),
+                            icon: const Icon(Icons.chevron_right, color: Colors.white, size: 18),
+                            label: Text(lang.lang == 'th' ? 'ถัดไป' : 'Next',
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: color,
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ]),
               const SizedBox(height: 20),
-            ],
-          ],
-          if (arabic.isNotEmpty) ...[
-            Container(
-              width: double.infinity, padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: theme.isDark ? const Color(0xFF0D3B1E) : const Color(0xFFE8F5E9),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: color.withOpacity(0.3))),
-              child: Column(children: [
-                Text(arabic, textAlign: TextAlign.center, textDirection: TextDirection.rtl,
-                    style: TextStyle(fontSize: 24, height: 2.0, color: theme.textColor)),
-                if (_getLessonTrans(lesson, lang.lang).isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(_getLessonTrans(lesson, lang.lang),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 13, color: theme.subTextColor,
-                          fontStyle: FontStyle.italic, height: 1.6)),
-                ],
-              ]),
-            ),
-            const SizedBox(height: 20),
-          ],
-          Container(
-            width: double.infinity, padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.cardColor, borderRadius: BorderRadius.circular(16),
-              border: theme.isDark ? Border.all(color: ThemeService.darkBorder) : null),
-            child: Text(content, style: TextStyle(fontSize: 15, color: theme.textColor, height: 1.8))),
-          const SizedBox(height: 32),
-        ]),
-      ),
+            ]),
+          ),
+        ),
+      ]),
     );
   }
 }
@@ -1238,6 +1519,7 @@ class _LessonsTabState extends State<LessonsTab> {
         final title = _getLangText(cat, 'title', _lang.lang);
         final subtitle = _getLangText(cat, 'subtitle', _lang.lang);
         final color = cat['color'] as Color;
+        final showGradient = !_theme.isDark;
         return GestureDetector(
           onTap: () => Navigator.push(context, MaterialPageRoute(
               builder: (_) => LessonDetailPage(category: cat, lang: _lang, theme: _theme))),
@@ -1245,32 +1527,48 @@ class _LessonsTabState extends State<LessonsTab> {
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
               color: _theme.cardColor,
+              gradient: showGradient
+                  ? LinearGradient(
+                      begin: Alignment.topLeft, end: Alignment.bottomRight,
+                      colors: [Colors.white, color.withOpacity(0.05)])
+                  : null,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFF0F0F0)),
-              boxShadow: _theme.isDark ? null : [
-                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))]),
-            child: Row(children: [
-              Container(width: 4, height: 90,
-                decoration: BoxDecoration(color: color, borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(14), bottomLeft: Radius.circular(14)))),
-              const SizedBox(width: 16),
-              Expanded(child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              boxShadow: [
+                BoxShadow(
+                    color: _theme.isDark ? Colors.black.withOpacity(0.15) : color.withOpacity(0.08),
+                    blurRadius: 10, offset: const Offset(0, 3))]),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                Container(
+                  width: 48, height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color.withOpacity(0.14),
+                    border: Border.all(color: color.withOpacity(0.35), width: 1.2)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(11),
+                    child: buildCategoryIcon(cat['id'] as String, size: 24, color: color),
+                  )),
+                const SizedBox(width: 14),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _theme.textColor)),
                   const SizedBox(height: 3),
-                  Text(subtitle, style: TextStyle(fontSize: 12, color: _theme.subTextColor, height: 1.4)),
+                  Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: _theme.subTextColor, height: 1.4)),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
                     child: Text('${cat['lessons']} ${_lang.lang == 'th' ? 'บทเรียน' : 'lessons'}',
                         style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600))),
-                ]))),
-              Padding(padding: const EdgeInsets.only(right: 12),
-                  child: Icon(Icons.chevron_right, size: 18, color: _theme.subTextColor)),
-            ]),
+                ])),
+                const SizedBox(width: 8),
+                Icon(Icons.chevron_right, size: 18, color: _theme.subTextColor),
+              ]),
+            ),
           ),
         );
       },
