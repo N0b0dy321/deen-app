@@ -5,6 +5,10 @@ import 'dart:math';
 import '../services/language_service.dart';
 import '../services/theme_service.dart';
 
+// ── ไอคอนกิบลัต (silhouette ขาว: เข็มทิศ + กะอ์บะฮ์) — path เดียวกับที่ใช้
+// ในการ์ด "ค้นหากิบลัต" หน้า Home เลย โลโก้ตรงกันทั้งแอป
+const String kQiblaIconAsset = 'image/decor/qibla_icon.png';
+
 class QiblaPage extends StatefulWidget {
   const QiblaPage({super.key});
   @override
@@ -132,7 +136,13 @@ class _QiblaPageState extends State<QiblaPage> {
                   child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22)),
             ]),
             const SizedBox(height: 8),
-            const Icon(Icons.explore, color: Color(0xFFFFD700), size: 40),
+            Image.asset(
+              kQiblaIconAsset,
+              width: 44, height: 44,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) =>
+                  const Icon(Icons.explore, color: Color(0xFFFFD700), size: 40),
+            ),
             const SizedBox(height: 8),
             Text(_lang.qiblaTitle,
                 style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),

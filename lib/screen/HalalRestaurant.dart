@@ -7,6 +7,10 @@ import 'dart:convert';
 import '../services/language_service.dart';
 import '../services/theme_service.dart';
 
+// ── ไอคอนฮาลาล (silhouette ขาว export จาก Canva แบบโปร่งใส) แทน emoji 🍽️
+// เดิม ทาสีทองทับด้วย ColorFiltered ให้เข้ากับสีหัวข้อ (Color(0xFFFFD700)) ──
+const String kHalalIconAsset = 'image/decor/halal_icon.png';
+
 class HalalRestaurantPage extends StatefulWidget {
   const HalalRestaurantPage({super.key});
   @override
@@ -195,7 +199,16 @@ class _HalalRestaurantPageState extends State<HalalRestaurantPage> {
                 child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22)),
             ]),
             const SizedBox(height: 12),
-            const Text('🍽️', style: TextStyle(fontSize: 40)),
+            ColorFiltered(
+              colorFilter: const ColorFilter.mode(Color(0xFFFFD700), BlendMode.srcIn),
+              child: Image.asset(
+                kHalalIconAsset,
+                width: 44, height: 44,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.restaurant_menu, color: Color(0xFFFFD700), size: 40),
+              ),
+            ),
             const SizedBox(height: 8),
             Text(
               _lang.isThai ? 'ร้านอาหารฮาลาล' : 'Halal Restaurants',

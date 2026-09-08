@@ -128,6 +128,24 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             SizedBox(height: 4.h),
             if (_prayerData != null)
               Text(_prayerData!['date'], style: TextStyle(color: Colors.white70, fontSize: 13.sp)),
+            // ── บอกให้รู้ตอนกำลังดูข้อมูล cache เก่า (offline) ไม่ใช่ข้อมูลสด
+            // ผูกกับ isOffline ที่ prayer_service.dart set ไว้ตอนดึงจาก
+            // cache สำรอง (ไม่มีเน็ตตอนนี้ แต่เคยออนไลน์ไว้ล่วงหน้าไม่เกิน 14 วัน) ──
+            if (_prayerData?['isOffline'] == true) ...[
+              SizedBox(height: 6.h),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20.r)),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.cloud_off_rounded, color: Colors.white70, size: 12.sp),
+                  SizedBox(width: 4.w),
+                  Text(_lang.isThai ? 'ออฟไลน์ · ข้อมูลที่บันทึกไว้' : 'Offline · Saved data',
+                      style: TextStyle(color: Colors.white70, fontSize: 11.sp)),
+                ]),
+              ),
+            ],
             // ── ชื่อตำแหน่งที่ใช้คำนวณเวลาละหมาดอยู่ตอนนี้ ──
             if (_prayerData?['locationName'] != null) ...[
               SizedBox(height: 6.h),
