@@ -816,6 +816,7 @@ class _QuranSettingsPageState extends State<_QuranSettingsPage> {
             ),
           ),
         ),
+        SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
       ]),
     );
   }
@@ -1325,6 +1326,7 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
             onTap: _scheduleTest,
           ),
         ]),
+        SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
       ]),
     );
   }
@@ -1433,7 +1435,8 @@ class _ChatbotSettingsPageState extends State<_ChatbotSettingsPage> {
         centerTitle: true,
       ),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 32.h),
+        padding: EdgeInsets.fromLTRB(
+            16.w, 16.h, 16.w, 32.h + MediaQuery.of(context).padding.bottom),
         children: [
           // ── สถานะปัจจุบัน ──
           Container(

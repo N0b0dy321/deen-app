@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:async';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'NearbyMasjid.dart';
 import 'HalalRestaurant.dart';
 import 'dua_lessons_page.dart';
 import 'prayer_time_page.dart';
 import 'Al-Quran.dart';
+import 'tasbih_page.dart';
 import '../services/prayer_service.dart';
 import '../services/language_service.dart';
 import '../services/theme_service.dart';
 import '../services/islamic_calendar_service.dart';
 import 'package:DEEN/screen/qibla_page.dart';
 import 'package:DEEN/screen/chatbot_page.dart';
-import 'package:DEEN/services/Setting_Time.dart';
 import 'home_widgets.dart';
 import 'islamic_calendar_widgets.dart';
 
@@ -138,8 +135,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _toggleLang() => _lang.setLang(_lang.isThai ? 'en' : 'th');
-
   void _showMoreSheet() {
     showModalBottomSheet(
       context: context,
@@ -164,7 +159,8 @@ class _HomePageState extends State<HomePage> {
           _buildHeader(),
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(16.w),
+              padding: EdgeInsets.fromLTRB(
+                  16.w, 16.w, 16.w, 16.w + MediaQuery.of(context).padding.bottom),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -293,6 +289,12 @@ class _HomePageState extends State<HomePage> {
                           theme: _theme,
                           color: const Color(0xFF00838F),
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DuaLessonsPage()))),
+                      FeatureCard(
+                          label: _lang.isThai ? 'ตัสบีฮ์' : 'Tasbih',
+                          icon: Icons.fingerprint,
+                          theme: _theme,
+                          color: const Color(0xFFB8860B),
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TasbihPage()))),
                     ],
                   ),
 

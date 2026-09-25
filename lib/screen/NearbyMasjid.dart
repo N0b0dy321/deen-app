@@ -7,6 +7,13 @@ import 'dart:convert';
 import '../services/language_service.dart';
 import '../services/theme_service.dart';
 
+// ── ลายเส้นขอบฟ้ามัสยิดสีทอง (path เดียวกับที่ใช้ใน home_page.dart) ──
+// วางไว้ล่างสุดของ header แบบจางๆ เป็นพื้นผิวตกแต่ง
+const String kMosqueSkylineAsset = 'image/decor/mosque_skyline.png';
+// ── ไอคอนมัสยิด (silhouette ขาว: โมสก์+ดาวเสี้ยว) — path เดียวกับที่ใช้ใน
+// การ์ด "มัสยิดใกล้เคียง" หน้า Home ให้โลโก้ตรงกันทั้งแอป ──
+const String kMosqueIconAsset = 'image/decor/mosque_icon.png';
+
 class NearbyMosquesPage extends StatefulWidget {
   const NearbyMosquesPage({super.key});
   @override
@@ -19,7 +26,6 @@ class _NearbyMosquesPageState extends State<NearbyMosquesPage> {
   String _errorMessage = '';
   Position? _currentPosition;
   List<Map<String, dynamic>> _mosques = [];
-  GoogleMapController? _mapController;
   Set<Marker> _markers = {};
   bool _showMap = false;
   final _lang = LanguageService();
@@ -152,6 +158,7 @@ class _NearbyMosquesPageState extends State<NearbyMosquesPage> {
   Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft, end: Alignment.bottomRight,
@@ -162,24 +169,53 @@ class _NearbyMosquesPageState extends State<NearbyMosquesPage> {
         borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
       ),
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Column(children: [
-            Row(children: [
-              GestureDetector(onTap: () => Navigator.pop(context),
-                  child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22)),
+        child: Stack(children: [
+          // ── ลายเส้นขอบฟ้ามัสยิดสีทอง (จางๆ) แปะไว้ล่างสุดของ Stack
+          // ให้ข้อความ render ทับข้างบนอีกที (แพทเทิร์นเดียวกับ home_page.dart) ──
+          Positioned(
+            left: 0, right: 0, bottom: 0,
+            height: 85,
+            child: ClipRect(
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset(
+                  kMosqueSkylineAsset,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.bottomCenter,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Column(children: [
+              Row(children: [
+                GestureDetector(onTap: () => Navigator.pop(context),
+                    child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22)),
+              ]),
+              const SizedBox(height: 8),
+              ColorFiltered(
+                colorFilter: const ColorFilter.mode(Color(0xFFFFD700), BlendMode.srcIn),
+                child: Image.asset(
+                  kMosqueIconAsset,
+                  width: 40, height: 40,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.mosque, color: Color(0xFFFFD700), size: 40),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(_lang.nearbyMosquesTitle,
+                  style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text(_currentPosition != null ? '${_lang.foundMosques} ${_mosques.length}' : _lang.gettingLocation,
+                  style: const TextStyle(color: Colors.white70, fontSize: 13)),
+              const SizedBox(height: 40),
             ]),
-            const SizedBox(height: 12),
-            const Icon(Icons.mosque, color: Color(0xFFFFD700), size: 40),
-            const SizedBox(height: 8),
-            Text(_lang.nearbyMosquesTitle,
-                style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(_currentPosition != null ? '${_lang.foundMosques} ${_mosques.length}' : _lang.gettingLocation,
-                style: const TextStyle(color: Colors.white70, fontSize: 13)),
-            const SizedBox(height: 16),
-          ]),
-        ),
+          ),
+        ]),
       ),
     );
   }
@@ -265,13 +301,19 @@ class _NearbyMosquesPageState extends State<NearbyMosquesPage> {
           decoration: BoxDecoration(
             color: _theme.cardColor,
             borderRadius: BorderRadius.circular(16),
-            border: _theme.isDark ? Border.all(color: ThemeService.darkBorder) : null,
-            boxShadow: [BoxShadow(color: _theme.shadowColor, blurRadius: 8, offset: const Offset(0, 2))],
+            border: Border.all(
+              color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFF0F0F0)),
+            boxShadow: [BoxShadow(
+                color: _theme.isDark ? Colors.black.withOpacity(0.15) : _theme.iconColor.withOpacity(0.08),
+                blurRadius: 10, offset: const Offset(0, 3))],
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               Container(width: 52, height: 52,
-                decoration: BoxDecoration(color: _theme.iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(
+                  color: _theme.iconColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _theme.iconColor.withOpacity(0.3), width: 1.2)),
                 child: Icon(Icons.mosque, color: _theme.iconColor, size: 28)),
               const SizedBox(width: 14),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -329,7 +371,6 @@ class _NearbyMosquesPageState extends State<NearbyMosquesPage> {
       markers: _markers,
       myLocationEnabled: true,
       myLocationButtonEnabled: true,
-      onMapCreated: (controller) => _mapController = controller,
     );
   }
 }

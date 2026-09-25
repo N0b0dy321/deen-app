@@ -60,7 +60,10 @@ class PrayerService {
       () async {
         try {
           final isThai = LanguageService().isThai;
-          final timezone = prefs.getString('timezone') ?? 'Asia/Bangkok';
+          // ── ใช้ timezone ที่เก็บไว้ "คู่กับ cache blob นี้เอง" เสมอ
+          // (มาจาก Aladhan meta.timezone ตอน fetch จริง ไม่ใช่ prefs
+          // ทั่วไปที่อาจไม่ตรงกับพิกัดของ cache ชุดนี้) ──
+          final timezone = data['timezone'] as String? ?? 'Asia/Bangkok';
           await NotificationService.schedulePrayerNotifications(
             timings: Map<String, dynamic>.from(data['timings']),
             timezone: timezone,
@@ -80,7 +83,6 @@ class PrayerService {
   static Future<Map<String, dynamic>?> _fetchAndCache14Days(
       SharedPreferences prefs) async {
     try {
-      final timezone = prefs.getString('timezone') ?? 'Asia/Bangkok';
       final method = prefs.getString('method') ?? '3'; // Default: Muslim World League
 
       // ── หาพิกัดที่จะใช้คำนวณเวลาละหมาด ──────────────────────
@@ -120,6 +122,18 @@ class PrayerService {
           ? manualLocation['name'] as String
           : await _resolveLocationName();
 
+      // ── timezone จริงของ "พิกัดที่กำลังใช้" — ได้จากการตอบกลับของ
+      // Aladhan เอง (data.meta.timezone) ในรอบ fetch แรกของ loop ด้านล่าง
+      // ไม่ใช้ prefs['timezone']/ค่า default 'Asia/Bangkok' อีกต่อไป เพราะ
+      // เคยทำให้เวลาละหมาดเพี้ยนไปทั้งวัน (สูงสุด 14 ชม.) ตอนอุปกรณ์อยู่
+      // คนละโซนเวลากับค่า default ที่ไม่เคยถูกตั้งไว้ (เช่น ทดสอบบน
+      // emulator ที่จำลองพิกัดเป็น Mountain View, California แต่ prefs
+      // ยังไม่เคยตั้ง timezone เลยใช้ 'Asia/Bangkok' ไปเรียก API ทั้งที่
+      // พิกัดเป็นของ Pacific Time — Aladhan คำนวณจากพิกัดถูกต้อง แต่ไป
+      // format เวลาออกมาผิดโซน) — เริ่มต้นเป็น fallback ไว้ก่อนเผื่อ API
+      // ไม่คืน meta.timezone มาด้วยเหตุผลใดก็ตาม
+      String resolvedTimezone = prefs.getString('timezone') ?? 'Asia/Bangkok';
+
       for (int i = 0; i < _prefetchDays; i++) {
         final date = now.add(Duration(days: i));
         final dateStr = _dateKey(date);
@@ -131,17 +145,15 @@ class PrayerService {
           continue;
         }
 
-        // เมื่อใช้ตำแหน่งที่เลือกเอง ไม่ส่ง timezonestring ไป —
-        // ให้ Aladhan API คำนวณ timezone ที่ถูกต้องจากพิกัดเอง
-        // (กันปัญหาเลือกเมืองอื่นแล้วเวลาไม่ขยับเพราะยังใช้ timezone เดิมค้างอยู่)
-        final tzParam = manualLocation != null ? '' : '&timezonestring=$timezone';
-
+        // ── ไม่ส่ง timezonestring ไปให้ Aladhan อีกต่อไป (ทั้ง manual
+        // location และ GPS) ให้ API คำนวณ timezone ที่ถูกต้องจากพิกัด
+        // (latitude/longitude) เองเสมอ กันปัญหา timezone ค้าง/ไม่ตรงกับ
+        // พิกัดจริงตามที่อธิบายไว้ข้างบน ──
         final url = Uri.parse(
           'https://api.aladhan.com/v1/timings/${date.day}-${date.month}-${date.year}'
           '?latitude=$latitude'
           '&longitude=$longitude'
-          '&method=$method'
-          '$tzParam',
+          '&method=$method',
         );
 
         final response =
@@ -149,10 +161,18 @@ class PrayerService {
         final data = json.decode(response.body);
 
         if (data['code'] == 200) {
+          // ── ดึง timezone จริงที่ Aladhan คำนวณให้จากพิกัด เก็บไว้ใช้
+          // กับทุกวันใน batch นี้ (ทำครั้งเดียวตอนวันแรกที่ fetch สำเร็จ
+          // ก็พอ เพราะพิกัดเดียวกันทั้ง batch timezone ไม่เปลี่ยน) ──
+          final apiTimezone = data['data']['meta']?['timezone'] as String?;
+          if (apiTimezone != null && apiTimezone.isNotEmpty) {
+            resolvedTimezone = apiTimezone;
+          }
+
           final dayData = {
             'timings': data['data']['timings'],
             'date': data['data']['date']['readable'],
-            'timezone': timezone,
+            'timezone': resolvedTimezone,
             'method': method,
             'locationName': locationName, // ← เก็บลง cache ด้วยเลย
           };
@@ -162,6 +182,9 @@ class PrayerService {
       }
 
       await prefs.setString(_lastFetchKey, now.toIso8601String());
+      // เก็บ timezone จริงที่เพิ่งคำนวณได้ไว้ใน prefs ด้วย ให้ครั้งถัดไป
+      // (เช่น ตอนอ่านจาก cache ล้วนๆ) มีค่าที่ตรงกับพิกัดปัจจุบันใช้ต่อ
+      await prefs.setString('timezone', resolvedTimezone);
 
       if (todayData != null) {
         todayData['nextPrayer'] = calculateNextPrayer(todayData['timings']);
@@ -177,7 +200,7 @@ class PrayerService {
           final isThai = LanguageService().isThai;
           await NotificationService.schedulePrayerNotifications(
             timings: Map<String, dynamic>.from(todayData['timings']),
-            timezone: todayData['timezone'] ?? 'Asia/Bangkok',
+            timezone: todayData['timezone'] ?? resolvedTimezone,
             isThai: isThai,
           );
         } catch (e) {

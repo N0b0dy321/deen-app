@@ -23,7 +23,6 @@ class _HalalRestaurantPageState extends State<HalalRestaurantPage> {
   String _errorMessage = '';
   Position? _currentPosition;
   List<Map<String, dynamic>> _restaurants = [];
-  GoogleMapController? _mapController;
   Set<Marker> _markers = {};
   bool _showMap = false;
   final _lang = LanguageService();
@@ -413,7 +412,6 @@ class _HalalRestaurantPageState extends State<HalalRestaurantPage> {
       markers: _markers,
       myLocationEnabled: true,
       myLocationButtonEnabled: true,
-      onMapCreated: (controller) => _mapController = controller,
     );
   }
 }

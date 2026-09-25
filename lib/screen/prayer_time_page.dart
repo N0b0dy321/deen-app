@@ -95,6 +95,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft, end: Alignment.bottomRight,
@@ -104,67 +105,80 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         ),
         borderRadius: BorderRadius.only(bottomLeft: Radius.circular(24.r), bottomRight: Radius.circular(24.r)),
       ),
-      child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-          child: Column(children: [
-            Row(children: [
-              GestureDetector(onTap: () => Navigator.pop(context),
-                  child: Icon(Icons.arrow_back_ios, color: Colors.white, size: 22.sp)),
-              GestureDetector(
-                onTap: () async {
-                  await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
-                  // โหลดใหม่เสมอตอนกลับมาจาก Settings (ไม่ใช่แค่ตอนกด Save)
-                  // เพราะการเลือกตำแหน่งใน location sheet จะ apply ทันทีอยู่แล้ว
-                  _loadPrayerTimes();
-                },
-                child: Icon(Icons.settings, color: Colors.white70, size: 26.sp)),
-            ]),
-            SizedBox(height: 8.h),
-            Icon(Icons.access_time, color: Color(0xFFFFD700), size: 40.sp),
-            SizedBox(height: 8.h),
-            Text(_lang.prayerTimes,
-                style: TextStyle(color: Color(0xFFFFD700), fontSize: 22.sp, fontWeight: FontWeight.bold)),
-            SizedBox(height: 4.h),
-            if (_prayerData != null)
-              Text(_prayerData!['date'], style: TextStyle(color: Colors.white70, fontSize: 13.sp)),
-            // ── บอกให้รู้ตอนกำลังดูข้อมูล cache เก่า (offline) ไม่ใช่ข้อมูลสด
-            // ผูกกับ isOffline ที่ prayer_service.dart set ไว้ตอนดึงจาก
-            // cache สำรอง (ไม่มีเน็ตตอนนี้ แต่เคยออนไลน์ไว้ล่วงหน้าไม่เกิน 14 วัน) ──
-            if (_prayerData?['isOffline'] == true) ...[
-              SizedBox(height: 6.h),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(20.r)),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.cloud_off_rounded, color: Colors.white70, size: 12.sp),
-                  SizedBox(width: 4.w),
-                  Text(_lang.isThai ? 'ออฟไลน์ · ข้อมูลที่บันทึกไว้' : 'Offline · Saved data',
-                      style: TextStyle(color: Colors.white70, fontSize: 11.sp)),
-                ]),
-              ),
-            ],
-            // ── ชื่อตำแหน่งที่ใช้คำนวณเวลาละหมาดอยู่ตอนนี้ ──
-            if (_prayerData?['locationName'] != null) ...[
-              SizedBox(height: 6.h),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Icon(Icons.location_on, color: Colors.white70, size: 13.sp),
-                SizedBox(width: 4.w),
-                Flexible(
-                  child: Text(
-                    _prayerData!['locationName'] as String,
-                    style: TextStyle(color: Colors.white70, fontSize: 12.sp),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ]),
-            ],
-            SizedBox(height: 16.h),
-          ]),
+      child: Stack(children: [
+        // ── ซิลูเอตทิวทัศน์มัสยิดสีทองแบบเมฆ วางเป็นพื้นหลังจางๆ ด้านล่างของ
+        // หัวข้อ ให้ความรู้สึกเหมือนขอบฟ้ายามพลบค่ำอยู่หลังข้อความ ──
+        Positioned(
+          bottom: 0, left: 0, right: 0,
+          child: Opacity(
+            opacity: 0.28,
+            child: Image.asset('image/decor/mosque_skyline_gold.png',
+                width: double.infinity, fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+          ),
         ),
-      ),
+        SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            child: Column(children: [
+              Row(children: [
+                GestureDetector(onTap: () => Navigator.pop(context),
+                    child: Icon(Icons.arrow_back_ios, color: Colors.white, size: 22.sp)),
+                GestureDetector(
+                  onTap: () async {
+                    await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
+                    // โหลดใหม่เสมอตอนกลับมาจาก Settings (ไม่ใช่แค่ตอนกด Save)
+                    // เพราะการเลือกตำแหน่งใน location sheet จะ apply ทันทีอยู่แล้ว
+                    _loadPrayerTimes();
+                  },
+                  child: Icon(Icons.settings, color: Colors.white70, size: 26.sp)),
+              ]),
+              SizedBox(height: 8.h),
+              Icon(Icons.access_time, color: Color(0xFFFFD700), size: 40.sp),
+              SizedBox(height: 8.h),
+              Text(_lang.prayerTimes,
+                  style: TextStyle(color: Color(0xFFFFD700), fontSize: 22.sp, fontWeight: FontWeight.bold)),
+              SizedBox(height: 4.h),
+              if (_prayerData != null)
+                Text(_prayerData!['date'], style: TextStyle(color: Colors.white70, fontSize: 13.sp)),
+              // ── บอกให้รู้ตอนกำลังดูข้อมูล cache เก่า (offline) ไม่ใช่ข้อมูลสด
+              // ผูกกับ isOffline ที่ prayer_service.dart set ไว้ตอนดึงจาก
+              // cache สำรอง (ไม่มีเน็ตตอนนี้ แต่เคยออนไลน์ไว้ล่วงหน้าไม่เกิน 14 วัน) ──
+              if (_prayerData?['isOffline'] == true) ...[
+                SizedBox(height: 6.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20.r)),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.cloud_off_rounded, color: Colors.white70, size: 12.sp),
+                    SizedBox(width: 4.w),
+                    Text(_lang.isThai ? 'ออฟไลน์ · ข้อมูลที่บันทึกไว้' : 'Offline · Saved data',
+                        style: TextStyle(color: Colors.white70, fontSize: 11.sp)),
+                  ]),
+                ),
+              ],
+              // ── ชื่อตำแหน่งที่ใช้คำนวณเวลาละหมาดอยู่ตอนนี้ ──
+              if (_prayerData?['locationName'] != null) ...[
+                SizedBox(height: 6.h),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Icon(Icons.location_on, color: Colors.white70, size: 13.sp),
+                  SizedBox(width: 4.w),
+                  Flexible(
+                    child: Text(
+                      _prayerData!['locationName'] as String,
+                      style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ]),
+              ],
+              SizedBox(height: 16.h),
+            ]),
+          ),
+        ),
+      ]),
     );
   }
 

@@ -294,6 +294,7 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
   late DateTime _displayMonth;
   List<Map<String, dynamic>>? _calendarData;
   bool _loading = true;
+  bool _loadFailed = false; // แยกสถานะ "โหลดไม่สำเร็จ" ออกจาก "กำลังโหลด"
 
   // ── มุมมองฮิจเราะห์ (สลับได้จากปุ่มด้านบน) — แก้ปัญหาเดือนคาบเกี่ยว
   // ตรงจุดที่สุด เพราะโหมดนี้จะโชว์ครบ 1 เดือนฮิจเราะห์เป๊ะๆ ไม่มีเดือนอื่นปนมา ──
@@ -304,6 +305,7 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
   late int _todayHijriYear;
   List<Map<String, dynamic>>? _hijriViewData;
   bool _hijriViewLoading = false;
+  bool _hijriViewLoadFailed = false;
 
   @override
   void initState() {
@@ -320,10 +322,18 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
   }
 
   Future<void> _loadCalendar() async {
-    setState(() => _loading = true);
+    setState(() { _loading = true; _loadFailed = false; });
     final data = await IslamicCalendarService.getHijriCalendar(
         _displayMonth.month, _displayMonth.year);
-    if (mounted) setState(() { _calendarData = data; _loading = false; });
+    if (!mounted) return;
+    if (data != null) {
+      setState(() { _calendarData = data; _loading = false; _loadFailed = false; });
+    } else {
+      // โหลดไม่สำเร็จและไม่มี cache ของเดือนนี้เลย (เช่น เดือนที่ยังไม่เคย
+      // prefetch ไว้ + ตอนนี้ไม่มีเน็ต) — ต้องโชว์สถานะนี้ชัดๆ ไม่ปล่อยให้
+      // ตารางว่างเปล่าดูเหมือนพังเงียบๆ
+      setState(() { _loading = false; _loadFailed = true; });
+    }
   }
 
   void _changeMonth(int delta) {
@@ -335,9 +345,14 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
   }
 
   Future<void> _loadHijriViewCalendar() async {
-    setState(() => _hijriViewLoading = true);
+    setState(() { _hijriViewLoading = true; _hijriViewLoadFailed = false; });
     final data = await IslamicCalendarService.getHijriToGregorianCalendar(_hijriMonth, _hijriYear);
-    if (mounted) setState(() { _hijriViewData = data; _hijriViewLoading = false; });
+    if (!mounted) return;
+    if (data != null) {
+      setState(() { _hijriViewData = data; _hijriViewLoading = false; _hijriViewLoadFailed = false; });
+    } else {
+      setState(() { _hijriViewLoading = false; _hijriViewLoadFailed = true; });
+    }
   }
 
   void _changeHijriMonth(int delta) {
@@ -357,6 +372,31 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
   }
 
   String _todayLabel() => kTodayLabels[widget.lang.lang] ?? 'Today';
+
+  // ── สถานะ "โหลดเดือนนี้ไม่สำเร็จ" (เช่น เดือนที่ยังไม่เคย prefetch ไว้
+  // ล่วงหน้า + ตอนนี้ไม่มีเน็ต) ให้กดแตะเพื่อลองใหม่ได้ แทนที่จะปล่อยตาราง
+  // ว่างเปล่าดูเหมือนพังเงียบๆ (ใช้ร่วมกันทั้งมุมมองเกรกอเรียนและฮิจเราะห์) ──
+  Widget _buildRetryState({required VoidCallback onRetry}) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onRetry,
+      child: Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.cloud_off_rounded, size: 32.sp, color: widget.theme.subTextColor),
+          SizedBox(height: 10.h),
+          Text(
+            {'en':'Could not load this month','th':'โหลดเดือนนี้ไม่สำเร็จ','ms':'Gagal memuat bulan ini','id':'Gagal memuat bulan ini','ar':'تعذر تحميل هذا الشهر','ur':'اس مہینے کو لوڈ نہیں کیا جا سکا','bn':'এই মাসটি লোড করা যায়নি'}[widget.lang.lang]
+                ?? 'Could not load this month',
+            style: TextStyle(fontSize: 13.sp, color: widget.theme.subTextColor)),
+          SizedBox(height: 4.h),
+          Text(
+            {'en':'Tap to retry','th':'แตะเพื่อลองใหม่','ms':'Ketik untuk cuba lagi','id':'Ketuk untuk coba lagi','ar':'اضغط لإعادة المحاولة','ur':'دوبارہ کوشش کے لیے ٹیپ کریں','bn':'আবার চেষ্টা করতে ট্যাপ করুন'}[widget.lang.lang]
+                ?? 'Tap to retry',
+            style: TextStyle(fontSize: 11.sp, color: widget.theme.iconColor, fontWeight: FontWeight.w600)),
+        ]),
+      ),
+    );
+  }
 
   // ปุ่มเดียวในชุด segmented switch เกรกอเรียน/ฮิจเราะห์
   Widget _viewToggleButton({required String label, required bool selected, required Color headerColor, required VoidCallback onTap}) {
@@ -420,7 +460,7 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
                   begin: Alignment.topLeft, end: Alignment.bottomRight),
               borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
             child: Column(children: [
-              Text('$weekdayName',
+              Text(weekdayName,
                   style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 12.sp)),
               SizedBox(height: 4.h),
               Text('$gDay $gregMonthName $gYear',
@@ -649,9 +689,11 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
             SizedBox(height: 6.h),
 
             // Grid — ครบ 1 เดือนฮิจเราะห์เป๊ะๆ ไม่มีเดือนอื่นปนมา
-            Expanded(child: _hijriViewLoading || _hijriViewData == null
-              ? Center(child: CircularProgressIndicator(color: widget.theme.iconColor, strokeWidth: 2.w))
-              : Builder(builder: (_) {
+            Expanded(child: _hijriViewLoadFailed
+              ? _buildRetryState(onRetry: _loadHijriViewCalendar)
+              : _hijriViewLoading || _hijriViewData == null
+                ? Center(child: CircularProgressIndicator(color: widget.theme.iconColor, strokeWidth: 2.w))
+                : Builder(builder: (_) {
                   final data = _hijriViewData!;
                   final firstG = data.first['gregorian'] as Map<String, dynamic>? ?? {};
                   final fd = int.tryParse(firstG['day']?.toString() ?? '') ?? 1;
@@ -789,9 +831,11 @@ class _FullCalendarSheetState extends State<_FullCalendarSheet> {
           SizedBox(height: 6.h),
 
           // Grid or loading
-          Expanded(child: _loading
-            ? Center(child: CircularProgressIndicator(color: widget.theme.iconColor, strokeWidth: 2.w))
-            : SingleChildScrollView(
+          Expanded(child: _loadFailed
+            ? _buildRetryState(onRetry: _loadCalendar)
+            : _loading
+              ? Center(child: CircularProgressIndicator(color: widget.theme.iconColor, strokeWidth: 2.w))
+              : SingleChildScrollView(
                 controller: ctrl,
                 padding: EdgeInsets.fromLTRB(12.w, 0.h, 12.w, 20.h),
                 child: Column(children: [

@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/language_service.dart';
 import '../services/theme_service.dart';
+import 'api_config.dart';
 
 class ChatbotPage extends StatefulWidget {
   const ChatbotPage({super.key});
@@ -14,12 +15,19 @@ class ChatbotPage extends StatefulWidget {
 
 class _ChatbotPageState extends State<ChatbotPage> {
   // ── Default key ของแอป (ใช้เป็นค่าเริ่มต้นถ้า user ไม่ได้ตั้งของตัวเอง) ──
-  // TODO: หมุน key นี้ทันทีที่ Google AI Studio เพราะเคยหลุดออกมาแล้ว
-  static const String _defaultApiKey = 'AQ.Ab8RN6JiAfYN7ZtqxvALEExa_HfwiwRNURKZvzdIKNYN9Qfs8A';
-  static const String _apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  // ดึงจาก api_config.dart ไฟล์เดียว (เดิมเคย hardcode ซ้ำอยู่ 3 จุดใน
+  // 2 ไฟล์ รวมทั้งใน dua_page.dart ทำให้ตอนหมุน key ใหม่เสี่ยงลืมแก้บางจุด)
+  static const String _defaultApiKey = ApiConfig.defaultGeminiApiKey;
+  static const String _apiUrl = ApiConfig.geminiApiUrl;
 
   // key ที่ user ตั้งเอง (ถ้ามี) ดึงมาจาก Settings > แชทบอต
   static const String userApiKeyPrefKey = 'user_gemini_api_key';
+
+  // ── จำกัดจำนวนข้อความ/วัน เฉพาะตอนใช้ default key ของแอป (ไม่จำกัดถ้า user
+  // ตั้ง key ของตัวเอง เพราะนั่นเป็นโควต้าและค่าใช้จ่ายของเขาเอง) ──
+  // เก็บเป็น "yyyy-MM-dd|count" ไว้ค่าเดียว รีเซ็ตอัตโนมัติเมื่อวันที่เปลี่ยน
+  static const String _dailyUsagePrefKey = 'chatbot_daily_usage';
+  static const int _dailyFreeLimit = 15;
 
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -67,8 +75,47 @@ Respond in the same language the user uses (All Language).
     return _defaultApiKey;
   }
 
+  String _todayKey() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  }
+
+  /// อ่านจำนวนข้อความที่ใช้ default key ไปแล้ววันนี้ (รีเซ็ตอัตโนมัติข้ามวัน)
+  Future<int> _getTodayUsage(SharedPreferences prefs) async {
+    final stored = prefs.getString(_dailyUsagePrefKey);
+    if (stored == null) return 0;
+    final parts = stored.split('|');
+    if (parts.length != 2 || parts[0] != _todayKey()) return 0;
+    return int.tryParse(parts[1]) ?? 0;
+  }
+
+  Future<void> _incrementTodayUsage(SharedPreferences prefs, int current) async {
+    await prefs.setString(_dailyUsagePrefKey, '${_todayKey()}|${current + 1}');
+  }
+
   Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final userKey = prefs.getString(userApiKeyPrefKey);
+    final usingOwnKey = userKey != null && userKey.trim().isNotEmpty;
+
+    // ── เช็คโควต้ารายวันเฉพาะตอนใช้ default key ของแอป ──
+    if (!usingOwnKey) {
+      final used = await _getTodayUsage(prefs);
+      if (used >= _dailyFreeLimit) {
+        setState(() {
+          _messages.add({'role': 'user', 'content': text});
+          _messages.add({'role': 'assistant', 'content': _lang.isThai
+              ? 'วันนี้ถามครบ $_dailyFreeLimit ข้อความแล้วครับ พรุ่งนี้ถามใหม่ได้ หรือใส่ Gemini API key ของคุณเองที่ Settings > แชทบอต เพื่อถามได้ไม่จำกัด'
+              : 'You\'ve reached today\'s limit of $_dailyFreeLimit messages. Try again tomorrow, or add your own Gemini API key in Settings > Chatbot for unlimited messages.'});
+        });
+        _controller.clear();
+        _scrollToBottom();
+        return;
+      }
+    }
+
     setState(() { _messages.add({'role': 'user', 'content': text}); _isLoading = true; });
     _controller.clear();
     _scrollToBottom();
@@ -86,10 +133,13 @@ Respond in the same language the user uses (All Language).
       if (data['candidates'] != null) {
         final reply = data['candidates'][0]['content']['parts'][0]['text'];
         setState(() { _messages.add({'role': 'assistant', 'content': reply}); _isLoading = false; });
+        // นับโควต้าเฉพาะตอนที่ยิง API สำเร็จจริง และใช้ default key เท่านั้น
+        if (!usingOwnKey) {
+          final used = await _getTodayUsage(prefs);
+          await _incrementTodayUsage(prefs, used);
+        }
       } else {
         // ถ้าใช้ key ของตัวเองแล้ว error (เช่น key ผิด/หมดโควต้า) แจ้งให้ตรงจุดกว่าเดิม
-        final prefs = await SharedPreferences.getInstance();
-        final usingOwnKey = (prefs.getString(userApiKeyPrefKey) ?? '').trim().isNotEmpty;
         final errorMsg = usingOwnKey
             ? (_lang.isThai
                 ? 'ขอโทษครับ ใช้ API key ของคุณไม่สำเร็จ กรุณาเช็คที่ Settings > แชทบอต'

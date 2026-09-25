@@ -76,8 +76,10 @@ class IslamicCalendarService {
   }
 
   // ดึงปฏิทินล่วงหน้าและ cache ไว้ (parallel)
-  // จำนวนเดือน: เดือนปัจจุบัน + ล่วงหน้าอีก 5 เดือน = รวม 6 เดือน
-  static const int prefetchMonthCount = 6;
+  // จำนวนเดือน: เดือนปัจจุบัน + ล่วงหน้าอีก 11 เดือน = รวม 12 เดือน (1 ปีเต็ม)
+  // ขยายจาก 6 → 12 เดือน ให้เปิดดูปฏิทินฮิจเราะห์แบบออฟไลน์ได้นานขึ้น
+  // (แพทเทิร์นเดียวกับที่ขยาย prayer_service.dart จาก 7 → 14 วัน)
+  static const int prefetchMonthCount = 12;
 
   static Future<void> prefetchCalendars() async {
     final now = DateTime.now();
@@ -89,6 +91,34 @@ class IslamicCalendarService {
           DateTime(now.year, now.month + i).year,
         ),
     ]);
+    // ลบ cache เดือนเก่าที่ผ่านไปแล้วทิ้ง กันไม่ให้ SharedPreferences โตขึ้น
+    // เรื่อยๆ แบบไม่มีที่สิ้นสุด (ทุกครั้งที่เปิดแอปจะ prefetch ล่วงหน้าใหม่
+    // 12 เดือน เดือนเก่าที่ผ่านไปแล้วไม่จำเป็นต้องเก็บถาวร)
+    final prefs = await SharedPreferences.getInstance();
+    await _cleanupOldMonthCache(prefs);
+  }
+
+  /// ลบ cache ปฏิทินฮิจเราะห์ (แบบเกรกอเรียนเป็นหลัก ที่ prefetch อัตโนมัติ)
+  /// ของเดือนที่ผ่านไปแล้ว เก็บเดือนที่แล้วไว้ 1 เดือนเผื่อดูย้อนหลังตอนเพิ่ง
+  /// ข้ามเดือนใหม่ — ไม่แตะ cache แบบฮิจเราะห์เป็นหลัก (คีย์ h2g_...) เพราะ
+  /// อันนั้นสร้างจากการที่ user กดสลับดูเองเท่านั้น ไม่ได้ prefetch อัตโนมัติ
+  /// ปริมาณจึงไม่มีทางบวมแบบไม่มีขอบเขตอยู่แล้ว
+  static Future<void> _cleanupOldMonthCache(SharedPreferences prefs) async {
+    final now = DateTime.now();
+    final cutoff = DateTime(now.year, now.month - 1);
+    final keys = prefs.getKeys().where((k) => k.startsWith(_cachePrefix)).toList();
+    for (final key in keys) {
+      final suffix = key.substring(_cachePrefix.length);
+      if (suffix.startsWith('h2g_')) continue; // ข้ามคีย์แบบฮิจเราะห์เป็นหลัก
+      final parts = suffix.split('_');
+      if (parts.length != 2) continue;
+      final y = int.tryParse(parts[0]);
+      final m = int.tryParse(parts[1]);
+      if (y == null || m == null) continue;
+      if (DateTime(y, m).isBefore(cutoff)) {
+        await prefs.remove(key);
+      }
+    }
   }
 
   // ══════════════════════════════════════════════════════════════

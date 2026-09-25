@@ -128,7 +128,6 @@ class _AzanSelectionPageState extends State<AzanSelectionPage> {
           final azan = AzanService.azanList[index];
           final id = azan['id']!;
           final name = _lang.isThai ? azan['nameTh']! : azan['name']!;
-          final isDownloadType = azan['type'] == 'download';
           final status = _downloadStatus[id] ?? 'idle';
           final isSelected = _selectedId == id;
           final isPlaying = _playingId == id;

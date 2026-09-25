@@ -17,16 +17,11 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _mainController;      // รูปหลัก fade+scale
   late AnimationController _glowController;      // glow pulse
   late AnimationController _starController;      // ดาวกะพริบ
-  late AnimationController _textController;      // ข้อความ
   late AnimationController _particleController;  // particle เคลื่อนที่
 
   // Main image
   late Animation<double> _imageFade;
   late Animation<double> _imageScale;
-
-  // Text
-  late Animation<double> _textFade;
-  late Animation<Offset> _textSlide;
 
   @override
   void initState() {
@@ -58,15 +53,6 @@ class _SplashScreenState extends State<SplashScreen>
         vsync: this, duration: const Duration(milliseconds: 3000))
       ..repeat();
 
-    // Text: fade + slide up
-    _textController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 800));
-    _textFade = Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(parent: _textController, curve: Curves.easeIn));
-    _textSlide = Tween<Offset>(
-        begin: const Offset(0, 0.4), end: Offset.zero).animate(
-        CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic));
-
     // เล่น sequence
     _runSequence();
 
@@ -86,8 +72,6 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _runSequence() async {
     _mainController.forward();
-    await Future.delayed(const Duration(milliseconds: 900));
-    _textController.forward();
   }
 
   @override
@@ -95,7 +79,6 @@ class _SplashScreenState extends State<SplashScreen>
     _mainController.dispose();
     _glowController.dispose();
     _starController.dispose();
-    _textController.dispose();
     _particleController.dispose();
     super.dispose();
   }
@@ -108,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen>
       body: AnimatedBuilder(
         animation: Listenable.merge([
           _mainController, _glowController,
-          _starController, _textController, _particleController,
+          _starController, _particleController,
         ]),
         builder: (context, _) {
           return Stack(

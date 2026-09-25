@@ -89,6 +89,8 @@ flutter:
     - image/Icon.png 
     - image/qibla/
     - image/decor/
+    - image/wudhu/
+    - assets/audio/tasbih/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

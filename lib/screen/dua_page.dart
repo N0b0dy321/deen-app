@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
+import 'api_config.dart';
 
 // ── Thai translations hardcoded ────────────────────
 const Map<int, Map<String, String>> kDuaTranslations = {
@@ -637,17 +638,400 @@ const Map<String, Map<int, Map<String, String>>> kDuaAllTranslations = {
 
 
 final _categories = [
-  {'id': 'all',        'th': 'ทั้งหมด',     'en': 'All',        'ms': 'Semua',       'id2': 'Semua',       'ar': 'الكل',       'ur': 'سب',      'bn': 'সব',      'icon': '🤲'},
-  {'id': 'daily',      'th': 'ประจำวัน',    'en': 'Daily',      'ms': 'Harian',      'id2': 'Harian',      'ar': 'يومي',       'ur': 'روزانہ',  'bn': 'দৈনিক',   'icon': '☀️'},
-  {'id': 'prayer',     'th': 'ละหมาด',      'en': 'Prayer',     'ms': 'Solat',       'id2': 'Sholat',      'ar': 'الصلاة',     'ur': 'نماز',    'bn': 'নামাজ',   'icon': '🕌'},
-  {'id': 'hardship',   'th': 'ยากลำบาก',   'en': 'Hardship',   'ms': 'Kesusahan',   'id2': 'Kesulitan',   'ar': 'الشدة',      'ur': 'مشکل',    'bn': 'কষ্ট',    'icon': '💙'},
-  {'id': 'protection', 'th': 'ปกป้อง',      'en': 'Protection', 'ms': 'Perlindungan','id2': 'Perlindungan','ar': 'الحماية',    'ur': 'تحفظ',    'bn': 'সুরক্ষা', 'icon': '🛡️'},
-  {'id': 'travel',     'th': 'เดินทาง',     'en': 'Travel',     'ms': 'Perjalanan',  'id2': 'Perjalanan',  'ar': 'السفر',      'ur': 'سفر',     'bn': 'ভ্রমণ',   'icon': '✈️'},
-  {'id': 'family',     'th': 'ครอบครัว',    'en': 'Family',     'ms': 'Keluarga',    'id2': 'Keluarga',    'ar': 'الأسرة',     'ur': 'خاندان',  'bn': 'পরিবার',  'icon': '👨‍👩‍👧'},
-  {'id': 'ramadan',    'th': 'รอมฎอน',      'en': 'Ramadan',    'ms': 'Ramadan',     'id2': 'Ramadan',     'ar': 'رمضان',      'ur': 'رمضان',   'bn': 'রমজান',   'icon': '🌙'},
-  {'id': 'social',     'th': 'สังคม',       'en': 'Social',     'ms': 'Sosial',      'id2': 'Sosial',      'ar': 'الاجتماعي',  'ur': 'سماجی',   'bn': 'সামাজিক', 'icon': '🤝'},
-  {'id': 'death',      'th': 'ผู้เสียชีวิต','en': 'Death',      'ms': 'Kematian',    'id2': 'Kematian',    'ar': 'الوفاة',     'ur': 'موت',     'bn': 'মৃত্যু',  'icon': '🕊️'},
+  {'id': 'all',        'th': 'ทั้งหมด',     'en': 'All',        'ms': 'Semua',       'id2': 'Semua',       'ar': 'الكل',       'ur': 'سب',      'bn': 'সব'},
+  {'id': 'daily',      'th': 'ประจำวัน',    'en': 'Daily',      'ms': 'Harian',      'id2': 'Harian',      'ar': 'يومي',       'ur': 'روزانہ',  'bn': 'দৈনিক'},
+  {'id': 'prayer',     'th': 'ละหมาด',      'en': 'Prayer',     'ms': 'Solat',       'id2': 'Sholat',      'ar': 'الصلاة',     'ur': 'نماز',    'bn': 'নামাজ'},
+  {'id': 'hardship',   'th': 'ยากลำบาก',   'en': 'Hardship',   'ms': 'Kesusahan',   'id2': 'Kesulitan',   'ar': 'الشدة',      'ur': 'مشکل',    'bn': 'কষ্ট'},
+  {'id': 'protection', 'th': 'ปกป้อง',      'en': 'Protection', 'ms': 'Perlindungan','id2': 'Perlindungan','ar': 'الحماية',    'ur': 'تحفظ',    'bn': 'সুরক্ষা'},
+  {'id': 'travel',     'th': 'เดินทาง',     'en': 'Travel',     'ms': 'Perjalanan',  'id2': 'Perjalanan',  'ar': 'السفر',      'ur': 'سفر',     'bn': 'ভ্রমণ'},
+  {'id': 'family',     'th': 'ครอบครัว',    'en': 'Family',     'ms': 'Keluarga',    'id2': 'Keluarga',    'ar': 'الأسرة',     'ur': 'خاندان',  'bn': 'পরিবার'},
+  {'id': 'ramadan',    'th': 'รอมฎอน',      'en': 'Ramadan',    'ms': 'Ramadan',     'id2': 'Ramadan',     'ar': 'رمضان',      'ur': 'رمضان',   'bn': 'রমজান'},
+  {'id': 'social',     'th': 'สังคม',       'en': 'Social',     'ms': 'Sosial',      'id2': 'Sosial',      'ar': 'الاجتماعي',  'ur': 'سماجی',   'bn': 'সামাজিক'},
+  {'id': 'death',      'th': 'ผู้เสียชีวิต','en': 'Death',      'ms': 'Kematian',    'id2': 'Kematian',    'ar': 'الوفاة',     'ur': 'موت',     'bn': 'মৃত্যু'},
 ];
+
+// ── ไอคอนและสีไล่เฉดของแต่ละหมวดหมู่ดุอาอ์ (ใช้ในหน้าการ์ดหมวดหมู่) ──
+const Map<String, IconData> kDuaCategoryIcons = {
+  'daily': Icons.wb_sunny_rounded,
+  'prayer': Icons.mosque_rounded,
+  'hardship': Icons.volunteer_activism_rounded,
+  'protection': Icons.shield_rounded,
+  'travel': Icons.flight_rounded,
+  'family': Icons.family_restroom_rounded,
+  'ramadan': Icons.nights_stay_rounded,
+  'social': Icons.groups_rounded,
+  'death': Icons.spa_rounded,
+};
+
+const Map<String, List<Color>> kDuaCategoryColors = {
+  'daily':      [Color(0xFFEF6C00), Color(0xFFFFA726)],
+  'prayer':     [Color(0xFF6A1B9A), Color(0xFF9C27B0)],
+  'hardship':   [Color(0xFF37474F), Color(0xFF607D8B)],
+  'protection': [Color(0xFF00695C), Color(0xFF00897B)],
+  'travel':     [Color(0xFF0D47A1), Color(0xFF1E88E5)],
+  'family':     [Color(0xFFAD1457), Color(0xFFD81B60)],
+  'ramadan':    [Color(0xFF283593), Color(0xFF3F51B5)],
+  'social':     [Color(0xFF2E7D32), Color(0xFF43A047)],
+  'death':      [Color(0xFF4E342E), Color(0xFF6D4C41)],
+};
+
+/// ── บันทึก "อ่านแล้ว" ของแต่ละดุอาอ์ลง SharedPreferences ──
+/// เก็บเป็น Set ของ id (แปลงเป็น String) ใช้ร่วมกันทั้งหน้า DuaPage และ DuaTab
+class DuaProgressService {
+  static const _key = 'dua_read_ids';
+
+  static Future<Set<String>> getReadIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (prefs.getStringList(_key) ?? []).toSet();
+  }
+
+  static Future<void> markRead(dynamic duaId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final ids = (prefs.getStringList(_key) ?? []).toSet();
+    if (ids.add(duaId.toString())) {
+      await prefs.setStringList(_key, ids.toList());
+    }
+  }
+}
+
+/// ── การ์ดหมวดหมู่ดุอาอ์ (ไล่เฉดสี + ไอคอน + แถบความคืบหน้า) ──
+/// ใช้ร่วมกันทั้ง DuaPage (มี Scaffold ของตัวเอง) และ DuaTab (แท็บใน DuaLessonsPage)
+Widget buildDuaCategoryCard({
+  required Map<String, String> cat,
+  required int total,
+  required int read,
+  required LanguageService lang,
+  required ThemeService theme,
+  required VoidCallback onTap,
+}) {
+  final catId = cat['id'] as String;
+  final colors = kDuaCategoryColors[catId] ?? const [Color(0xFF1B5E20), Color(0xFF2E7D32)];
+  final icon = kDuaCategoryIcons[catId] ?? Icons.menu_book_rounded;
+  final label = _getCatLabel(cat, lang.lang);
+  final progress = total > 0 ? read / total : 0.0;
+  final isDone = total > 0 && read >= total;
+
+  return TweenAnimationBuilder<double>(
+    tween: Tween(begin: 0.94, end: 1.0),
+    duration: const Duration(milliseconds: 260),
+    curve: Curves.easeOutCubic,
+    builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        splashColor: colors[0].withOpacity(0.12),
+        highlightColor: colors[0].withOpacity(0.06),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 14),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: theme.isDark ? ThemeService.darkBorder : Colors.grey.shade200),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(theme.isDark ? 0.20 : 0.04), blurRadius: 10, offset: const Offset(0, 3))]),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Container(width: 52, height: 52,
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: colors),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [BoxShadow(color: colors[0].withOpacity(0.35), blurRadius: 8, offset: const Offset(0, 3))]),
+                child: Icon(icon, color: Colors.white, size: 26)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(label,
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: theme.textColor, fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 2),
+                Text(cat['en'] ?? '',
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: theme.subTextColor, fontSize: 11.5, letterSpacing: 0.2)),
+                const SizedBox(height: 8),
+                Row(children: [
+                  Icon(Icons.menu_book_rounded, size: 13, color: colors[0]),
+                  const SizedBox(width: 4),
+                  Text('$read/$total ${lang.isThai ? "บท" : (lang.lang == "en" ? "duas" : "")}'.trim(),
+                      style: TextStyle(color: colors[0], fontSize: 12, fontWeight: FontWeight.w700)),
+                ]),
+              ]),
+            ),
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 46, height: 46,
+              child: Stack(alignment: Alignment.center, children: [
+                SizedBox(
+                  width: 46, height: 46,
+                  child: CircularProgressIndicator(
+                    value: progress.clamp(0.0, 1.0),
+                    strokeWidth: 4,
+                    backgroundColor: theme.isDark ? ThemeService.darkBorder : Colors.grey.shade200,
+                    valueColor: AlwaysStoppedAnimation(colors[0]),
+                  ),
+                ),
+                isDone
+                    ? Icon(Icons.check_rounded, color: colors[0], size: 20)
+                    : Text('${(progress * 100).round()}%',
+                        style: TextStyle(color: theme.textColor, fontSize: 11, fontWeight: FontWeight.w700)),
+              ]),
+            ),
+          ]),
+        ),
+      ),
+    ),
+  );
+}
+
+/// ── หน้าใหม่แยกต่างหากสำหรับแสดงดุอาอ์ในหมวดที่เลือก ──
+/// เปิดด้วย Navigator.push (มี transition แบบเปลี่ยนหน้าจริงของระบบ)
+/// แทนการสลับ state อยู่ในหน้าเดิม ใช้ร่วมกันทั้ง DuaPage และ DuaTab
+class DuaCategoryDetailPage extends StatefulWidget {
+  final String categoryId;
+  final List<Map<String, dynamic>> duas;
+  const DuaCategoryDetailPage({super.key, required this.categoryId, required this.duas});
+
+  @override
+  State<DuaCategoryDetailPage> createState() => _DuaCategoryDetailPageState();
+}
+
+class _DuaCategoryDetailPageState extends State<DuaCategoryDetailPage> {
+  final _theme = ThemeService();
+  final _lang = LanguageService();
+  final _searchCtrl = TextEditingController();
+  Set<String> _readDuaIds = {};
+  late List<Map<String, dynamic>> _filtered;
+
+  void _rebuild() { if (mounted) setState(() {}); }
+
+  @override
+  void initState() {
+    super.initState();
+    _theme.addListener(_rebuild);
+    _lang.addListener(_rebuild);
+    _filtered = widget.duas.where((d) => d['category'] == widget.categoryId).toList();
+    _searchCtrl.addListener(_filterDuas);
+    _loadReadIds();
+  }
+
+  Future<void> _loadReadIds() async {
+    final ids = await DuaProgressService.getReadIds();
+    if (mounted) setState(() => _readDuaIds = ids);
+  }
+
+  @override
+  void dispose() {
+    _theme.removeListener(_rebuild);
+    _lang.removeListener(_rebuild);
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  void _filterDuas() {
+    final query = _searchCtrl.text.toLowerCase();
+    final lang = _lang.lang;
+    setState(() {
+      _filtered = widget.duas.where((dua) {
+        final matchCat = dua['category'] == widget.categoryId;
+        final matchSearch = query.isEmpty ||
+            (_getDuaTitle(dua, lang)).toLowerCase().contains(query) ||
+            (dua['dua'] ?? '').contains(query);
+        return matchCat && matchSearch;
+      }).toList();
+    });
+  }
+
+  void _copyDua(Map<String, dynamic> dua) {
+    Clipboard.setData(ClipboardData(text: '${dua['dua']}\n\n${dua['transliteration']}'));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(_lang.copied),
+      backgroundColor: const Color(0xFF1B5E20),
+      duration: const Duration(seconds: 1)));
+  }
+
+  void _showDetail(Map<String, dynamic> dua) {
+    DuaProgressService.markRead(dua['id']).then((_) {
+      if (mounted) setState(() => _readDuaIds.add(dua['id'].toString()));
+    });
+    final lang = _lang.lang;
+    final cat = _categories.firstWhere(
+        (c) => c['id'] == dua['category'],
+        orElse: () => {'en': '', 'th': '', 'id2': '', 'ms': '', 'ar': '', 'ur': '', 'bn': ''});
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.75, maxChildSize: 0.95, minChildSize: 0.5,
+        builder: (_, ctrl) => Container(
+          decoration: BoxDecoration(
+            color: _theme.cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24))),
+          child: ListView(controller: ctrl, padding: const EdgeInsets.all(24), children: [
+            Center(child: Container(width: 40, height: 4,
+                decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 16),
+            Row(children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: _theme.iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(20)),
+                child: Row(children: [
+                  Text(_getCatLabel(cat, lang),
+                      style: TextStyle(fontSize: 12, color: _theme.iconColor, fontWeight: FontWeight.w600)),
+                ])),
+              const Spacer(),
+              IconButton(icon: Icon(Icons.copy, color: _theme.subTextColor, size: 20), onPressed: () => _copyDua(dua)),
+            ]),
+            const SizedBox(height: 12),
+            Text(_getDuaTitle(dua, lang), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _theme.textColor)),
+            const SizedBox(height: 6),
+            Text(_getDuaDesc(dua, lang), style: TextStyle(fontSize: 13, color: _theme.subTextColor, height: 1.5)),
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity, padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: _theme.isDark ? const Color(0xFF0D3B1E) : const Color(0xFFE8F5E9),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _theme.iconColor.withOpacity(0.2))),
+              child: Text(dua['dua'] ?? '',
+                  textAlign: TextAlign.right, textDirection: TextDirection.rtl,
+                  style: TextStyle(fontSize: 26, height: 2.0, color: _theme.textColor, fontWeight: FontWeight.w500))),
+            const SizedBox(height: 16),
+            if (_getDuaTrans(dua, lang).isNotEmpty)
+            Container(
+              width: double.infinity, padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _theme.cardColor, borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _theme.isDark ? ThemeService.darkBorder : Colors.grey.shade200)),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(_lang.transliteration, style: TextStyle(fontSize: 12, color: _theme.iconColor, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 6),
+                Text(_getDuaTrans(dua, lang),
+                    style: TextStyle(fontSize: 14, color: _theme.textColor, height: 1.6, fontStyle: FontStyle.italic)),
+              ])),
+            const SizedBox(height: 32),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard(Map<String, dynamic> dua) {
+    final lang = _lang.lang;
+    return GestureDetector(
+      onTap: () => _showDetail(dua),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: _theme.cardColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFE8F5E9)),
+          boxShadow: _theme.isDark ? null : [
+            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))]),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(_getDuaTitle(dua, lang),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _theme.textColor)),
+                const SizedBox(height: 2),
+                Text(_getDuaDesc(dua, lang),
+                    style: TextStyle(fontSize: 11, color: _theme.subTextColor),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              ])),
+              GestureDetector(
+                onTap: () => _copyDua(dua),
+                child: Padding(padding: const EdgeInsets.all(4),
+                    child: Icon(Icons.copy_outlined, color: _theme.subTextColor, size: 15))),
+            ])),
+          Container(height: 0.5, margin: const EdgeInsets.symmetric(horizontal: 14),
+              color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFEEEEEE)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Text(dua['dua'] ?? '',
+                  textAlign: TextAlign.right, textDirection: TextDirection.rtl,
+                  maxLines: 2, overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 19, height: 1.9, color: _theme.textColor)),
+              if (_getDuaTrans(dua, lang).isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(_getDuaTrans(dua, lang),
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: _theme.subTextColor, fontStyle: FontStyle.italic)),
+              ],
+            ])),
+        ]),
+      ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final lang = _lang.lang;
+    final cat = _categories.firstWhere((c) => c['id'] == widget.categoryId,
+        orElse: () => const {'th': '', 'en': ''});
+    final colors = kDuaCategoryColors[widget.categoryId] ?? const [Color(0xFF1B5E20), Color(0xFF2E7D32)];
+    final icon = kDuaCategoryIcons[widget.categoryId] ?? Icons.menu_book_rounded;
+    return Scaffold(
+      backgroundColor: _theme.bgColor,
+      body: Column(children: [
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: colors),
+            borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
+            boxShadow: [BoxShadow(color: colors[0].withOpacity(0.28), blurRadius: 14, offset: const Offset(0, 6))]),
+          child: SafeArea(bottom: false, child: Padding(
+            padding: const EdgeInsets.fromLTRB(4, 4, 16, 16),
+            child: Column(children: [
+              Row(children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                  onPressed: () => Navigator.pop(context)),
+                Container(width: 44, height: 44,
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                    child: Icon(icon, color: Colors.white, size: 22)),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(_getCatLabel(cat, lang),
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('${_filtered.length} ${lang == "th" ? "บท" : (cat['en'] ?? '')}'.trim(),
+                      style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12)),
+                ])),
+              ]),
+              const SizedBox(height: 14),
+              Container(
+                height: 42,
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
+                child: TextField(
+                  controller: _searchCtrl,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: _lang.searchDua,
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14),
+                    prefixIcon: const Icon(Icons.search, color: Colors.white70, size: 20),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10)))),
+            ]),
+          )),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: SafeArea(
+            top: false,
+            child: _filtered.isEmpty
+                ? Center(child: Text(_lang.noDuaFound, style: TextStyle(color: _theme.subTextColor)))
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    itemCount: _filtered.length,
+                    itemBuilder: (_, i) => _buildCard(_filtered[i])),
+          ),
+        ),
+      ]),
+    );
+  }
+}
 
 String _getCatLabel(Map<String, String> cat, String lang) {
   if (lang == 'id') return cat['id2'] ?? cat['en'] ?? '';
@@ -696,7 +1080,7 @@ class _DuaPageState extends State<DuaPage> {
   List<Map<String, dynamic>> _filtered = [];
   bool _isLoading = true;
   String _errorMessage = '';
-  String _selectedCategory = 'all';
+  Set<String> _readDuaIds = {};
   final _searchCtrl = TextEditingController();
 
   void _rebuild() { if (mounted) setState(() {}); }
@@ -717,6 +1101,12 @@ class _DuaPageState extends State<DuaPage> {
     _lang.addListener(_onLangChange);
     _searchCtrl.addListener(_filterDuas);
     _fetchDuas();
+    _loadReadIds();
+  }
+
+  Future<void> _loadReadIds() async {
+    final ids = await DuaProgressService.getReadIds();
+    if (mounted) setState(() => _readDuaIds = ids);
   }
 
   @override
@@ -805,8 +1195,9 @@ class _DuaPageState extends State<DuaPage> {
   }
 
   Future<Map<String, dynamic>> _translateTransliteration(String lang) async {
-    const geminiKey = 'AQ.Ab8RN6JiAfYN7ZtqxvALEExa_HfwiwRNURKZvzdIKNYN9Qfs8A';
-    const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+    // ดึงจาก api_config.dart ไฟล์เดียว (แก้ key ที่นั่นที่เดียวพอ)
+    const geminiKey = ApiConfig.defaultGeminiApiKey;
+    const geminiUrl = ApiConfig.geminiApiUrl;
     final langName = lang == 'ur' ? 'Urdu script (اردو)' : 'Bengali script (বাংলা)';
     final Map<String, dynamic> result = {};
     const batchSize = 25;
@@ -821,7 +1212,7 @@ class _DuaPageState extends State<DuaPage> {
             'Items (id|latin_transliteration):\n$items';
 
         final res = await http.post(
-          Uri.parse('\$geminiUrl?key=\$geminiKey'),
+          Uri.parse('$geminiUrl?key=$geminiKey'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'contents': [{'parts': [{'text': prompt}]}],
@@ -841,7 +1232,7 @@ class _DuaPageState extends State<DuaPage> {
         await Future.delayed(const Duration(milliseconds: 300));
       }
     } catch (e) {
-      print('Transliteration error: \$e');
+      print('Transliteration error: $e');
     }
     return result;
   }
@@ -851,11 +1242,10 @@ class _DuaPageState extends State<DuaPage> {
     final lang = _lang.lang;
     setState(() {
       _filtered = _duas.where((dua) {
-        final matchCat = _selectedCategory == 'all' || dua['category'] == _selectedCategory;
         final matchSearch = query.isEmpty ||
             (_getDuaTitle(dua, lang)).toLowerCase().contains(query) ||
             (dua['dua'] ?? '').contains(query);
-        return matchCat && matchSearch;
+        return matchSearch;
       }).toList();
     });
   }
@@ -869,10 +1259,13 @@ class _DuaPageState extends State<DuaPage> {
   }
 
   void _showDetail(Map<String, dynamic> dua) {
+    DuaProgressService.markRead(dua['id']).then((_) {
+      if (mounted) setState(() => _readDuaIds.add(dua['id'].toString()));
+    });
     final lang = _lang.lang;
     final cat = _categories.firstWhere(
         (c) => c['id'] == dua['category'],
-        orElse: () => {'icon': '🤲', 'en': '', 'th': '', 'id': '', 'id2': '', 'ms': '', 'ar': '', 'ur': '', 'bn': ''});
+        orElse: () => {'en': '', 'th': '', 'id': '', 'id2': '', 'ms': '', 'ar': '', 'ur': '', 'bn': ''});
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -892,7 +1285,7 @@ class _DuaPageState extends State<DuaPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: _theme.iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(20)),
                 child: Row(children: [
-                  Text(_getCatLabel(cat as Map<String, String>, lang),
+                  Text(_getCatLabel(cat, lang),
                       style: TextStyle(fontSize: 12, color: _theme.iconColor, fontWeight: FontWeight.w600)),
                 ])),
               const Spacer(),
@@ -938,11 +1331,14 @@ class _DuaPageState extends State<DuaPage> {
       backgroundColor: _theme.bgColor,
       body: Column(children: [
         _buildHeader(context),
-  
-        Expanded(child: _isLoading
-            ? Center(child: CircularProgressIndicator(color: _theme.iconColor))
-            : _errorMessage.isNotEmpty ? _buildError()
-            : _buildBody()),
+
+        Expanded(child: SafeArea(
+          top: false,
+          child: _isLoading
+              ? Center(child: CircularProgressIndicator(color: _theme.iconColor))
+              : _errorMessage.isNotEmpty ? _buildError()
+              : _buildBody(),
+        )),
       ]),
     );
   }
@@ -958,14 +1354,14 @@ class _DuaPageState extends State<DuaPage> {
               : [const Color(0xFF1B5E20), const Color(0xFF2E7D32)]),
         borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24))),
-      child: SafeArea(child: Padding(
+      child: SafeArea(bottom: false, child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Column(children: [
           Row(children: [
             GestureDetector(onTap: () => Navigator.pop(context),
                 child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 22))]),
           const SizedBox(height: 8),
-          const Text('🤲', style: TextStyle(fontSize: 40)),
+          const Icon(Icons.volunteer_activism, color: Color(0xFFFFD700), size: 40),
           const SizedBox(height: 8),
           Text(_lang.duaLessons,
               style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),
@@ -991,52 +1387,43 @@ class _DuaPageState extends State<DuaPage> {
     );
   }
 
+  Widget _buildCategoryGrid() {
+    final realCats = _categories.where((c) => c['id'] != 'all').toList();
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: realCats.length,
+      itemBuilder: (context, i) {
+        final cat = realCats[i];
+        final catId = cat['id'] as String;
+        final total = _duas.where((d) => d['category'] == catId).length;
+        final read = _duas.where((d) =>
+            d['category'] == catId && _readDuaIds.contains(d['id'].toString())).length;
+        return buildDuaCategoryCard(
+          cat: cat, total: total, read: read, lang: _lang, theme: _theme,
+          onTap: () async {
+            await Navigator.push(context, MaterialPageRoute(
+                builder: (_) => DuaCategoryDetailPage(categoryId: catId, duas: _duas)));
+            if (mounted) await _loadReadIds();
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildBody() {
-    final lang = _lang.lang;
-    return Column(children: [
-      SizedBox(
-        height: 52,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          itemCount: _categories.length,
-          itemBuilder: (_, i) {
-            final cat = _categories[i];
-            final isSelected = _selectedCategory == cat['id'];
-            return GestureDetector(
-              onTap: () { setState(() => _selectedCategory = cat['id'] as String); _filterDuas(); },
-              child: Container(
-                margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: isSelected ? _theme.iconColor : _theme.cardColor,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: isSelected ? _theme.iconColor
-                      : (_theme.isDark ? ThemeService.darkBorder : Colors.grey.shade300))),
-                child: Row(children: [
-                  Text(_getCatLabel(cat as Map<String, String>, lang),
-                      style: TextStyle(fontSize: 13,
-                          color: isSelected ? Colors.white : _theme.textColor,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
-                ]),
-              ));
-          }),
-      ),
-      Expanded(
-        child: _filtered.isEmpty
-            ? Center(child: Text(_lang.noDuaFound, style: TextStyle(color: _theme.subTextColor)))
-            : ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                itemCount: _filtered.length,
-                itemBuilder: (_, i) => _buildCard(_filtered[i]))),
-    ]);
+    if (_searchCtrl.text.trim().isEmpty) {
+      return _buildCategoryGrid();
+    }
+    return _filtered.isEmpty
+        ? Center(child: Text(_lang.noDuaFound, style: TextStyle(color: _theme.subTextColor)))
+        : ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            itemCount: _filtered.length,
+            itemBuilder: (_, i) => _buildCard(_filtered[i]));
   }
 
   Widget _buildCard(Map<String, dynamic> dua) {
     final lang = _lang.lang;
-    final cat = _categories.firstWhere(
-        (c) => c['id'] == dua['category'],
-        orElse: () => {'icon': '🤲', 'en': '', 'th': '', 'id2': '', 'ms': '', 'ar': '', 'ur': '', 'bn': ''});
     return GestureDetector(
       onTap: () => _showDetail(dua),
       child: Container(
@@ -1112,7 +1499,7 @@ class _DuaTabState extends State<DuaTab> {
   List<Map<String, dynamic>> _filtered = [];
   bool _isLoading = true;
   String _errorMessage = '';
-  String _selectedCategory = 'all';
+  Set<String> _readDuaIds = {};
   final _searchCtrl = TextEditingController();
 
   void _rebuild() { if (mounted) setState(() {}); }
@@ -1133,6 +1520,12 @@ class _DuaTabState extends State<DuaTab> {
     _lang.addListener(_onLangChange);
     _searchCtrl.addListener(_filterDuas);
     _fetchDuas();
+    _loadReadIds();
+  }
+
+  Future<void> _loadReadIds() async {
+    final ids = await DuaProgressService.getReadIds();
+    if (mounted) setState(() => _readDuaIds = ids);
   }
 
   @override
@@ -1221,8 +1614,9 @@ class _DuaTabState extends State<DuaTab> {
   }
 
   Future<Map<String, dynamic>> _translateTransliteration(String lang) async {
-    const geminiKey = 'AQ.Ab8RN6JiAfYN7ZtqxvALEExa_HfwiwRNURKZvzdIKNYN9Qfs8A';
-    const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+    // ดึงจาก api_config.dart ไฟล์เดียว (แก้ key ที่นั่นที่เดียวพอ)
+    const geminiKey = ApiConfig.defaultGeminiApiKey;
+    const geminiUrl = ApiConfig.geminiApiUrl;
     final langName = lang == 'ur' ? 'Urdu script (اردو)' : 'Bengali script (বাংলা)';
     final Map<String, dynamic> result = {};
     const batchSize = 25;
@@ -1237,7 +1631,7 @@ class _DuaTabState extends State<DuaTab> {
             'Items (id|latin_transliteration):\n$items';
 
         final res = await http.post(
-          Uri.parse('\$geminiUrl?key=\$geminiKey'),
+          Uri.parse('$geminiUrl?key=$geminiKey'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'contents': [{'parts': [{'text': prompt}]}],
@@ -1257,7 +1651,7 @@ class _DuaTabState extends State<DuaTab> {
         await Future.delayed(const Duration(milliseconds: 300));
       }
     } catch (e) {
-      print('Transliteration error: \$e');
+      print('Transliteration error: $e');
     }
     return result;
   }
@@ -1267,11 +1661,10 @@ class _DuaTabState extends State<DuaTab> {
     final lang = _lang.lang;
     setState(() {
       _filtered = _duas.where((dua) {
-        final matchCat = _selectedCategory == 'all' || dua['category'] == _selectedCategory;
         final matchSearch = query.isEmpty ||
             (_getDuaTitle(dua, lang)).toLowerCase().contains(query) ||
             (dua['dua'] ?? '').contains(query);
-        return matchCat && matchSearch;
+        return matchSearch;
       }).toList();
     });
   }
@@ -1285,10 +1678,13 @@ class _DuaTabState extends State<DuaTab> {
   }
 
   void _showDetail(Map<String, dynamic> dua) {
+    DuaProgressService.markRead(dua['id']).then((_) {
+      if (mounted) setState(() => _readDuaIds.add(dua['id'].toString()));
+    });
     final lang = _lang.lang;
     final cat = _categories.firstWhere(
         (c) => c['id'] == dua['category'],
-        orElse: () => {'icon': '🤲', 'en': '', 'th': '', 'id2': '', 'ms': '', 'ar': '', 'ur': '', 'bn': ''});
+        orElse: () => {'en': '', 'th': '', 'id2': '', 'ms': '', 'ar': '', 'ur': '', 'bn': ''});
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1308,7 +1704,7 @@ class _DuaTabState extends State<DuaTab> {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: _theme.iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(20)),
                 child: Row(children: [
-                  Text(_getCatLabel(cat as Map<String, String>, lang),
+                  Text(_getCatLabel(cat, lang),
                       style: TextStyle(fontSize: 12, color: _theme.iconColor, fontWeight: FontWeight.w600)),
                 ])),
               const Spacer(),
@@ -1348,118 +1744,100 @@ class _DuaTabState extends State<DuaTab> {
     );
   }
 
+  Widget _buildCategoryGrid() {
+    final realCats = _categories.where((c) => c['id'] != 'all').toList();
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: realCats.length,
+      itemBuilder: (context, i) {
+        final cat = realCats[i];
+        final catId = cat['id'] as String;
+        final total = _duas.where((d) => d['category'] == catId).length;
+        final read = _duas.where((d) =>
+            d['category'] == catId && _readDuaIds.contains(d['id'].toString())).length;
+        return buildDuaCategoryCard(
+          cat: cat, total: total, read: read, lang: _lang, theme: _theme,
+          onTap: () async {
+            await Navigator.push(context, MaterialPageRoute(
+                builder: (_) => DuaCategoryDetailPage(categoryId: catId, duas: _duas)));
+            if (mounted) await _loadReadIds();
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildCard(Map<String, dynamic> dua) {
+    final lang = _lang.lang;
+    return GestureDetector(
+      onTap: () => _showDetail(dua),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: _theme.cardColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFE8F5E9)),
+          boxShadow: _theme.isDark ? null : [
+            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))]),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(_getDuaTitle(dua, lang),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _theme.textColor)),
+                const SizedBox(height: 2),
+                Text(_getDuaDesc(dua, lang),
+                    style: TextStyle(fontSize: 11, color: _theme.subTextColor),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              ])),
+              GestureDetector(
+                onTap: () => _copyDua(dua),
+                child: Padding(padding: const EdgeInsets.all(4),
+                    child: Icon(Icons.copy_outlined, color: _theme.subTextColor, size: 15))),
+            ])),
+          Container(height: 0.5, margin: const EdgeInsets.symmetric(horizontal: 14),
+              color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFEEEEEE)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Text(dua['dua'] ?? '',
+                  textAlign: TextAlign.right, textDirection: TextDirection.rtl,
+                  maxLines: 2, overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 19, height: 1.9, color: _theme.textColor)),
+              if (_getDuaTrans(dua, lang).isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(_getDuaTrans(dua, lang),
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: _theme.subTextColor, fontStyle: FontStyle.italic)),
+              ],
+            ])),
+        ]),
+      ));
+  }
+
   @override
   Widget build(BuildContext context) {
-    final lang = _lang.lang;
-    return Column(children: [
-      Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-        child: TextField(
-          controller: _searchCtrl,
-          style: TextStyle(color: _theme.textColor),
-          decoration: InputDecoration(
-            hintText: _lang.searchDua,
-            hintStyle: TextStyle(color: _theme.subTextColor),
-            prefixIcon: Icon(Icons.search, color: _theme.subTextColor),
-            filled: true, fillColor: _theme.cardColor,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-            contentPadding: const EdgeInsets.symmetric(vertical: 12)))),
-
-      SizedBox(
-        height: 52,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          itemCount: _categories.length,
-          itemBuilder: (_, i) {
-            final cat = _categories[i];
-            final isSelected = _selectedCategory == cat['id'];
-            return GestureDetector(
-              onTap: () { setState(() => _selectedCategory = cat['id'] as String); _filterDuas(); },
-              child: Container(
-                margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: isSelected ? _theme.iconColor : _theme.cardColor,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: isSelected ? _theme.iconColor
-                      : (_theme.isDark ? ThemeService.darkBorder : Colors.grey.shade300))),
-                child: Row(children: [
-                  Text(_getCatLabel(cat as Map<String, String>, lang),
-                      style: TextStyle(fontSize: 13,
-                          color: isSelected ? Colors.white : _theme.textColor,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
-                ])));
-          })),
-      Expanded(
-        child: _isLoading
-            ? Center(child: CircularProgressIndicator(color: _theme.iconColor))
-            : _errorMessage.isNotEmpty
-                ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    const Icon(Icons.wifi_off, size: 48, color: Colors.grey),
-                    const SizedBox(height: 12),
-                    Text(_errorMessage, style: TextStyle(color: _theme.subTextColor)),
-                    const SizedBox(height: 12),
-                    ElevatedButton(onPressed: _fetchDuas,
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
-                      child: Text(_lang.tryAgain, style: const TextStyle(color: Colors.white))),
-                  ]))
-                : _filtered.isEmpty
-                    ? Center(child: Text(_lang.noDuaFound, style: TextStyle(color: _theme.subTextColor)))
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                        itemCount: _filtered.length,
-                        itemBuilder: (_, i) {
-                          final dua = _filtered[i];
-                          final cat = _categories.firstWhere(
-                              (c) => c['id'] == dua['category'],
-                              orElse: () => {'icon': '🤲', 'en': '', 'th': '', 'id2': '', 'ms': '', 'ar': '', 'ur': '', 'bn': ''});
-                          return GestureDetector(
-                            onTap: () => _showDetail(dua),
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 10),
-                              decoration: BoxDecoration(
-                                color: _theme.cardColor,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFE8F5E9)),
-                                boxShadow: _theme.isDark ? null : [
-                                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))]),
-                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
-                                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                      Text(_getDuaTitle(dua, lang),
-                                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _theme.textColor)),
-                                      const SizedBox(height: 2),
-                                      Text(_getDuaDesc(dua, lang),
-                                          style: TextStyle(fontSize: 11, color: _theme.subTextColor),
-                                          maxLines: 1, overflow: TextOverflow.ellipsis),
-                                    ])),
-                                    GestureDetector(
-                                      onTap: () => _copyDua(dua),
-                                      child: Padding(padding: const EdgeInsets.all(4),
-                                          child: Icon(Icons.copy_outlined, color: _theme.subTextColor, size: 15))),
-                                  ])),
-                                Container(height: 0.5, margin: const EdgeInsets.symmetric(horizontal: 14),
-                                    color: _theme.isDark ? ThemeService.darkBorder : const Color(0xFFEEEEEE)),
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-                                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                                    Text(dua['dua'] ?? '',
-                                        textAlign: TextAlign.right, textDirection: TextDirection.rtl,
-                                        maxLines: 2, overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(fontSize: 19, height: 1.9, color: _theme.textColor)),
-                                    if (_getDuaTrans(dua, lang).isNotEmpty) ...[
-                                      const SizedBox(height: 4),
-                                      Text(_getDuaTrans(dua, lang),
-                                          maxLines: 1, overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(fontSize: 11, color: _theme.subTextColor, fontStyle: FontStyle.italic)),
-                                    ],
-                                  ])),
-                              ])));
-                        })),
-    ]);
+    return SafeArea(
+      top: false,
+      child: Builder(builder: (context) {
+        if (_isLoading) {
+          return Center(child: CircularProgressIndicator(color: _theme.iconColor));
+        }
+        if (_errorMessage.isNotEmpty) {
+          return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            const Icon(Icons.wifi_off, size: 48, color: Colors.grey),
+            const SizedBox(height: 12),
+            Text(_errorMessage, style: TextStyle(color: _theme.subTextColor)),
+            const SizedBox(height: 12),
+            ElevatedButton(onPressed: _fetchDuas,
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
+              child: Text(_lang.tryAgain, style: const TextStyle(color: Colors.white))),
+          ]));
+        }
+        return _buildCategoryGrid();
+      }),
+    );
   }
 }
