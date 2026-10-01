@@ -32,6 +32,9 @@ const String kQiblaIconAsset = 'image/decor/qibla_icon.png';
 const String kMosqueIconAsset = 'image/decor/mosque_icon.png';
 // ── ไอคอนอัลกุรอาน (silhouette ขาว) ใช้แทน Icons.menu_book ในการ์ด "อัลกุรอาน" ──
 const String kQuranIconAsset = 'image/decor/quran_icon.png';
+// ── ไอคอนลูกประคำตัสบีฮ์ (silhouette โปร่งใส ที่ผู้ใช้ส่งมาเอง) ใช้แทน
+// Icons.fingerprint เดิมในการ์ด "ตัสบีฮ์" ──
+const String kTasbihIconAsset = 'image/decor/tasbih_icon.png';
 
 List<Widget> headerCornerDecor({double size = 38}) {
   Widget cornerImg() => Image.asset(kHeaderCornerAsset, width: size, height: size,
@@ -292,6 +295,7 @@ class _HomePageState extends State<HomePage> {
                       FeatureCard(
                           label: _lang.isThai ? 'ตัสบีฮ์' : 'Tasbih',
                           icon: Icons.fingerprint,
+                          imageAsset: kTasbihIconAsset,
                           theme: _theme,
                           color: const Color(0xFFB8860B),
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TasbihPage()))),
