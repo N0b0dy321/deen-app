@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -93,6 +94,27 @@ Respond in the same language the user uses (All Language).
     await prefs.setString(_dailyUsagePrefKey, '${_todayKey()}|${current + 1}');
   }
 
+  /// ยิง request ไปหา Gemini API พร้อม retry อัตโนมัติเมื่อเจอ 503
+  /// (UNAVAILABLE — โมเดลมีคนใช้เยอะชั่วคราว) ลองใหม่สูงสุด 2 ครั้ง
+  /// เว้นช่วงเพิ่มขึ้นเรื่อยๆ (1s, 2s) ก่อนจะยอมแพ้แล้วคืนผลลัพธ์สุดท้ายกลับไป
+  Future<http.Response> _postWithRetry(String apiKey, List<Map<String, dynamic>> contents) async {
+    const maxRetries = 2;
+    http.Response response;
+    for (int attempt = 0; ; attempt++) {
+      response = await http.post(Uri.parse(_apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
+        body: json.encode({'contents': contents}));
+      if (response.statusCode != 503 || attempt >= maxRetries) {
+        return response;
+      }
+      debugPrint('[Chatbot] Gemini API 503 (busy) — retry ${attempt + 1}/$maxRetries');
+      await Future.delayed(Duration(seconds: attempt + 1));
+    }
+  }
+
   Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
@@ -127,10 +149,11 @@ Respond in the same language the user uses (All Language).
       ];
       await Future.delayed(const Duration(seconds: 1));
       final apiKey = await _resolveApiKey();
-      final response = await http.post(Uri.parse('$_apiUrl?key=$apiKey'),
-        headers: {'Content-Type': 'application/json'}, body: json.encode({'contents': contents}));
+      // ── ส่ง API key ผ่าน header "x-goog-api-key" ตามวิธีที่ Google แนะนำ
+      // ปัจจุบัน (เดิมส่งผ่าน query param ?key= ซึ่งยังใช้ได้แต่ไม่ใช่วิธีหลักแล้ว) ──
+      final response = await _postWithRetry(apiKey, contents);
       final data = json.decode(response.body);
-      if (data['candidates'] != null) {
+      if (response.statusCode == 200 && data['candidates'] != null) {
         final reply = data['candidates'][0]['content']['parts'][0]['text'];
         setState(() { _messages.add({'role': 'assistant', 'content': reply}); _isLoading = false; });
         // นับโควต้าเฉพาะตอนที่ยิง API สำเร็จจริง และใช้ default key เท่านั้น
@@ -139,6 +162,10 @@ Respond in the same language the user uses (All Language).
           await _incrementTodayUsage(prefs, used);
         }
       } else {
+        // log สถานะ + เนื้อหา error จริงจาก Google ลง console เพื่อ debug
+        // (ก่อนหน้านี้กลืน error ทิ้งหมด ทำให้ไม่รู้ว่าสาเหตุจริงคืออะไร
+        // เช่น key ผิด/model ผิดชื่อ/หมดโควต้า)
+        debugPrint('[Chatbot] Gemini API error — status: ${response.statusCode}, body: ${response.body}');
         // ถ้าใช้ key ของตัวเองแล้ว error (เช่น key ผิด/หมดโควต้า) แจ้งให้ตรงจุดกว่าเดิม
         final errorMsg = usingOwnKey
             ? (_lang.isThai
@@ -148,6 +175,7 @@ Respond in the same language the user uses (All Language).
         setState(() { _messages.add({'role': 'assistant', 'content': errorMsg}); _isLoading = false; });
       }
     } catch (e) {
+      debugPrint('[Chatbot] Connection error: $e');
       setState(() { _messages.add({'role': 'assistant', 'content': 'Connection error. Please try again.'}); _isLoading = false; });
     }
     _scrollToBottom();

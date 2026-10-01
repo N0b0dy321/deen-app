@@ -39,6 +39,8 @@ const Map<String, IconData> kLessonCategoryIcons = {
   'history': Icons.account_balance_outlined,
   'fasting': Icons.nightlight_outlined,
   'special_prayer': Icons.mosque,
+  'asmaulhusna': Icons.star_outline_rounded,
+  'prophetnames': Icons.groups_outlined,
 };
 
 // ── ไอคอนแบบภาพ (silhouette สีขาว export จาก Canva) ใช้แทน Material icon
@@ -93,7 +95,7 @@ class _LessonsPageState extends State<LessonsPage> {
     {'id': 'wudhu', 'icon': '💧',
      'titleEn': 'How to Perform Wudhu', 'titleTh': 'วิธีทำวุฎูอ์', 'titleMs': 'Cara Berwudhu', 'titleId': 'Cara Berwudhu', 'titleAr': 'كيفية الوضوء', 'titleUr': 'وضو کا طریقہ', 'titleBn': 'ওযু করার নিয়ম',
      'subtitleEn': 'Step by step wudhu guide', 'subtitleTh': 'คู่มือวุฎูอ์ทีละขั้นตอน', 'subtitleMs': 'Panduan wudhu langkah demi langkah', 'subtitleId': 'Panduan wudhu langkah demi langkah', 'subtitleAr': 'دليل الوضوء خطوة بخطوة', 'subtitleUr': 'وضو کی مرحلہ وار رہنمائی', 'subtitleBn': 'ধাপে ধাপে ওযুর গাইড',
-     'color': const Color(0xFF0277BD), 'lessons': 8},
+     'color': const Color(0xFF0277BD), 'lessons': 9},
     {'id': 'prayer', 'icon': '🙏',
      'titleEn': 'How to Pray', 'titleTh': 'วิธีละหมาด', 'titleMs': 'Cara Solat', 'titleId': 'Cara Sholat', 'titleAr': 'كيفية الصلاة', 'titleUr': 'نماز کا طریقہ', 'titleBn': 'নামাজের পদ্ধতি',
      'subtitleEn': 'Step by step prayer guide', 'subtitleTh': 'คู่มือละหมาดทีละขั้นตอน', 'subtitleMs': 'Panduan solat langkah demi langkah', 'subtitleId': 'Panduan sholat langkah demi langkah', 'subtitleAr': 'دليل الصلاة خطوة بخطوة', 'subtitleUr': 'نماز کی مرحلہ وار رہنمائی', 'subtitleBn': 'ধাপে ধাপে নামাজের গাইড',
@@ -118,6 +120,14 @@ class _LessonsPageState extends State<LessonsPage> {
      'titleEn': 'Special Prayers', 'titleTh': 'ละหมาดพิเศษ', 'titleMs': 'Solat Khas', 'titleId': 'Sholat Khusus', 'titleAr': 'الصلوات الخاصة', 'titleUr': 'خصوصی نمازیں', 'titleBn': 'বিশেষ নামাজ',
      'subtitleEn': 'Eid, Funeral, Tarawih and more', 'subtitleTh': 'ละหมาดอีด ญะนาซะห์ ตะรอวีห์ และอื่นๆ', 'subtitleMs': 'Solat Eid, Jenazah, Tarawih dan lain-lain', 'subtitleId': 'Sholat Eid, Jenazah, Tarawih dan lainnya', 'subtitleAr': 'صلاة العيد والجنازة والتراويح وغيرها', 'subtitleUr': 'عید، جنازہ، تراویح اور دیگر نمازیں', 'subtitleBn': 'ঈদ, জানাজা, তারাবি এবং অন্যান্য',
      'color': const Color(0xFF4527A0), 'lessons': 6},
+    {'id': 'asmaulhusna', 'icon': '✨',
+     'titleEn': '99 Names of Allah', 'titleTh': '99 พระนามของอัลลอฮ์', 'titleMs': '99 Nama Allah', 'titleId': '99 Nama Allah', 'titleAr': 'أسماء الله الحسنى', 'titleUr': 'اللہ کے 99 نام', 'titleBn': 'আল্লাহর ৯৯ নাম',
+     'subtitleEn': 'Asma ul Husna with meanings', 'subtitleTh': 'อัสมาอุลฮุสนาพร้อมความหมาย', 'subtitleMs': 'Asma ul Husna dengan makna', 'subtitleId': 'Asma ul Husna dengan makna', 'subtitleAr': 'أسماء الله الحسنى ومعانيها', 'subtitleUr': 'اسماء الحسنیٰ اور ان کے معانی', 'subtitleBn': 'অর্থসহ আসমাউল হুসনা',
+     'color': const Color(0xFFC2185B), 'lessons': 99},
+    {'id': 'prophetnames', 'icon': '🌟',
+     'titleEn': '25 Messengers of Allah', 'titleTh': '25 เราะซูล (ศาสนทูต)', 'titleMs': '25 Rasul Allah', 'titleId': '25 Rasul Allah', 'titleAr': 'الرسل الخمسة والعشرون', 'titleUr': '25 رسول', 'titleBn': '২৫ জন রাসূল',
+     'subtitleEn': 'The 25 prophets named in the Quran', 'subtitleTh': '25 เราะซูลที่กล่าวถึงในอัลกุรอาน', 'subtitleMs': '25 nabi yang disebut dalam Al-Quran', 'subtitleId': '25 nabi yang disebutkan dalam Al-Quran', 'subtitleAr': 'الأنبياء الخمسة والعشرون المذكورون في القرآن', 'subtitleUr': 'قرآن میں مذکور 25 انبیاء', 'subtitleBn': 'কুরআনে উল্লিখিত ২৫ জন নবী',
+     'color': const Color(0xFF00838F), 'lessons': 25},
   ];
 
   void _rebuild() { if (mounted) setState(() {}); }
@@ -374,17 +384,10 @@ class LessonContentPage extends StatelessWidget {
   // รวม presentation forms ที่พบในข้อความดุอา/อายะห์) ถ้าใช่ ขยายขนาดตัวอักษร
   // ให้ใหญ่ขึ้นชัดเจน + จัดจากขวาไปซ้ายแบบอาหรับจริงๆ แทนที่จะใช้ขนาดเดียวกับ
   // คำอ่าน/ความหมายที่เป็นไทย/อังกฤษ
-// ── ต้องมีสัดส่วนตัวอักษรอาหรับ "ส่วนใหญ่" ของบรรทัดจริงๆ ถึงจะนับว่าเป็น
-// บรรทัดภาษาอาหรับ (ไม่ใช่แค่เจอตัวอักษรอาหรับตัวเดียวก็จัด RTL ทั้งบรรทัด)
-// กันปัญหาสัญลักษณ์ ﷺ (ขอความสันติจงมีแด่ท่าน) ที่ปนอยู่ในประโยคอังกฤษ/ไทย
-// แล้วถูกจัดเรียงกลับด้านทั้งประโยคโดยไม่ตั้งใจ
-bool _isArabicLine(String line) {
-  final arabicRegex = RegExp(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]');
-  final arabicCount = arabicRegex.allMatches(line).length;
-  final letterCount = line.replaceAll(RegExp(r'\s'), '').length;
-  if (letterCount == 0) return false;
-  return arabicCount / letterCount > 0.5;
-}
+  bool _isArabicLine(String line) {
+    final arabicRegex = RegExp(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]');
+    return arabicRegex.hasMatch(line);
+  }
 
   List<Widget> _buildContentBlocks(String content) {
     final blocks = content.split('\n\n').map((b) => b.trim()).where((b) => b.isNotEmpty).toList();
@@ -415,7 +418,7 @@ bool _isArabicLine(String line) {
               width: double.infinity,
               child: Text(line,
                   textDirection: TextDirection.rtl,
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.right,
                   style: TextStyle(fontSize: 24, color: theme.textColor,
                       height: 2.0, fontWeight: FontWeight.w600)),
             ),
@@ -726,7 +729,7 @@ class _LessonsTabState extends State<LessonsTab> {
     {'id': 'wudhu', 'icon': '💧',
      'titleEn': 'How to Perform Wudhu', 'titleTh': 'วิธีทำวุฎูอ์', 'titleMs': 'Cara Berwudhu', 'titleId': 'Cara Berwudhu', 'titleAr': 'كيفية الوضوء', 'titleUr': 'وضو کا طریقہ', 'titleBn': 'ওযু করার নিয়ম',
      'subtitleEn': 'Step by step wudhu guide', 'subtitleTh': 'คู่มือวุฎูอ์ทีละขั้นตอน', 'subtitleMs': 'Panduan wudhu langkah demi langkah', 'subtitleId': 'Panduan wudhu langkah demi langkah', 'subtitleAr': 'دليل الوضوء خطوة بخطوة', 'subtitleUr': 'وضو کی مرحلہ وار رہنمائی', 'subtitleBn': 'ধাপে ধাপে ওযুর গাইড',
-     'color': const Color(0xFF0277BD), 'lessons': 8},
+     'color': const Color(0xFF0277BD), 'lessons': 9},
     {'id': 'prayer', 'icon': '🙏',
      'titleEn': 'How to Pray', 'titleTh': 'วิธีละหมาด', 'titleMs': 'Cara Solat', 'titleId': 'Cara Sholat', 'titleAr': 'كيفية الصلاة', 'titleUr': 'نماز کا طریقہ', 'titleBn': 'নামাজের পদ্ধতি',
      'subtitleEn': 'Step by step prayer guide', 'subtitleTh': 'คู่มือละหมาดทีละขั้นตอน', 'subtitleMs': 'Panduan solat langkah demi langkah', 'subtitleId': 'Panduan sholat langkah demi langkah', 'subtitleAr': 'دليل الصلاة خطوة بخطوة', 'subtitleUr': 'نماز کی مرحلہ وار رہنمائی', 'subtitleBn': 'ধাপে ধাপে নামাজের গাইড',
@@ -734,7 +737,7 @@ class _LessonsTabState extends State<LessonsTab> {
     {'id': 'hadith', 'icon': '📜',
      'titleEn': '40 Hadith', 'titleTh': '40 หะดีษ', 'titleMs': '40 Hadith', 'titleId': '40 Hadis', 'titleAr': '٤٠ حديثاً', 'titleUr': '40 احادیث', 'titleBn': '৪০ হাদিস',
      'subtitleEn': 'Key teachings of Prophet Muhammad', 'subtitleTh': 'คำสอนสำคัญของท่านนบี', 'subtitleMs': 'Ajaran utama Nabi Muhammad', 'subtitleId': 'Ajaran utama Nabi Muhammad', 'subtitleAr': 'تعاليم النبي محمد الأساسية', 'subtitleUr': 'نبی محمد کی اہم تعلیمات', 'subtitleBn': 'নবী মুহাম্মদের মূল শিক্ষা',
-     'color': const Color(0xFF4E342E), 'lessons': 40},
+     'color': const Color(0xFF4E342E), 'lessons': 10},
     {'id': 'adab', 'icon': '🤝',
      'titleEn': 'Islamic Manners', 'titleTh': 'มารยาทอิสลาม', 'titleMs': 'Adab Islam', 'titleId': 'Adab Islam', 'titleAr': 'الآداب الإسلامية', 'titleUr': 'اسلامی آداب', 'titleBn': 'ইসলামী আদব',
      'subtitleEn': 'Etiquette in daily life', 'subtitleTh': 'มารยาทในชีวิตประจำวัน', 'subtitleMs': 'Adab dalam kehidupan harian', 'subtitleId': 'Etika dalam kehidupan sehari-hari', 'subtitleAr': 'الآداب في الحياة اليومية', 'subtitleUr': 'روزمرہ زندگی میں آداب', 'subtitleBn': 'দৈনন্দিন জীবনে শিষ্টাচার',
@@ -751,6 +754,14 @@ class _LessonsTabState extends State<LessonsTab> {
      'titleEn': 'Special Prayers', 'titleTh': 'ละหมาดพิเศษ', 'titleMs': 'Solat Khas', 'titleId': 'Sholat Khusus', 'titleAr': 'الصلوات الخاصة', 'titleUr': 'خصوصی نمازیں', 'titleBn': 'বিশেষ নামাজ',
      'subtitleEn': 'Eid, Funeral, Tarawih and more', 'subtitleTh': 'ละหมาดอีด ญะนาซะห์ ตะรอวีห์ และอื่นๆ', 'subtitleMs': 'Solat Eid, Jenazah, Tarawih dan lain-lain', 'subtitleId': 'Sholat Eid, Jenazah, Tarawih dan lainnya', 'subtitleAr': 'صلاة العيد والجنازة والتراويح وغيرها', 'subtitleUr': 'عید، جنازہ، تراویح اور دیگر نمازیں', 'subtitleBn': 'ঈদ, জানাজা, তারাবি এবং অন্যান্য',
      'color': const Color(0xFF4527A0), 'lessons': 6},
+    {'id': 'asmaulhusna', 'icon': '✨',
+     'titleEn': '99 Names of Allah', 'titleTh': '99 พระนามของอัลลอฮ์', 'titleMs': '99 Nama Allah', 'titleId': '99 Nama Allah', 'titleAr': 'أسماء الله الحسنى', 'titleUr': 'اللہ کے 99 نام', 'titleBn': 'আল্লাহর ৯৯ নাম',
+     'subtitleEn': 'Asma ul Husna with meanings', 'subtitleTh': 'อัสมาอุลฮุสนาพร้อมความหมาย', 'subtitleMs': 'Asma ul Husna dengan makna', 'subtitleId': 'Asma ul Husna dengan makna', 'subtitleAr': 'أسماء الله الحسنى ومعانيها', 'subtitleUr': 'اسماء الحسنیٰ اور ان کے معانی', 'subtitleBn': 'অর্থসহ আসমাউল হুসনা',
+     'color': const Color(0xFFC2185B), 'lessons': 99},
+    {'id': 'prophetnames', 'icon': '🌟',
+     'titleEn': '25 Messengers of Allah', 'titleTh': '25 เราะซูล (ศาสนทูต)', 'titleMs': '25 Rasul Allah', 'titleId': '25 Rasul Allah', 'titleAr': 'الرسل الخمسة والعشرون', 'titleUr': '25 رسول', 'titleBn': '২৫ জন রাসূল',
+     'subtitleEn': 'The 25 prophets named in the Quran', 'subtitleTh': '25 เราะซูลที่กล่าวถึงในอัลกุรอาน', 'subtitleMs': '25 nabi yang disebut dalam Al-Quran', 'subtitleId': '25 nabi yang disebutkan dalam Al-Quran', 'subtitleAr': 'الأنبياء الخمسة والعشرون المذكورون في القرآن', 'subtitleUr': 'قرآن میں مذکور 25 انبیاء', 'subtitleBn': 'কুরআনে উল্লিখিত ২৫ জন নবী',
+     'color': const Color(0xFF00838F), 'lessons': 25},
   ];
 
   void _rebuild() { if (mounted) setState(() {}); }
