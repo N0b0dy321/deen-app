@@ -9,6 +9,7 @@ import '../services/quran_database.dart';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
 import '../services/quran_font_service.dart';
+import '../services/quran_audio_cache_service.dart';
 
 // ── ลายมุมดาวทอง + เส้นคั่นลายดอกไม้ (ไฟล์เดียวกับที่ใช้ในหน้ารายการซูเราะห์
 // AlQuranPage) ใช้ตกแต่งหน้ามุศฮัฟให้เข้าชุดเดียวกันทั้งหมวดอัลกุรอาน ──
@@ -568,6 +569,11 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
   }
 
   // ── Play / Stop ────────────────────────────────────
+  // ── เล่นเสียงอายะห์ — เช็คแคชในเครื่องก่อนเสมอ ──────────────────
+  // ถ้าเคยโหลดอายะห์นี้ (ของนักอ่านคนนี้) มาแล้ว จะเล่นจากไฟล์ในเครื่อง
+  // ทันที ไม่ยิง request เลย (เล่นได้แม้ไม่มีเน็ต) ถ้ายังไม่เคยโหลด จะดึง
+  // URL จาก API มาเล่นแบบสตรีมตามเดิม พร้อมดาวน์โหลดเก็บไว้เป็นแคชเบื้อง
+  // หลังแบบไม่บล็อก UI เผื่อเปิดฟังซ้ำอายะห์เดิมในอนาคต
   Future<void> _playVerse(int verseNumber) async {
     if (_playingVerseNumber == verseNumber && _isPlaying) {
       await _player.stop();
@@ -578,6 +584,18 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
     setState(() { _isPlaying = true; _playingVerseNumber = verseNumber; });
 
     try {
+      // ── ขั้นที่ 1: มีแคชอยู่แล้วไหม — เล่นจากไฟล์ในเครื่องตรงๆ เลย ──
+      final cachedPath = await QuranAudioCacheService.getCachedPath(
+          _selectedReciter, widget.surahId, verseNumber);
+      if (cachedPath != null) {
+        await _player.stop();
+        await Future.delayed(const Duration(milliseconds: 300));
+        await _player.setFilePath(cachedPath);
+        await _player.play();
+        return;
+      }
+
+      // ── ขั้นที่ 2: ยังไม่มีแคช — ดึง URL เสียงจาก API แล้วเล่นแบบสตรีมตามเดิม ──
       final apiUrl = 'https://api.alquran.cloud/v1/ayah/${widget.surahId}:$verseNumber/$_selectedReciter';
       final response = await http.get(Uri.parse(apiUrl)).timeout(const Duration(seconds: 10));
 
@@ -589,6 +607,17 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
         await Future.delayed(const Duration(milliseconds: 300));
         await _player.setUrl(audioUrl);
         await _player.play();
+
+        // ── ขั้นที่ 3: ดาวน์โหลดเก็บแคชเบื้องหลัง ไม่ต้องรอ ไม่กระทบการเล่นเสียง
+        // ปัจจุบัน — ครั้งหน้าที่เปิดอายะห์นี้ซ้ำ (นักอ่านคนเดิม) จะได้เล่น
+        // จากแคชทันทีโดยไม่ต้องใช้เน็ตอีก ──
+        QuranAudioCacheService.downloadAndCache(
+                _selectedReciter, widget.surahId, verseNumber, audioUrl)
+            .catchError((_) {
+          // โหลดแคชไม่สำเร็จ (เช่นเน็ตหลุดระหว่างดาวน์) ไม่เป็นไร แค่จะต้อง
+          // สตรีมใหม่ตอนเปิดฟังครั้งหน้า — ไม่กระทบการเล่นเสียงที่กำลังเล่นอยู่
+          return '';
+        });
       } else {
         throw Exception('API error');
       }

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- กัน resource shrinker ลบไฟล์เสียงอาซานใน res/raw (โค้ดอ้างอิงด้วยชื่อ string จึงถูกมองว่าไม่ได้ใช้) -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/azan_makkah,@raw/azan_madinah,@raw/azan_aqsa" />

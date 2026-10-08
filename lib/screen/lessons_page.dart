@@ -49,6 +49,9 @@ const Map<String, IconData> kLessonCategoryIcons = {
 // ใช้ ColorFiltered ทาสีทับ silhouette ขาวให้เป็นสีอะไรก็ได้ เหมือน Icon(color:)
 const Map<String, String> kLessonCategoryImageIcons = {
   'prayer': 'image/decor/prayer_icon.png',
+  // ── โลโก้ "الله" แบบลายมืออาหรับ แทนไอคอนดาว (Icons.star_outline_rounded)
+  // เดิมของหมวด "99 พระนามของอัลลอฮ์" ──
+  'asmaulhusna': 'image/decor/allah_icon.png',
 };
 
 /// ตัวช่วยเรนเดอร์ไอคอนหมวดหมู่ — เช็คก่อนว่ามีไอคอนแบบภาพไหม ถ้ามีใช้ภาพ

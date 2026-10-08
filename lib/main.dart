@@ -5,14 +5,24 @@ import 'services/theme_service.dart';
 import 'services/language_service.dart';
 import 'services/notification_service.dart';
 import 'services/azan_service.dart';
+import 'services/prayer_service.dart';
+import 'services/quran_download_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ThemeService().init();
   await LanguageService().init();
   await NotificationService.init();
-  await NotificationService.requestPermission();
+  // ── เริ่มระบบดาวน์โหลดอัลกุรอาน offline แบบ background ──────────
+  // ทำงานต่อเนื่องผ่าน Android WorkManager แม้ปิดแอปอยู่ ไม่ต้องเปิดค้างไว้
+  // ที่หน้า Al-Quran เหมือนเดิมอีกต่อไป
+  await QuranDownloadService.initialize();
   runApp(const MyApp());
+
+  // ขอสิทธิ์แจ้งเตือน "หลัง" แอปขึ้นแล้ว (ไม่บล็อกการเปิดแอป) จากนั้นตั้งแจ้งเตือนใหม่
+  // จาก cache ทันที ผู้ใช้ไม่ต้องเปิดหน้าเวลาละหมาดก่อนแจ้งเตือนถึงจะถูกตั้ง
+  NotificationService.requestPermission()
+      .then((_) => PrayerService.rescheduleNotifications());
 }
 
 class MyApp extends StatefulWidget {

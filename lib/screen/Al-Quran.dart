@@ -8,6 +8,7 @@ import '../services/quran_database.dart';
 import '../services/language_service.dart';
 import '../services/theme_service.dart';
 import '../services/quran_font_service.dart';
+import '../services/quran_download_service.dart';
 import 'surah_detail_page.dart';
 
 // ── ไอคอนอัลกุรอาน (silhouette ขาว) — path เดียวกับที่ใช้ในการ์ดหน้า Home
@@ -112,7 +113,7 @@ class _AlQuranPageState extends State<AlQuranPage> {
   bool isLoading = true;
   bool isDownloading = false;
   int downloadProgress = 0;
-  int totalSurahs = 114;
+  int downloadTotal = 114 * kQuranOfflineEditions.length;
   String errorMessage = '';
   // ── ฟอนต์ชื่อซูเราะห์ภาษาอาหรับ ใช้ตัวเดียวกับที่ user เลือกไว้ในหน้า
   // ตั้งค่า (Settings) ให้สอดคล้องกันทั้งแอป แทนที่จะ hardcode ฟอนต์แยก ──
@@ -168,8 +169,7 @@ class _AlQuranPageState extends State<AlQuranPage> {
     if (hasLocal) {
       final local = await QuranDatabase.getSurahs();
       setState(() { surahs = local; filteredSurahs = local; isLoading = false; });
-      final allDownloaded = await QuranDatabase.hasAllVerses();
-      if (!allDownloaded) _downloadAllVerses(local);
+      _downloadAllVersesAllLangs(local);
       return;
     }
     await fetchSurahsFromApi();
@@ -183,7 +183,7 @@ class _AlQuranPageState extends State<AlQuranPage> {
         await QuranDatabase.saveSurahs(data['chapters'] as List);
         final local = await QuranDatabase.getSurahs();
         setState(() { surahs = local; filteredSurahs = local; isLoading = false; });
-        _downloadAllVerses(local);
+        _downloadAllVersesAllLangs(local);
       } else {
         setState(() { errorMessage = 'Failed to load surahs'; isLoading = false; });
       }
@@ -192,22 +192,24 @@ class _AlQuranPageState extends State<AlQuranPage> {
     }
   }
 
-  Future<void> _downloadAllVerses(List<Map<String, dynamic>> surahList) async {
+  // ── ดาวน์โหลดอายะห์ offline ไว้ล่วงหน้า "ครบทุกภาษาที่แอปรองรับ" ─────────
+  // ลอจิกจริงย้ายไปไว้ที่ QuranDownloadService กลางแล้ว (ใช้ร่วมกับ
+  // background task ของ WorkManager ที่ตั้งไว้ใน main.dart ด้วย) ที่นี่แค่
+  // เรียกใช้แล้วรับ progress มาแสดงผล — ประโยชน์คือถ้าผู้ใช้ออกจากหน้านี้ไป
+  // (หรือปิดแอปไปเลย) การดาวน์โหลดยังเดินต่อเองใน background ผ่าน
+  // WorkManager ได้ ไม่ต้องเปิดค้างหน้า Al-Quran ไว้เหมือนเดิมอีกต่อไป
+  Future<void> _downloadAllVersesAllLangs(List<Map<String, dynamic>> surahList) async {
     setState(() { isDownloading = true; downloadProgress = 0; });
-    for (int i = 0; i < surahList.length; i++) {
-      final surahId = surahList[i]['id'] as int;
-      if (await QuranDatabase.hasVerses(surahId)) { setState(() => downloadProgress = i + 1); continue; }
-      try {
-        final response = await http.get(Uri.parse(
-          'https://api.qurancdn.com/api/qdc/verses/by_chapter/$surahId?language=en&words=true&translations=131&per_page=300&fields=text_uthmani'));
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          await QuranDatabase.saveVerses(surahId, data['verses'] as List);
-        }
-      } catch (e) { break; }
-      setState(() => downloadProgress = i + 1);
-    }
-    setState(() => isDownloading = false);
+    await QuranDownloadService.downloadAll(
+      onProgress: (done, total) {
+        if (!mounted) return; // ออกจากหน้านี้ไปแล้ว แต่ service ยังทำงานต่อได้
+        setState(() {
+          downloadProgress = done;
+          downloadTotal = total;
+        });
+      },
+    );
+    if (mounted) setState(() => isDownloading = false);
   }
 
   @override
@@ -238,13 +240,13 @@ class _AlQuranPageState extends State<AlQuranPage> {
                             Row(children: [
                               Icon(Icons.download, color: _theme.iconColor, size: 18.sp),
                               SizedBox(width: 8.w),
-                              Expanded(child: Text('${_lang.downloadingOffline} $downloadProgress/$totalSurahs',
+                              Expanded(child: Text('${_lang.downloadingOffline} $downloadProgress/$downloadTotal',
                                   style: TextStyle(color: _theme.iconColor, fontSize: 13.sp))),
                             ]),
                             SizedBox(height: 6.h),
                             ClipRRect(
                               borderRadius: BorderRadius.circular(20.r),
-                              child: LinearProgressIndicator(value: downloadProgress / totalSurahs,
+                              child: LinearProgressIndicator(value: downloadProgress / downloadTotal,
                                   minHeight: 5.h,
                                   backgroundColor: _theme.isDark ? const Color(0xFF2C3E50) : Colors.grey.shade300,
                                   color: _theme.iconColor),

@@ -57,22 +57,8 @@ class PrayerService {
       // การตั้งแจ้งเตือนเสร็จก่อนถึงจะโชว์ข้อมูลได้ ทั้งที่ error ก็แค่
       // print log เฉยๆ ไม่มีอะไรต้องรอผลจริงๆ — เอา await ออกให้ทำงาน
       // เบื้องหลังแทน หน้าจอจะได้ข้อมูลจาก cache ทันทีไม่ต้องรอ
-      () async {
-        try {
-          final isThai = LanguageService().isThai;
-          // ── ใช้ timezone ที่เก็บไว้ "คู่กับ cache blob นี้เอง" เสมอ
-          // (มาจาก Aladhan meta.timezone ตอน fetch จริง ไม่ใช่ prefs
-          // ทั่วไปที่อาจไม่ตรงกับพิกัดของ cache ชุดนี้) ──
-          final timezone = data['timezone'] as String? ?? 'Asia/Bangkok';
-          await NotificationService.schedulePrayerNotifications(
-            timings: Map<String, dynamic>.from(data['timings']),
-            timezone: timezone,
-            isThai: isThai,
-          );
-        } catch (e) {
-          print('NOTIFICATION SCHEDULE ERROR (cache): $e');
-        }
-      }();
+      // ตั้งแจ้งเตือนล่วงหน้าทุกวันที่มี cache (ไม่ใช่แค่วันนี้) แบบไม่รอผล
+      rescheduleNotifications(prefs: prefs);
 
       return data;
     }
@@ -193,19 +179,8 @@ class PrayerService {
         // (??= เผื่อ todayData มาจาก cache เก่าก่อนมี field นี้)
         todayData['locationName'] ??= locationName;
 
-        // ── Schedule Notifications ──
-        // ห่อด้วย try-catch: ถ้าตั้งแจ้งเตือนไม่สำเร็จ (เช่น เสียงที่เลือกไว้หาไฟล์ไม่เจอ)
-        // ไม่ควรทำให้การโหลดเวลาละหมาด/หน้าจอค้างไปด้วย
-        try {
-          final isThai = LanguageService().isThai;
-          await NotificationService.schedulePrayerNotifications(
-            timings: Map<String, dynamic>.from(todayData['timings']),
-            timezone: todayData['timezone'] ?? resolvedTimezone,
-            isThai: isThai,
-          );
-        } catch (e) {
-          print('NOTIFICATION SCHEDULE ERROR (fetch): $e');
-        }
+        // ── Schedule Notifications (ล่วงหน้าทุกวันที่ cache ไว้) ──
+        await rescheduleNotifications(prefs: prefs);
 
         return todayData;
       }
@@ -369,10 +344,38 @@ class PrayerService {
     return null;
   }
 
+  /// ตั้งแจ้งเตือนใหม่จากเวลาละหมาดที่ cache ไว้ทั้งหมด (สูงสุด 14 วัน)
+  /// เรียกได้ทุกที่: ตอนเปิดแอป, หลังเปลี่ยนเสียงอาซาน, หลังเปิดสวิตช์แจ้งเตือน
+  static Future<void> rescheduleNotifications({SharedPreferences? prefs}) async {
+    try {
+      prefs ??= await SharedPreferences.getInstance();
+      final now = DateTime.now();
+      final days = <String, Map<String, dynamic>>{};
+      String? timezone;
+      for (int i = 0; i < _prefetchDays; i++) {
+        final key = _dateKey(now.add(Duration(days: i)));
+        final raw = prefs.getString('$_cachePrefix$key');
+        if (raw == null) continue;
+        final data = json.decode(raw) as Map<String, dynamic>;
+        if (data['timings'] == null) continue;
+        days[key] = Map<String, dynamic>.from(data['timings']);
+        timezone ??= data['timezone'] as String?;
+      }
+      if (days.isEmpty) return;
+      await NotificationService.scheduleUpcomingNotifications(
+        daysTimings: days,
+        timezone: timezone ?? prefs.getString('timezone') ?? 'Asia/Bangkok',
+        isThai: LanguageService().isThai,
+      );
+    } catch (e) {
+      print('NOTIFICATION RESCHEDULE ERROR: $e');
+    }
+  }
+
   static Future<void> clearCache() async {
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
-    for (int i = -1; i <= 7; i++) {
+    for (int i = -1; i < _prefetchDays; i++) {
       await prefs.remove('$_cachePrefix${_dateKey(now.add(Duration(days: i)))}');
     }
     await prefs.remove(_lastFetchKey);

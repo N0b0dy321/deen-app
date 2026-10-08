@@ -193,6 +193,19 @@ class QuranDatabase {
     return (result.first['count'] as int) > 0;
   }
 
+  // ── เช็คว่าโหลด offline ครบทั้ง 114 ซูเราะห์ "สำหรับภาษานี้" แล้วหรือยัง ──
+  // (ใช้แยกจาก hasAllVerses() เดิมที่เช็คเฉพาะ lang='en' เท่านั้น — ทำให้
+  // ก่อนหน้านี้แอปคิดว่า "โหลดครบแล้ว" ทั้งที่โหลดแค่ภาษาอังกฤษไว้ พอ user
+  // เปิดอ่านด้วยภาษาอื่น (เช่นไทย) เลยต้องไปเรียก API ใหม่ทุกครั้ง)
+  static Future<bool> hasAllVersesForLang(String lang) async {
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(DISTINCT surah_id) as count FROM verses WHERE lang = ?',
+      [lang],
+    );
+    return (result.first['count'] as int) >= 114;
+  }
+
   static Future<void> deleteVersesByLang(int surahId, String lang) async {
     final db = await database;
     await db.delete('verses',

@@ -912,24 +912,6 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
     });
   }
 
-  Future<void> _showTestNotification() async {
-    await NotificationService.showTest();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(_lang.isThai ? 'ส่งแจ้งเตือนแล้ว!' : 'Notification sent!'),
-        backgroundColor: const Color(0xFF1B5E20)));
-    }
-  }
-
-  Future<void> _scheduleTest() async {
-    await NotificationService.scheduleTestIn1Min();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(_lang.isThai ? 'รอ 1 นาทีครับ 🔔' : 'Wait 1 minute 🔔'),
-        backgroundColor: const Color(0xFF1B5E20)));
-    }
-  }
-
   void _showTimezoneSheet() {
     showModalBottomSheet(
       context: context,
@@ -1211,7 +1193,7 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
                           ? () async {
                               // apply ทันที ไม่ต้องรอกด Save
                               await AzanService.setSelectedAzan(id);
-                              await PrayerService.clearCache();
+                              await PrayerService.rescheduleNotifications();
                               if (mounted) setState(() => _selectedAzanId = id);
                               if (sheetContext.mounted) Navigator.pop(sheetContext);
                             }
@@ -1265,7 +1247,8 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
               if (!v) {
                 await NotificationService.cancelAll();
               } else {
-                await PrayerService.clearCache(); // trigger reschedule รอบถัดไป
+                await NotificationService.requestPermission();
+                await PrayerService.rescheduleNotifications(); // ตั้งใหม่ทันที
               }
               if (mounted) setState(() => _notificationEnabled = v);
             },
@@ -1306,24 +1289,6 @@ class _PrayerNotificationSettingsPageState extends State<_PrayerNotificationSett
             textColor: textColor,
             subColor: subColor,
             onTap: _showMethodSheet,
-          ),
-        ]),
-
-        _sectionHeader(_lang.isThai ? 'ทดสอบ' : 'Testing', subColor),
-        _buildGroup(cardBg, divColor, _theme.isDark, [
-          _buildNavRow(
-            icon: Icons.notifications_active_outlined,
-            iconColor: Colors.orange,
-            label: _lang.isThai ? 'ทดสอบการแจ้งเตือน' : 'Test Notification',
-            value: '', textColor: textColor, subColor: subColor,
-            onTap: _showTestNotification,
-          ),
-          _buildNavRow(
-            icon: Icons.alarm_outlined,
-            iconColor: Colors.deepOrange,
-            label: _lang.isThai ? 'ทดสอบ Schedule (1 นาที)' : 'Schedule Test (1 min)',
-            value: '', textColor: textColor, subColor: subColor,
-            onTap: _scheduleTest,
           ),
         ]),
         SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
@@ -1609,7 +1574,7 @@ class _AboutSettingsPageState extends State<_AboutSettingsPage> {
   }
 
   Future<void> _rateApp() async {
-    const packageName = 'com.example.flutter_application_1';
+    const packageName = 'com.deenapp.deen';
     try {
       final uri = Uri.parse(
           'https://play.google.com/store/apps/details?id=$packageName');

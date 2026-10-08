@@ -15,7 +15,7 @@ class NotificationService {
   static final _plugin = FlutterLocalNotificationsPlugin();
   static bool _initialized = false;
 
-  static const _channelId = 'prayer_channel';
+  static const _channelId = 'prayer_v2';
   static const _channelName = 'Prayer Times';
   static const _channelDesc = 'Prayer time notifications';
 
@@ -46,25 +46,57 @@ class NotificationService {
       },
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
+
+    // สร้าง channel ของทุกเสียงไว้ล่วงหน้า "ครั้งเดียว" (ไม่ลบ/สร้างใหม่ทุกครั้งอีก)
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    for (final azan in AzanService.azanList) {
+      final sound = azan['id']!;
+      try {
+        await androidPlugin?.createNotificationChannel(AndroidNotificationChannel(
+          '${_channelId}_$sound',
+          _channelName,
+          description: _channelDesc,
+          importance: Importance.max,
+          playSound: true,
+          sound: RawResourceAndroidNotificationSound(sound),
+          enableVibration: true,
+        ));
+      } catch (e) {
+        print('CREATE CHANNEL ERROR ($sound): $e');
+      }
+    }
     _initialized = true;
   }
 
+  /// ขอสิทธิ์แจ้งเตือน (Android 13+) และสิทธิ์ตั้งปลุกตรงเวลา (Android 12+)
+  /// สิทธิ์ปลุกตรงเวลาจะเปิดหน้าตั้งค่าเฉพาะตอนที่ยังไม่ได้อนุญาตเท่านั้น
   static Future<void> requestPermission() async {
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
-    await android?.requestNotificationsPermission();
-    await android?.requestExactAlarmsPermission();
+    if (android == null) return;
+    try {
+      await android.requestNotificationsPermission();
+      final canExact = await android.canScheduleExactNotifications() ?? true;
+      if (!canExact) {
+        await android.requestExactAlarmsPermission();
+      }
+    } catch (e) {
+      print('REQUEST PERMISSION ERROR: $e');
+    }
+  }
+
+  /// เช็คว่าผู้ใช้ปิดแจ้งเตือนของแอปในระบบไว้หรือไม่ (ใช้เตือนในหน้าตั้งค่าได้)
+  static Future<bool> areNotificationsAllowed() async {
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    return await android?.areNotificationsEnabled() ?? true;
   }
 
   // ── Build details with azan sound ────────────────
   // เสียงทั้งหมด (Makkah, Madinah, Al-Aqsa) เป็น raw resource ที่ bundle มากับแอป
   // ไฟล์อยู่ที่ android/app/src/main/res/raw/<sound>.mp3
-  static Future<NotificationDetails> _buildDetails(
-    String body, {
-    String sound = 'azan_makkah',
-  }) async {
-    final soundObj = RawResourceAndroidNotificationSound(sound);
-
+  static NotificationDetails _buildDetails(String body, {required String sound}) {
     return NotificationDetails(
       android: AndroidNotificationDetails(
         '${_channelId}_$sound', // channel แยกตามเสียง
@@ -74,17 +106,16 @@ class NotificationService {
         priority: Priority.high,
         icon: '@mipmap/ic_launcher',
         color: const Color(0xFF1B5E20),
-        sound: soundObj,
+        sound: RawResourceAndroidNotificationSound(sound),
         playSound: true,
         enableVibration: true,
-        ongoing: false,
-        autoCancel: true,
+        category: AndroidNotificationCategory.alarm,
+        visibility: NotificationVisibility.public,
         styleInformation: BigTextStyleInformation(body),
-        fullScreenIntent: true,
         actions: const [
           AndroidNotificationAction(
             'stop_azan',
-            '🔇 Stop',
+            'Stop',
             cancelNotification: true,
             showsUserInterface: false,
           ),
@@ -99,11 +130,42 @@ class NotificationService {
     );
   }
 
+  // กันการเรียกซ้อนกัน (เช่น เปิดแอป + เปิดหน้าละหมาดพร้อมกัน) ให้ทำทีละรอบ
+  static Future<void> _lock = Future.value();
+
+  /// ตั้งแจ้งเตือนวันนี้วันเดียว (คงไว้เพื่อให้โค้ดเดิมยังเรียกได้)
   static Future<void> schedulePrayerNotifications({
     required Map<String, dynamic> timings,
     required String timezone,
     required bool isThai,
-  }) async {
+  }) {
+    final now = DateTime.now();
+    final key = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    return scheduleUpcomingNotifications(
+      daysTimings: {key: timings},
+      timezone: timezone,
+      isThai: isThai,
+    );
+  }
+
+  /// ตั้งแจ้งเตือนล่วงหน้าหลายวันในครั้งเดียว (ไม่ซ้ำรายวันแบบเดิม)
+  /// daysTimings: คีย์ 'YYYY-MM-DD' -> timings ของวันนั้น
+  /// ทำให้แจ้งเตือนยังเด้งตรงเวลาจริงของแต่ละวัน แม้ผู้ใช้ไม่เปิดแอปหลายวัน
+  static Future<void> scheduleUpcomingNotifications({
+    required Map<String, Map<String, dynamic>> daysTimings,
+    required String timezone,
+    required bool isThai,
+  }) {
+    final run = _lock.then((_) => _doSchedule(daysTimings, timezone, isThai));
+    _lock = run.catchError((_) {});
+    return run;
+  }
+
+  static Future<void> _doSchedule(
+    Map<String, Map<String, dynamic>> daysTimings,
+    String timezone,
+    bool isThai,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final enabled = prefs.getBool('notification') ?? true;
 
@@ -120,63 +182,90 @@ class NotificationService {
 
     await cancelAll();
 
-    // ดึงเสียงที่เลือก
     final selectedAzan = await AzanService.getSelectedAzanId();
 
-    // ── ลบ channel เก่าทิ้งก่อนเสมอ ──────────────────────────
-    // Android จะ "ล็อก" เสียงของ notification channel ไว้ถาวรตั้งแต่ครั้งแรกที่สร้าง
-    // (แก้เสียงทีหลังไม่ได้ ต้องลบแล้วสร้างใหม่เท่านั้น) เพราะ channel id ผูกกับชื่อเสียง
-    // (${_channelId}_$sound) ถ้าเคยสร้าง channel นี้มาก่อนด้วยเสียงที่ error/fallback
-    // ก็ต้องลบทิ้งเพื่อให้สร้างใหม่ด้วยเสียงที่ถูกต้อง
     final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
-    await androidPlugin?.deleteNotificationChannel('${_channelId}_$selectedAzan');
-
-    final now = tz.TZDateTime.now(tz.local);
-    print('=== NOW: $now ===');
-
-    for (final prayer in _prayers) {
-      final name = prayer['name'] as String;
-      final nameAr = prayer['nameAr'] as String;
-      final nameTh = prayer['nameTh'] as String;
-      final id = prayer['id'] as int;
-      final timeStr = timings[name] as String?;
-      if (timeStr == null) continue;
-
-      final parts = timeStr.split(':');
-      if (parts.length < 2) continue;
-
-      final hour = int.tryParse(parts[0]) ?? 0;
-      final minute = int.tryParse(parts[1]) ?? 0;
-
-      var scheduled = tz.TZDateTime(
-        tz.local,
-        now.year, now.month, now.day,
-        hour, minute,
-      );
-
-      if (scheduled.isBefore(now)) {
-        scheduled = scheduled.add(const Duration(days: 1));
-      }
-
-      print('=== SCHEDULING $name at $scheduled ===');
-
-      final title = isThai ? '🕌 $nameTh - $nameAr' : '🕌 $name - $nameAr';
-      final body = isThai ? 'ถึงเวลา$nameTh แล้ว' : 'It\'s time for $name prayer';
-
-      final details = await _buildDetails(body, sound: selectedAzan);
-
-      await _plugin.zonedSchedule(
-        id, title, body, scheduled,
-        details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: DateTimeComponents.time,
-      );
+    final canExact = await androidPlugin?.canScheduleExactNotifications() ?? true;
+    final mode = canExact
+        ? AndroidScheduleMode.exactAllowWhileIdle
+        : AndroidScheduleMode.inexactAllowWhileIdle;
+    if (!canExact) {
+      print('=== NO EXACT ALARM PERMISSION: ใช้โหมดไม่ตรงเวลาเป๊ะแทน ===');
     }
 
-    print('=== ALL PRAYERS SCHEDULED ===');
+    final now = tz.TZDateTime.now(tz.local);
+    final todayStart = tz.TZDateTime(tz.local, now.year, now.month, now.day);
+
+    final keys = daysTimings.keys.toList()..sort();
+    int count = 0;
+
+    for (final dayKey in keys) {
+      final dp = dayKey.split('-');
+      if (dp.length != 3) continue;
+      final y = int.tryParse(dp[0]);
+      final m = int.tryParse(dp[1]);
+      final d = int.tryParse(dp[2]);
+      if (y == null || m == null || d == null) continue;
+
+      final dayIndex = tz.TZDateTime(tz.local, y, m, d).difference(todayStart).inDays;
+      if (dayIndex < 0 || dayIndex > 13) continue;
+
+      final timings = daysTimings[dayKey]!;
+
+      for (final prayer in _prayers) {
+        final name = prayer['name'] as String;
+        final nameAr = prayer['nameAr'] as String;
+        final nameTh = prayer['nameTh'] as String;
+        final prayerId = prayer['id'] as int;
+
+        final raw = timings[name]?.toString();
+        if (raw == null) continue;
+        // รองรับรูปแบบ "05:12" และ "05:12 (+07)"
+        final match = RegExp(r'(\d{1,2}):(\d{2})').firstMatch(raw);
+        if (match == null) continue;
+        final hour = int.parse(match.group(1)!);
+        final minute = int.parse(match.group(2)!);
+
+        final scheduled = tz.TZDateTime(tz.local, y, m, d, hour, minute);
+        if (!scheduled.isAfter(now)) continue; // เวลาที่ผ่านไปแล้วข้าม
+
+        final title = isThai ? '🕌 $nameTh - $nameAr' : '🕌 $name - $nameAr';
+        final timeLabel =
+            '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+        final body = isThai
+            ? 'ถึงเวลา$nameTh แล้ว • $timeLabel น.'
+            : 'It\'s time for $name prayer • $timeLabel';
+        final details = _buildDetails(body, sound: selectedAzan);
+        final id = dayIndex * 10 + prayerId;
+
+        try {
+          await _plugin.zonedSchedule(
+            id, title, body, scheduled, details,
+            androidScheduleMode: mode,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+          );
+          count++;
+        } catch (e) {
+          // ถ้าโหมดตรงเวลาถูกปฏิเสธ ลองใหม่แบบไม่ตรงเวลาเป๊ะ ดีกว่าไม่แจ้งเตือนเลย
+          print('SCHEDULE ERROR ($name $dayKey): $e');
+          try {
+            await _plugin.zonedSchedule(
+              id, title, body, scheduled, details,
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+              uiLocalNotificationDateInterpretation:
+                  UILocalNotificationDateInterpretation.absoluteTime,
+            );
+            count++;
+          } catch (e2) {
+            print('SCHEDULE RETRY ERROR ($name $dayKey): $e2');
+          }
+        }
+      }
+    }
+
+    print('=== SCHEDULED $count PRAYER NOTIFICATIONS ===');
   }
 
   static Future<void> cancelAll() async {
@@ -186,13 +275,8 @@ class NotificationService {
   static Future<void> showTest() async {
     final selectedAzan = await AzanService.getSelectedAzanId();
 
-    // ลบ channel เก่าทิ้งก่อน กันเสียงค้างจากรอบก่อนหน้า (ดูคำอธิบายใน schedulePrayerNotifications)
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    await androidPlugin?.deleteNotificationChannel('${_channelId}_$selectedAzan');
-
     const body = 'การแจ้งเตือนทำงานปกติ ✅';
-    final details = await _buildDetails(body, sound: selectedAzan);
+    final details = _buildDetails(body, sound: selectedAzan);
     await _plugin.show(
       99,
       '🕌 DEEN - Test',
@@ -206,14 +290,9 @@ class NotificationService {
     final scheduled = now.add(const Duration(minutes: 1));
     final selectedAzan = await AzanService.getSelectedAzanId();
 
-    // ลบ channel เก่าทิ้งก่อน กันเสียงค้างจากรอบก่อนหน้า
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    await androidPlugin?.deleteNotificationChannel('${_channelId}_$selectedAzan');
-
     print('=== SCHEDULING TEST FOR: $scheduled ===');
 
-    final details = await _buildDetails(
+    final details = _buildDetails(
       'การแจ้งเตือนแบบ schedule ทำงานปกติ ✅',
       sound: selectedAzan,
     );
