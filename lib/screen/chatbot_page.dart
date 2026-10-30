@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/language_service.dart';
 import '../services/theme_service.dart';
 import 'api_config.dart';
@@ -126,14 +127,7 @@ Respond in the same language the user uses (All Language).
     if (!usingOwnKey) {
       final used = await _getTodayUsage(prefs);
       if (used >= _dailyFreeLimit) {
-        setState(() {
-          _messages.add({'role': 'user', 'content': text});
-          _messages.add({'role': 'assistant', 'content': _lang.isThai
-              ? 'วันนี้ถามครบ $_dailyFreeLimit ข้อความแล้วครับ พรุ่งนี้ถามใหม่ได้ หรือใส่ Gemini API key ของคุณเองที่ Settings > แชทบอต เพื่อถามได้ไม่จำกัด'
-              : 'You\'ve reached today\'s limit of $_dailyFreeLimit messages. Try again tomorrow, or add your own Gemini API key in Settings > Chatbot for unlimited messages.'});
-        });
-        _controller.clear();
-        _scrollToBottom();
+        _showApiKeyDialog(limitReached: true);
         return;
       }
     }
@@ -173,12 +167,97 @@ Respond in the same language the user uses (All Language).
                 : 'Sorry, your API key did not work. Please check Settings > Chatbot.')
             : (_lang.isThai ? 'ขอโทษครับ ไม่สามารถประมวลผลคำขอได้' : 'Sorry, I could not process your request.');
         setState(() { _messages.add({'role': 'assistant', 'content': errorMsg}); _isLoading = false; });
+        // token ของแอปหมดโควต้า (429) → เปิด popup ให้ใส่ key ของ user เอง
+        if (!usingOwnKey && response.statusCode == 429 && mounted) {
+          _showApiKeyDialog(limitReached: true);
+        }
       }
     } catch (e) {
       debugPrint('[Chatbot] Connection error: $e');
       setState(() { _messages.add({'role': 'assistant', 'content': 'Connection error. Please try again.'}); _isLoading = false; });
     }
     _scrollToBottom();
+  }
+
+  static const String _apiKeyUrl = 'https://aistudio.google.com/apikey';
+
+  /// Popup แจ้งว่า token ของแอปหมด + ให้ user ใส่ Gemini API key ของตัวเอง
+  /// พร้อมลิงก์ไปหน้าสร้าง key (Google AI Studio)
+  Future<void> _showApiKeyDialog({bool limitReached = false}) async {
+    if (!mounted) return;
+    final th = _lang.isThai;
+    final keyCtrl = TextEditingController();
+    String? error;
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(builder: (ctx, setD) => AlertDialog(
+        backgroundColor: _theme.cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text(
+          th ? 'โควต้า AI ของแอปหมดแล้ว' : 'App AI quota used up',
+          style: TextStyle(color: _theme.textColor, fontSize: 17.sp, fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+              th
+                  ? 'ใส่ Gemini API key ของคุณเองเพื่อใช้แชทบอทต่อได้ไม่จำกัด (สร้างฟรีที่ Google AI Studio)'
+                  : 'Enter your own Gemini API key to keep using the chatbot without limits (free to create at Google AI Studio).',
+              style: TextStyle(color: _theme.subTextColor, fontSize: 13.sp, height: 1.4)),
+            SizedBox(height: 10.h),
+            InkWell(
+              onTap: () async {
+                try {
+                  await launchUrl(Uri.parse(_apiKeyUrl), mode: LaunchMode.externalApplication);
+                } catch (_) {}
+              },
+              child: Row(children: [
+                Icon(Icons.open_in_new, size: 16.sp, color: const Color(0xFF2E7D32)),
+                SizedBox(width: 6.w),
+                Expanded(child: Text(
+                  th ? 'เปิดเว็บสร้าง API key' : 'Open the API key page',
+                  style: TextStyle(color: const Color(0xFF2E7D32), fontSize: 13.sp,
+                      decoration: TextDecoration.underline))),
+              ]),
+            ),
+            SizedBox(height: 12.h),
+            TextField(
+              controller: keyCtrl,
+              style: TextStyle(color: _theme.textColor, fontSize: 13.sp),
+              decoration: InputDecoration(
+                hintText: 'AIza...',
+                hintStyle: TextStyle(color: _theme.subTextColor),
+                errorText: error,
+                isDense: true,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r)),
+              ),
+            ),
+          ]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(th ? 'ยกเลิก' : 'Cancel', style: TextStyle(color: _theme.subTextColor))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32)),
+            onPressed: () async {
+              final k = keyCtrl.text.trim();
+              if (k.length < 20) {
+                setD(() => error = th ? 'key ไม่ถูกต้อง' : 'Invalid key');
+                return;
+              }
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setString(userApiKeyPrefKey, k);
+              if (ctx.mounted) Navigator.pop(ctx);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(th ? 'บันทึก key แล้ว ถามต่อได้เลย' : 'Key saved. You can keep chatting.')));
+              }
+            },
+            child: Text(th ? 'บันทึก' : 'Save', style: const TextStyle(color: Colors.white))),
+        ],
+      )),
+    );
+    keyCtrl.dispose();
   }
 
   void _scrollToBottom() {
@@ -197,6 +276,7 @@ Respond in the same language the user uses (All Language).
       body: Column(children: [
         _buildHeader(context),
         Expanded(child: _messages.isEmpty ? _buildWelcome() : _buildMessages()),
+        _buildDisclaimer(),
         _buildInput(),
       ]),
     );
@@ -237,6 +317,46 @@ Respond in the same language the user uses (All Language).
             SizedBox(height: 16.h),
           ]),
         ),
+      ),
+    );
+  }
+
+  // ── ข้อความเตือนให้ตรวจสอบข้อมูลซ้ำ แสดงเหนือช่องพิมพ์ตลอดเวลา ──────────
+  String _getDisclaimer() {
+    switch (_lang.lang) {
+      case 'th': return 'คำตอบจากแชทบอทอาจไม่ถูกต้อง กรุณาตรวจสอบข้อมูลอีกครั้งกับผู้รู้หรือแหล่งข้อมูลที่เชื่อถือได้';
+      case 'ms': return 'Jawapan chatbot mungkin tidak tepat. Sila semak semula dengan orang yang berilmu atau sumber yang dipercayai.';
+      case 'id': return 'Jawaban chatbot bisa saja tidak akurat. Mohon periksa kembali dengan orang yang berilmu atau sumber tepercaya.';
+      case 'ar': return 'قد تكون إجابات الروبوت غير دقيقة. يُرجى التحقق منها مع أهل العلم أو من مصدر موثوق.';
+      case 'ur': return 'چیٹ بوٹ کے جوابات غلط ہو سکتے ہیں۔ براہِ کرم کسی اہلِ علم یا معتبر ذریعے سے دوبارہ تصدیق کریں۔';
+      case 'bn': return 'চ্যাটবটের উত্তর ভুল হতে পারে। অনুগ্রহ করে জ্ঞানী ব্যক্তি বা নির্ভরযোগ্য উৎস থেকে আবার যাচাই করুন।';
+      default: return 'Chatbot answers may be inaccurate. Please verify with a knowledgeable person or a trusted source.';
+    }
+  }
+
+  Widget _buildDisclaimer() {
+    final isRtl = _lang.lang == 'ar' || _lang.lang == 'ur';
+    return Container(
+      width: double.infinity,
+      color: _theme.bgColor,
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: 1.h),
+            child: Icon(Icons.info_outline, size: 14.sp, color: _theme.subTextColor),
+          ),
+          SizedBox(width: 6.w),
+          Flexible(
+            child: Text(
+              _getDisclaimer(),
+              textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+              style: TextStyle(fontSize: 11.sp, color: _theme.subTextColor, height: 1.4),
+            ),
+          ),
+        ],
       ),
     );
   }
